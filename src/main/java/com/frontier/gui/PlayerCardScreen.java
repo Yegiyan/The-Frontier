@@ -1,0 +1,205 @@
+package com.frontier.gui;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.frontier.PlayerData;
+import com.frontier.gui.util.TextureElement;
+import com.frontier.regions.RegionManager;
+import com.frontier.settlements.SettlementManager;
+import com.mojang.authlib.minecraft.MinecraftProfileTexture;
+
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
+
+public class PlayerCardScreen extends Screen
+{
+	private static final Identifier BACKGROUND_TEXTURE = new Identifier("minecraft", "textures/gui/demo_background.png");
+	public static final int BACKGROUND_WIDTH = 256;
+    public static final int BACKGROUND_HEIGHT = 350;
+    public static final int BACKGROUND_OFFSET_X = 0;
+    public static final int BACKGROUND_OFFSET_Y = 65;
+    
+	private static final Identifier PROFESSION_TEXTURE = new Identifier("minecraft", "textures/mob_effect/strength.png");
+	private static final Identifier FACTION_TEXTURE = new Identifier("minecraft", "textures/mob_effect/resistance.png");
+	private static final Identifier RENOWN_TEXTURE = new Identifier("minecraft", "textures/mob_effect/hero_of_the_village.png");
+	private static final Identifier REGION_TEXTURE = new Identifier("minecraft", "textures/mob_effect/darkness.png");
+	private static final Identifier REPUTATION_TEXTURE = new Identifier("minecraft", "textures/mob_effect/slowness.png");
+	
+	private static final Identifier SEPARATOR_TEXTURE = new Identifier("minecraft", "textures/gui/header_separator.png");
+	
+	int ORANGE = 0xF74B03;
+	
+	List<TextureElement> textures = new ArrayList<>();
+	
+	private int backgroundPosX;
+    private int backgroundPosY;
+	
+    private Text nameText;
+    private Text factionText;
+    private Text professionText;
+    private Text renownText;
+    private Text regionText;
+    private Text reputationText;
+    
+    private ButtonWidget cardButton;
+    private ButtonWidget bountyButton;
+    private boolean toggleMenu = false;
+    
+    MinecraftProfileTexture portrait;
+    Identifier skinTexture;
+
+    public PlayerCardScreen() 
+    {
+        super(Text.literal("Create a New Settlement Screen"));
+    }
+    
+	@Override @SuppressWarnings("resource")
+    protected void init() 
+    {
+		PlayerEntity player = MinecraftClient.getInstance().player;
+    	PlayerData playerData = PlayerData.map.get(player.getUuid());
+    	
+    	backgroundPosX = (this.width - BACKGROUND_WIDTH) / 2;
+        backgroundPosY = (this.height - BACKGROUND_HEIGHT) / 2;
+
+        textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, (backgroundPosY + 100), 10, 10, "Current Region (" + RegionManager.getPlayerDirection(player.getBlockPos()) + ")" + RegionManager.getRegionWild(player.getBlockPos())));
+        textures.add(new TextureElement(REPUTATION_TEXTURE, (backgroundPosX + 12), (backgroundPosY + 120), 12, 12, "Current Territory"));
+        textures.add(new TextureElement(PROFESSION_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 80), 12, 12, "Profession"));
+        textures.add(new TextureElement(FACTION_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 101), 12, 12, "Faction"));
+        textures.add(new TextureElement(RENOWN_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 121), 12, 12, "Renown"));
+        
+        if (player != null && playerData != null)
+        {
+            this.portrait = MinecraftClient.getInstance().getSkinProvider().getTextures(player.getGameProfile()).get(MinecraftProfileTexture.Type.SKIN);
+            
+            if (portrait != null)
+                skinTexture = new Identifier(portrait.getUrl());
+            else 
+                skinTexture = new Identifier("minecraft", "textures/entity/player/wide/steve.png");
+            
+            if (player.getWorld().getRegistryKey().equals(World.OVERWORLD))
+            	regionText = ((MutableText) Text.literal(RegionManager.getPlayerRegion(player.getBlockPos())));
+            else if (player.getWorld().getRegistryKey().equals(World.NETHER))
+            	regionText = ((MutableText) Text.literal("§kNetherworld"));
+            else if (player.getWorld().getRegistryKey().equals(World.END))
+            	regionText = ((MutableText) Text.literal("The End"));
+            else
+            	regionText = ((MutableText) Text.literal("Unknown Region"));
+            
+            String territory = SettlementManager.getSettlementTerritory(player.getBlockPos());
+            if (SettlementManager.settlementExists(territory))
+            {
+            	int playerReputation = playerData.getReputation(territory);
+            	
+            	if (playerReputation >= -10 && playerReputation <= 10)
+                	reputationText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.WHITE));
+            	
+                else if (playerReputation >= 11 && playerReputation <= 50)
+                	reputationText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.GREEN));
+                else if (playerReputation >= 51 && playerReputation <= 99)
+                	reputationText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.DARK_AQUA));
+                else if (playerReputation == 100)
+                	reputationText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.BLUE));
+            	
+                else if (playerReputation >= -11 && playerReputation <= -50)
+                	reputationText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.YELLOW));
+                else if (playerReputation >= -51 && playerReputation <= -99)
+                	reputationText = (MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(ORANGE)));
+                else if (playerReputation == -100)
+                	reputationText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.RED));
+            }
+            else
+            	reputationText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.WHITE));
+        	
+        	nameText = ((MutableText) Text.literal(playerData.getName()));
+            factionText = ((MutableText)Text.literal(playerData.getFaction()));
+            professionText = ((MutableText) Text.literal(playerData.getProfession()));
+            renownText = ((MutableText) Text.literal(playerData.getRenownAsString()));
+
+            this.cardButton = ButtonWidget.builder(Text.literal("PLAYER CARD"), button ->
+            {        	
+            	toggleMenu = false;
+            }).dimensions(backgroundPosX + 0, backgroundPosY + 40, 80, 20).build();
+            
+            this.bountyButton = ButtonWidget.builder(Text.literal("BOUNTIES"), button ->
+            {        	
+            	toggleMenu = true;
+            }).dimensions(backgroundPosX + 168, backgroundPosY + 40, 80, 20).build();
+            
+            addDrawableChild(cardButton);
+            addDrawableChild(bountyButton);
+        }  
+    }
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) 
+    {
+        this.renderBackground(context);
+        context.drawTexture(BACKGROUND_TEXTURE, backgroundPosX + BACKGROUND_OFFSET_X, backgroundPosY + BACKGROUND_OFFSET_Y, 0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
+        
+        if (toggleMenu)
+        {
+        	cardButton.active = true;
+        	bountyButton.active = false;
+        }
+        
+        else
+        {
+        	cardButton.active = false;
+        	bountyButton.active = true;
+        	
+        	context.drawTexture(skinTexture, (backgroundPosX + 13), (backgroundPosY + 80), 8, 8, 8, 8, 64, 64);
+        	for (TextureElement element : textures) 
+        	{
+                element.draw(context);
+                if (element.isMouseOver(mouseX, mouseY))
+                    renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+            }
+        	
+        	context.drawText(this.textRenderer, nameText, (backgroundPosX + 30), (backgroundPosY + 80), new Color(255, 255, 255).getRGB(), true);
+        	context.drawText(this.textRenderer, regionText, (backgroundPosX + 30), (backgroundPosY + 101), new Color(255, 255, 255).getRGB(), true);
+        	context.drawText(this.textRenderer, reputationText, (backgroundPosX + 30), (backgroundPosY + 122), new Color(255, 255, 255).getRGB(), true);
+
+        	drawTextR(context, this.textRenderer, professionText, (backgroundPosX + 215), (backgroundPosY + 80), new Color(255, 255, 255).getRGB(), true);
+        	drawTextR(context, this.textRenderer, factionText, (backgroundPosX + 215), (backgroundPosY + 102), new Color(255, 255, 255).getRGB(), true);
+        	drawTextR(context, this.textRenderer, renownText, (backgroundPosX + 215), (backgroundPosY + 123), new Color(255, 255, 255).getRGB(), true);   
+        	
+        	context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 12), (backgroundPosY + 145), 0, 0, 225, 2, 32, 2);
+        }
+        
+        super.render(context, mouseX, mouseY, delta);
+    }
+
+    @Override
+    public boolean shouldPause() 
+    {
+    	return false;
+    }
+    
+    private void renderTooltip(DrawContext context, String text, int mouseX, int mouseY) 
+    {
+    	if (text != null)
+    		context.drawTooltip(textRenderer, Text.literal(text), mouseX, mouseY);
+    }
+
+    // align text from right side
+    private void drawTextR(DrawContext context, TextRenderer textRenderer, Text text, int rightEdgeX, int y, int color, boolean shadow) 
+    {
+        int textWidth = textRenderer.getWidth(text);
+        int x = rightEdgeX - textWidth;
+        context.drawText(textRenderer, text, x, y, color, shadow);
+    }
+}

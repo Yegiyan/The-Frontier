@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "frontier",
+	"version": "${version}",
+	"name": "The Frontier",
+	"description": "I made this because the Millenaire team is taking as long as the heat death of the universe to update it to a modern version of Minecraft.",
+	"authors": [
+		"FLy1nRabBit"
+	],
+	"contact": {
+		"homepage": "https://legacy.curseforge.com/minecraft/mc-mods/the-frontier",
+		"sources": "https://github.com/Yegiyan/The-Frontier"
+	},
+	"license": "All Rights Reserved",
+	"icon": "assets/frontier/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.frontier.Frontier"
+		]
+	},
+	"mixins": [
+		"frontier.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.14.24",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
