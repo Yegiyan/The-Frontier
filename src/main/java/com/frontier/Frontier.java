@@ -15,7 +15,7 @@ import com.frontier.regions.RegionManager;
 import com.frontier.renderers.RegionMapRenderer;
 import com.frontier.renderers.SettlerEntityRenderer;
 import com.frontier.settlements.SettlementManager;
-import com.frontier.structures.StructureDamageChecker;
+import com.frontier.structures.StructureUpdate;
 import com.frontier.util.FrontierCommands;
 import com.frontier.util.FrontierKeyBindings;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -69,8 +69,10 @@ public class Frontier implements ModInitializer
 		FabricDefaultAttributeRegistry.register(ARCHITECT_ENTITY, SettlerEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1));
 	}
 	
-	// TODO: Spawn townhall after creating settlement
-	// TODO: Save structures and settlers to settlement data
+	// Tier upgading
+	// THEN convert nomad to architect, etc.
+	
+	// TODO: Save settlers to settlement data
 	
 	@Override
 	public void onInitialize()
@@ -90,7 +92,7 @@ public class Frontier implements ModInitializer
 		SettlementManager.registerCallback();
 		RequestNomads.registerCallback();
 		
-		StructureDamageChecker damageChecker = new StructureDamageChecker();
+		StructureUpdate damageChecker = new StructureUpdate();
         damageChecker.register();
 		
 		updateWorldEvents();

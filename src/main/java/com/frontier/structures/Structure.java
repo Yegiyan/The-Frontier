@@ -2,13 +2,22 @@ package com.frontier.structures;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
+import net.minecraft.block.BellBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.ChestBlockEntity;
+import net.minecraft.block.entity.FurnaceBlockEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtList;
@@ -110,14 +119,43 @@ public abstract class Structure
 
 	public boolean isDamaged(ServerWorld world)
 	{
-		final boolean[] isDamaged = { false };
-		processStructure(world, (blockPos, expectedState) ->
-		{
-			BlockState currentState = world.getBlockState(blockPos);
-			if (!currentState.equals(expectedState))
-				isDamaged[0] = true;
-		});
-		return isDamaged[0];
+	    final boolean[] isDamaged = { false };
+	    processStructure(world, (blockPos, expectedState) ->
+	    {
+	        if (expectedState.isOf(Blocks.AIR)) // ignore air blocks
+	            return;
+
+	        BlockState currentState = world.getBlockState(blockPos);
+	        
+	        // check furnace block type and ignore active state property
+	        if (expectedState.isOf(Blocks.FURNACE))
+	        {
+	            if (currentState.isOf(Blocks.FURNACE))
+	                return;
+	            else
+	            {
+	                isDamaged[0] = true;
+	                return;
+	            }
+	        }
+	        
+	        // ignore direction of bells
+	        if (expectedState.getBlock() instanceof BellBlock && currentState.getBlock() instanceof BellBlock)
+	        {
+	            // check all properties except facing
+	            for (Property<?> property : expectedState.getProperties())
+	            {
+	                if (!property.getName().equals("facing") && !currentState.get(property).equals(expectedState.get(property)))
+	                {
+	                    isDamaged[0] = true;
+	                    break;
+	                }
+	            }
+	        }
+	        else if (!currentState.equals(expectedState))
+	            isDamaged[0] = true;
+	    });
+	    return isDamaged[0];
 	}
 
 	private void processStructure(ServerWorld world, BiConsumer<BlockPos, BlockState> blockProcessor)
@@ -256,11 +294,74 @@ public abstract class Structure
 			return original;
 		}
 	}
-
+	
 	private <T extends Comparable<T>> BlockState applyProperty(BlockState state, Property<T> property, String value)
 	{
 		return property.parse(value).map(parsedValue -> state.with(property, parsedValue)).orElse(state);
 	}
+	
+	public List<BlockPos> findChests(ServerWorld world)
+	{
+        List<BlockPos> chestPositions = new ArrayList<>();
+        processStructure(world, (blockPos, blockState) ->
+        {
+            if (blockState.isOf(Blocks.CHEST))
+                chestPositions.add(blockPos);
+        });
+        return chestPositions;
+    }
+
+    public Map<BlockPos, List<ItemStack>> getChestContents(ServerWorld world)
+    {
+        List<BlockPos> chestPositions = findChests(world);
+        Map<BlockPos, List<ItemStack>> chestContents = new HashMap<>();
+        for (BlockPos chestPos : chestPositions)
+        {
+            BlockEntity blockEntity = world.getBlockEntity(chestPos);
+            if (blockEntity instanceof ChestBlockEntity)
+            {
+                Inventory inventory = (Inventory) blockEntity;
+                List<ItemStack> items = new ArrayList<>();
+                for (int i = 0; i < inventory.size(); i++)
+                {
+                    ItemStack itemStack = inventory.getStack(i);
+                    if (!itemStack.isEmpty())
+                        items.add(itemStack);
+                }
+                chestContents.put(chestPos, items);
+            }
+        }
+        return chestContents;
+    }
+    
+    public List<BlockPos> findFurnaces(ServerWorld world)
+    {
+        List<BlockPos> furnacePositions = new ArrayList<>();
+        processStructure(world, (blockPos, blockState) ->
+        {
+            if (blockState.isOf(Blocks.FURNACE))
+                furnacePositions.add(blockPos);
+        });
+        return furnacePositions;
+    }
+
+    public Map<BlockPos, ItemStack> getFurnaceOutputContents(ServerWorld world)
+    {
+        List<BlockPos> furnacePositions = findFurnaces(world);
+        Map<BlockPos, ItemStack> furnaceOutputs = new HashMap<>();
+        for (BlockPos furnacePos : furnacePositions)
+        {
+            BlockEntity blockEntity = world.getBlockEntity(furnacePos);
+            if (blockEntity instanceof FurnaceBlockEntity)
+            {
+                Inventory inventory = (Inventory) blockEntity;
+                ItemStack outputStack = inventory.getStack(2); // output for furnace should be slot 2
+                if (!outputStack.isEmpty())
+                    furnaceOutputs.put(furnacePos, outputStack);
+            }
+        }
+        return furnaceOutputs;
+    }
 
 	public String getName() {
 		return name;

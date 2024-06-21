@@ -40,6 +40,7 @@ import net.minecraft.util.math.Direction;
 public class SettlementManager
 {
     private static Map<String, Settlement> settlements = new HashMap<>();
+    private static BlockPos bellPos = null;
 
     public static void registerCallback()
 	{
@@ -48,7 +49,13 @@ public class SettlementManager
 	    	PlayerData playerData = PlayerData.map.get(player.getUuid());
 	    	if (playerData != null)
 	    	{
-	    		if (world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == Items.CLOCK && world.getBlockState(blockHitResult.getBlockPos()).getBlock() == Blocks.BELL) 
+	    		if (!world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == Items.CLOCK && world.getBlockState(blockHitResult.getBlockPos()).getBlock() == Blocks.BELL)
+	    		{
+	    			bellPos = blockHitResult.getBlockPos();
+	    			world.setBlockState(bellPos, Blocks.AIR.getDefaultState());
+	    		}	
+	    		
+	    		if (world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == Items.CLOCK && world.getBlockState(blockHitResult.getBlockPos()).getBlock() == Blocks.BELL)
 		        {
 		        	MinecraftClient.getInstance().setScreen(new CreateSettlementScreen());
 		            return ActionResult.SUCCESS;
@@ -78,11 +85,10 @@ public class SettlementManager
                     settlements.put(factionName, settlement);
                     
                     ServerPlayerEntity player = playerData.getPlayer(server);
-                    BlockPos townHallPos = getFrontPosition(player, 5);
+                    BlockPos townHallPos = getFrontPosition(player, 2);
                     Direction facing = player.getHorizontalFacing();
-
-                    // Construct the town hall at the calculated position with the correct orientation
                     settlement.constructStructure("town_hall", townHallPos, server.getOverworld(), facing);
+                    
                     
                     return settlement;
                 } 
@@ -413,8 +419,7 @@ public class SettlementManager
 	private static BlockPos getFrontPosition(ServerPlayerEntity player, int distance)
 	{
 	    Direction facing = player.getHorizontalFacing();
-	    BlockPos playerPos = player.getBlockPos();
-	    return playerPos.offset(facing, distance);
+	    return bellPos.offset(facing, distance);
 	}
 	
 	public static boolean isTerritoryOverlap(BlockPos newSettlementPos)

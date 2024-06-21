@@ -7,8 +7,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 
-public class StructureDamageChecker
+public class StructureUpdate
 {
+	private static final int SECONDS = 2; // update interval in seconds
     private int tickCounter = 0;
 
     public void register()
@@ -19,7 +20,7 @@ public class StructureDamageChecker
     private void onServerTick(MinecraftServer server)
     {
         tickCounter++;
-        if (tickCounter >= 20)
+        if (tickCounter >= 20 * SECONDS)
         {
             tickCounter = 0;
             checkStructuresForDamage(server);
@@ -33,6 +34,8 @@ public class StructureDamageChecker
             ServerWorld world = server.getOverworld();
             for (Structure structure : settlement.getStructures())
             {
+            	System.out.println(structure.getFurnaceOutputContents(world));
+            	
             	if (structure.isDamaged(world))
             	{
             		structure.requiresRepair = true;
