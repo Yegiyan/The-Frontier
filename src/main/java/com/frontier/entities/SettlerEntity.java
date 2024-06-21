@@ -140,24 +140,17 @@ public class SettlerEntity extends PathAwareEntity
 	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, EntityData entityData, NbtCompound entityNbt) 
 	{
 		entityData = super.initialize(world, difficulty, spawnReason, entityData, entityNbt);
-
 	    if (entityNbt.contains("Name")) 
 	        setSettlerName(entityNbt.getString("Name"));
-	    
 	    if (entityNbt.contains("Faction")) 
 	        setSettlerFaction(entityNbt.getString("Faction"));
-	    
 	    if (entityNbt.contains("Profession")) 
 	        setSettlerProfession(entityNbt.getString("Profession"));
-	    
 	    if (entityNbt.contains("Morale"))
 	        setSettlerMorale(entityNbt.getInt("Morale"));
-	    
 	    if (entityNbt.contains("Gender")) 
 	        setSettlerGender(entityNbt.getString("Gender"));
-	    
 	    this.getDataTracker().set(SETTLER_TEXTURE, getSettlerTexture());
-	    
 	    return entityData;
 	}
 
@@ -165,28 +158,20 @@ public class SettlerEntity extends PathAwareEntity
 	public void readCustomDataFromNbt(NbtCompound nbt) 
 	{
 	    super.readCustomDataFromNbt(nbt);
-	    
 	    if (nbt.contains("UUID")) 
 	        this.uuid = nbt.getUuid("UUID");
-	    
 	    if (nbt.contains("Name"))
 	        this.getDataTracker().set(SETTLER_NAME, nbt.getString("Name"));
-	    
 	    if (nbt.contains("Faction"))
 	        this.getDataTracker().set(SETTLER_FACTION, nbt.getString("Faction"));
-	    
 	    if (nbt.contains("Profession"))
 	        this.getDataTracker().set(SETTLER_PROFESSION, nbt.getString("Profession"));
-	    
 	    if (nbt.contains("Morale"))
 	        this.getDataTracker().set(SETTLER_MORALE, nbt.getInt("Morale"));
-	    
 	    if (nbt.contains("Gender"))
 	        this.getDataTracker().set(SETTLER_GENDER, nbt.getString("Gender"));
-	    
 	    if (nbt.contains("SettlerTexture"))
 	        this.getDataTracker().set(SETTLER_TEXTURE, nbt.getInt("SettlerTexture"));
-	    
 	    loadData(this.getWorld());
 	}
 

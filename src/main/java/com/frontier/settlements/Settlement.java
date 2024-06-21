@@ -10,6 +10,8 @@ import java.util.UUID;
 
 import com.frontier.entities.SettlerEntity;
 import com.frontier.structures.Structure;
+import com.frontier.structures.TownHall;
+import com.frontier.structures.Warehouse;
 
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleEffect;
@@ -19,6 +21,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Direction;
 
 public class Settlement
 {
@@ -38,7 +41,7 @@ public class Settlement
     
     private final int territoryChunkRadius = 1;
 
-    public Settlement(String name, UUID leader, BlockPos position)
+    public Settlement(String name, UUID leader, BlockPos position, MinecraftServer server)
     {
         this.name = name;
         this.leader = leader;
@@ -50,16 +53,36 @@ public class Settlement
         this.players = new ArrayList<>();
         this.allies = new ArrayList<>();
         this.enemies = new ArrayList<>();
-        generateInitialTerritory();
+        generateTerritory();
     }
     
-    private void generateInitialTerritory()
+    private void generateTerritory() // everytime we loadSettlements() this method is called so faction territories persist across sessions
 	{
         int centerX = this.position.getX() >> 4;
         int centerZ = this.position.getZ() >> 4;
         for (int dx = -territoryChunkRadius; dx <= territoryChunkRadius; dx++)
             for (int dz = -territoryChunkRadius; dz <= territoryChunkRadius; dz++)
                 this.territory.add(new ChunkPos(centerX + dx, centerZ + dz));
+        // TODO: add territory expansion from watchtowers here
+    }
+    
+    protected void constructStructure(String structureName, BlockPos position, ServerWorld world, Direction facing)
+    {
+        Structure structure;
+        switch (structureName)
+        {
+            case "town_hall":
+                structure = new TownHall(structureName, this.name, position, facing);
+                break;
+            case "warehouse":
+                structure = new Warehouse(structureName, this.name, position, facing);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown structure type: " + structureName);
+        }
+
+        structure.startConstruction(world);
+        structures.add(structure);
     }
     
     public boolean isWithinTerritory(BlockPos pos)

@@ -6,8 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.frontier.entities.ArchitectEntity;
-import com.frontier.entities.SettlerEntity;
 import com.frontier.entities.NomadEntity;
+import com.frontier.entities.SettlerEntity;
 import com.frontier.events.RequestNomads;
 import com.frontier.gui.PlayerCardScreen;
 import com.frontier.network.FrontierPackets;
@@ -15,6 +15,7 @@ import com.frontier.regions.RegionManager;
 import com.frontier.renderers.RegionMapRenderer;
 import com.frontier.renderers.SettlerEntityRenderer;
 import com.frontier.settlements.SettlementManager;
+import com.frontier.structures.StructureDamageChecker;
 import com.frontier.util.FrontierCommands;
 import com.frontier.util.FrontierKeyBindings;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -88,6 +89,9 @@ public class Frontier implements ModInitializer
 		RegionManager.registerCallback();
 		SettlementManager.registerCallback();
 		RequestNomads.registerCallback();
+		
+		StructureDamageChecker damageChecker = new StructureDamageChecker();
+        damageChecker.register();
 		
 		updateWorldEvents();
 	}

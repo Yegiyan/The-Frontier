@@ -14,6 +14,9 @@ import java.util.UUID;
 import com.frontier.PlayerData;
 import com.frontier.gui.AbandonSettlementScreen;
 import com.frontier.gui.CreateSettlementScreen;
+import com.frontier.structures.Structure;
+import com.frontier.structures.TownHall;
+import com.frontier.structures.Warehouse;
 
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.Blocks;
@@ -32,6 +35,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Direction;
 
 public class SettlementManager
 {
@@ -70,8 +74,16 @@ public class SettlementManager
                 BlockPos newSettlementPos = playerData.getPlayer(server).getBlockPos();
                 if (!isTerritoryOverlap(newSettlementPos))
                 {
-                    Settlement settlement = new Settlement(factionName, leader, newSettlementPos);
+                    Settlement settlement = new Settlement(factionName, leader, newSettlementPos, server);
                     settlements.put(factionName, settlement);
+                    
+                    ServerPlayerEntity player = playerData.getPlayer(server);
+                    BlockPos townHallPos = getFrontPosition(player, 5);
+                    Direction facing = player.getHorizontalFacing();
+
+                    // Construct the town hall at the calculated position with the correct orientation
+                    settlement.constructStructure("town_hall", townHallPos, server.getOverworld(), facing);
+                    
                     return settlement;
                 } 
                 else
@@ -205,14 +217,23 @@ public class SettlementManager
 
 	    if (nbtFile.exists())
 	    {
-	        try { rootNbt = NbtIo.readCompressed(nbtFile); } 
-	        catch (IOException e) { e.printStackTrace(); return; }
-	    } 
-	    
+	        try
+	        {
+	            rootNbt = NbtIo.readCompressed(nbtFile);
+	        }
+	        catch (IOException e)
+	        {
+	        	e.printStackTrace(); 
+	        	return;
+	        }
+	    }
 	    else
 	    {
 	        rootNbt = new NbtCompound();
-	        try { nbtFile.createNewFile(); }
+	        try
+	        {
+	            nbtFile.createNewFile();
+	        }
 	        catch (IOException e) { e.printStackTrace(); }
 	    }
 
@@ -222,7 +243,8 @@ public class SettlementManager
 	        String factionName = entry.getKey();
 	        Settlement settlement = entry.getValue();
 	        NbtCompound settlementNbt = new NbtCompound();
-	        
+
+	        // save territory
 	        NbtList territoryNbt = new NbtList();
 	        for (ChunkPos chunk : settlement.getTerritory())
 	        {
@@ -232,22 +254,39 @@ public class SettlementManager
 	            territoryNbt.add(chunkNbt);
 	        }
 
+	        // save reputations
 	        NbtCompound reputationsNbt = new NbtCompound();
 	        for (Map.Entry<UUID, Integer> repEntry : settlement.getReputations().entrySet())
 	            reputationsNbt.putInt(repEntry.getKey().toString(), repEntry.getValue());
-	        
+
+	        // save players
 	        NbtList playersNbt = new NbtList();
 	        for (UUID playerUuid : settlement.getPlayers())
 	            playersNbt.add(NbtString.of(playerUuid.toString()));
-	        
+
+	        // save allies and enemies
 	        NbtList alliesNbt = new NbtList();
 	        for (String ally : settlement.getAllies())
 	            alliesNbt.add(NbtString.of(ally));
-	        
+
 	        NbtList enemiesNbt = new NbtList();
 	        for (String enemy : settlement.getEnemies())
 	            enemiesNbt.add(NbtString.of(enemy));
-	        
+
+	        // save structures
+	        NbtList structuresNbt = new NbtList();
+	        for (Structure structure : settlement.getStructures())
+	        {
+	            NbtCompound structureNbt = new NbtCompound();
+	            structureNbt.putString("Name", structure.getName());
+	            structureNbt.putString("Faction", structure.getFaction());
+	            structureNbt.putLong("Position", structure.getPosition().asLong());
+	            structureNbt.putString("Facing", structure.getFacing().getName());
+	            structureNbt.putInt("Tier", structure.getTier());
+	            structureNbt.putUuid("UUID", structure.getUUID());
+	            structuresNbt.add(structureNbt);
+	        }
+
 	        settlementNbt.putUuid("Leader", settlement.getLeader());
 	        settlementNbt.putLong("Position", settlement.getPosition().asLong());
 	        settlementNbt.put("Territory", territoryNbt);
@@ -255,13 +294,17 @@ public class SettlementManager
 	        settlementNbt.put("Players", playersNbt);
 	        settlementNbt.put("Allies", alliesNbt);
 	        settlementNbt.put("Enemies", enemiesNbt);
-	        
+	        settlementNbt.put("Structures", structuresNbt);
+
 	        settlementsNbt.put(factionName, settlementNbt);
 	    }
 
 	    rootNbt.put("Settlements", settlementsNbt);
 
-	    try { NbtIo.writeCompressed(rootNbt, nbtFile); } 
+	    try
+	    {
+	        NbtIo.writeCompressed(rootNbt, nbtFile);
+	    }
 	    catch (IOException e) { e.printStackTrace(); }
 	}
 
@@ -289,13 +332,13 @@ public class SettlementManager
 
 	                UUID leader = settlementNbt.getUuid("Leader");
 	                BlockPos position = BlockPos.fromLong(settlementNbt.getLong("Position"));
-	                Settlement settlement = new Settlement(factionName, leader, position);
-	                
+	                Settlement settlement = new Settlement(factionName, leader, position, server);
+
+	                // load territory
 	                if (settlementNbt.contains("Territory", 9))
 	                {
 	                    NbtList territoryNbt = settlementNbt.getList("Territory", 10);
-	                    for (int i = 0; i < territoryNbt.size(); i++)
-	                    {
+	                    for (int i = 0; i < territoryNbt.size(); i++) {
 	                        NbtCompound chunkNbt = territoryNbt.getCompound(i);
 	                        int x = chunkNbt.getInt("X");
 	                        int z = chunkNbt.getInt("Z");
@@ -303,7 +346,8 @@ public class SettlementManager
 	                        settlement.expandTerritory(chunkPos);
 	                    }
 	                }
-	                
+
+	                // load reputations
 	                NbtCompound reputationsNbt = settlementNbt.getCompound("Reputations");
 	                for (String uuidKey : reputationsNbt.getKeys())
 	                {
@@ -311,7 +355,8 @@ public class SettlementManager
 	                    int reputation = reputationsNbt.getInt(uuidKey);
 	                    settlement.setReputation(uuid, reputation);
 	                }
-	                
+
+	                // load players
 	                NbtList playersNbt = settlementNbt.getList("Players", 8);
 	                for (int i = 0; i < playersNbt.size(); i++)
 	                {
@@ -319,6 +364,7 @@ public class SettlementManager
 	                    settlement.addPlayer(playerUuid);
 	                }
 
+	                // load allies and enemies
 	                NbtList alliesNbt = settlementNbt.getList("Allies", 8);
 	                for (int i = 0; i < alliesNbt.size(); i++)
 	                    settlement.addAlly(alliesNbt.getString(i));
@@ -327,11 +373,48 @@ public class SettlementManager
 	                for (int i = 0; i < enemiesNbt.size(); i++)
 	                    settlement.addEnemy(enemiesNbt.getString(i));
 
+	                // load structures
+	                NbtList structuresNbt = settlementNbt.getList("Structures", 10);
+	                for (int i = 0; i < structuresNbt.size(); i++)
+	                {
+	                    NbtCompound structureNbt = structuresNbt.getCompound(i);
+	                    String structureName = structureNbt.getString("Name");
+	                    String faction = structureNbt.getString("Faction");
+	                    BlockPos structurePos = BlockPos.fromLong(structureNbt.getLong("Position"));
+	                    Direction facing = Direction.byName(structureNbt.getString("Facing"));
+	                    int tier = structureNbt.getInt("Tier");
+	                    UUID uuid = structureNbt.getUuid("UUID");
+
+	                    Structure structure;
+	                    switch (structureName)
+	                    {
+	                        case "town_hall":
+	                            structure = new TownHall(structureName, faction, structurePos, facing);
+	                            break;
+	                        case "warehouse":
+	                            structure = new Warehouse(structureName, faction, structurePos, facing);
+	                            break;
+	                        default:
+	                            throw new IllegalArgumentException("Unknown structure type: " + structureName);
+	                    }
+	                    
+	                    structure.setTier(tier);
+	                    structure.setUUID(uuid);
+	                    settlement.getStructures().add(structure);
+	                }
+
 	                settlements.put(factionName, settlement);
 	            }
 	        }
-	    } 
+	    }
 	    catch (IOException e) { e.printStackTrace(); }
+	}
+	
+	private static BlockPos getFrontPosition(ServerPlayerEntity player, int distance)
+	{
+	    Direction facing = player.getHorizontalFacing();
+	    BlockPos playerPos = player.getBlockPos();
+	    return playerPos.offset(facing, distance);
 	}
 	
 	public static boolean isTerritoryOverlap(BlockPos newSettlementPos)
