@@ -36,7 +36,7 @@ public class StructureUpdate
             {
             	//System.out.println(structure.getFurnaceOutputContents(world));
             	if (!structure.isUpgrading() && !structure.isConstructing())
-            		structure.upgradeStructure(world);
+            		structure.upgrade(world);
             	
             	if (structure.isDamaged(world) && !structure.isUpgrading() && !structure.isConstructing())
             	{

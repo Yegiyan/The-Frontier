@@ -69,7 +69,9 @@ public class Frontier implements ModInitializer
 		FabricDefaultAttributeRegistry.register(ARCHITECT_ENTITY, SettlerEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1));
 	}
 		
-	// Tier upgrading
+	// Persist construction/upgrading across world loads
+	// Save more of the structure data to the settlement nbt
+	
 	// Convert nomad to architect
 	// Save settlers to settlement data
 	

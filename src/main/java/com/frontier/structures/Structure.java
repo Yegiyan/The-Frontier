@@ -59,6 +59,9 @@ public abstract class Structure
     private Map<BlockPos, BlockState> constructionMap = new HashMap<>();
     private int ticksElapsed = 0;
     private int upgradeTicksElapsed = 0;
+    
+    private static final int BLOCK_PLACE_TICKS = 1;
+    private static final int BLOCK_CLEAR_TICKS = 5;
 
 	protected StructureType type;
 	public enum StructureType { CORE, GATHERER, TRADER, CRAFTER, OUTSIDER, RANCHER, MILITIA, MISC }
@@ -175,8 +178,8 @@ public abstract class Structure
                         world.setBlockState(pos, Blocks.AIR.getDefaultState());
                     }
 
-                    // clear non-air blocks every 5 ticks
-                    if (ticksElapsed >= 5)
+                    // clear non-air blocks
+                    if (ticksElapsed >= BLOCK_CLEAR_TICKS)
                     {
                         ticksElapsed = 0;
                         if (!clearingQueue.isEmpty())
@@ -187,7 +190,7 @@ public abstract class Structure
                         else
                         {
                             isClearing = false;
-                            ticksElapsed = 0; // Reset tick counter for construction phase
+                            ticksElapsed = 0; // reset tick counter for construction phase
                         }
                     }
                 }
@@ -201,8 +204,8 @@ public abstract class Structure
                         world.setBlockState(pos, state);
                     }
 
-                    // place non-air blocks every 5 ticks
-                    if (ticksElapsed >= 5)
+                    // place non-air blocks
+                    if (ticksElapsed >= BLOCK_PLACE_TICKS)
                     {
                         ticksElapsed = 0;
                         if (!otherBlocksQueue.isEmpty())
@@ -239,8 +242,8 @@ public abstract class Structure
 					world.setBlockState(pos, newState);
 				}
 
-				// process non-air blocks every 5 ticks
-				if (upgradeTicksElapsed >= 5)
+				// process non-air blocks
+				if (upgradeTicksElapsed >= BLOCK_PLACE_TICKS)
 				{
 					upgradeTicksElapsed = 0;
 					if (!upgradeQueue.isEmpty())
