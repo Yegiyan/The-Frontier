@@ -81,7 +81,7 @@ public class Settlement
                 throw new IllegalArgumentException("Unknown structure type: " + structureName);
         }
 
-        structure.startConstruction(world);
+        structure.constructStructure(world);
         structures.add(structure);
     }
     

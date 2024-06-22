@@ -8,19 +8,24 @@ public class TownHall extends Structure
     public TownHall(String name, String faction, BlockPos position, Direction facing)
     {
         super(name, faction, StructureType.CORE, position, facing);
+        setMaxTier(2);
     }
 
     @Override
     protected void onConstruction()
     {
-    	System.out.println("Construction of Town Hall started at " + position);
-    	System.out.println("Resource requirements: " + resourceRequirements);
+    	System.out.println("Constructed Town Hall at " + position);
     }
 
     @Override
-    protected void onUpgrade() // architect should begin upgrading structure
+    protected void onUpgrade()
     {
-        System.out.println("Upgrading Town Hall to tier " + tier + " at " + position);
-        System.out.println("New resource requirements: " + resourceRequirements);
+        System.out.println("Upgraded Town Hall to tier " + tier + " at " + position);
     }
+
+	@Override
+	protected void onUpdate()
+	{
+		
+	}
 }

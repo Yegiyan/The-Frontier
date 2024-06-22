@@ -34,9 +34,11 @@ public class StructureUpdate
             ServerWorld world = server.getOverworld();
             for (Structure structure : settlement.getStructures())
             {
-            	System.out.println(structure.getFurnaceOutputContents(world));
+            	//System.out.println(structure.getFurnaceOutputContents(world));
+            	if (!structure.isUpgrading() && !structure.isConstructing())
+            		structure.upgradeStructure(world);
             	
-            	if (structure.isDamaged(world))
+            	if (structure.isDamaged(world) && !structure.isUpgrading() && !structure.isConstructing())
             	{
             		structure.requiresRepair = true;
             		System.out.println("Structure '" + structure.getName() + "' in settlement '" + settlement.getName() + "' is damaged!");

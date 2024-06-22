@@ -68,11 +68,12 @@ public class Frontier implements ModInitializer
 		EntityRendererRegistry.register(ARCHITECT_ENTITY,(EntityRendererFactory.Context context) -> new SettlerEntityRenderer(context));
 		FabricDefaultAttributeRegistry.register(ARCHITECT_ENTITY, SettlerEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1));
 	}
+		
+	// Tier upgrading
+	// Convert nomad to architect
+	// Save settlers to settlement data
 	
-	// Tier upgading
-	// THEN convert nomad to architect, etc.
-	
-	// TODO: Save settlers to settlement data
+	// Display tier 0 and max tier dimensions to player
 	
 	@Override
 	public void onInitialize()

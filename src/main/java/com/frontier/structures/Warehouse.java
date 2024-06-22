@@ -13,14 +13,18 @@ public class Warehouse extends Structure
     @Override
     protected void onConstruction()
     {
-    	System.out.println("Construction of Warehouse started at " + position);
-    	System.out.println("Resource requirements: " + resourceRequirements);
+    	System.out.println("Constructed Warehouse at " + position);
     }
 
     @Override
     protected void onUpgrade()
     {
-        System.out.println("Upgrading Town Hall to tier " + tier + " at " + position);
-        System.out.println("New resource requirements: " + resourceRequirements);
+        System.out.println("Upgraded Warehouse to tier " + tier + " at " + position);
     }
+
+	@Override
+	protected void onUpdate()
+	{
+		
+	}
 }

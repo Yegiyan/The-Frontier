@@ -50,10 +50,7 @@ public class SettlementManager
 	    	if (playerData != null)
 	    	{
 	    		if (!world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == Items.CLOCK && world.getBlockState(blockHitResult.getBlockPos()).getBlock() == Blocks.BELL)
-	    		{
 	    			bellPos = blockHitResult.getBlockPos();
-	    			world.setBlockState(bellPos, Blocks.AIR.getDefaultState());
-	    		}	
 	    		
 	    		if (world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == Items.CLOCK && world.getBlockState(blockHitResult.getBlockPos()).getBlock() == Blocks.BELL)
 		        {
@@ -88,8 +85,7 @@ public class SettlementManager
                     BlockPos townHallPos = getFrontPosition(player, 2);
                     Direction facing = player.getHorizontalFacing();
                     settlement.constructStructure("town_hall", townHallPos, server.getOverworld(), facing);
-                    
-                    
+                    server.getOverworld().setBlockState(bellPos, Blocks.AIR.getDefaultState());
                     return settlement;
                 } 
                 else

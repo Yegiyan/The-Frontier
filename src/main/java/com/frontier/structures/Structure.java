@@ -4,15 +4,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BellBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.ChestBlock;
+import net.minecraft.block.FurnaceBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.entity.FurnaceBlockEntity;
@@ -33,20 +38,34 @@ public abstract class Structure
 	protected String name;
 	protected String faction;
 	protected BlockPos position;
-	protected boolean isConstructed;
-	protected boolean requiresRepair;
 	protected Direction facing;
 	protected int tier;
+	protected int maxTier;
 	protected UUID uuid;
+	
+	protected boolean isConstructed;
+	protected boolean isConstructing;
+	protected boolean requiresRepair;
+	protected boolean isUpgrading;
+	protected boolean isClearing;
 
 	protected Map<String, Integer> resourceRequirements;
+	
+	private Queue<BlockPos> airBlocksQueue = new LinkedList<>();
+    private Queue<BlockPos> otherBlocksQueue = new LinkedList<>();
+    private Queue<BlockPos> clearingQueue = new LinkedList<>();
+    private Queue<BlockPos> upgradeQueue = new LinkedList<>();
+    private Map<BlockPos, BlockState> upgradeMap = new HashMap<>();
+    private Map<BlockPos, BlockState> constructionMap = new HashMap<>();
+    private int ticksElapsed = 0;
+    private int upgradeTicksElapsed = 0;
 
 	protected StructureType type;
-
 	public enum StructureType { CORE, GATHERER, TRADER, CRAFTER, OUTSIDER, RANCHER, MILITIA, MISC }
 
 	protected abstract void onConstruction();
 	protected abstract void onUpgrade();
+	protected abstract void onUpdate();
 
 	public Structure(String name, String faction, StructureType type, BlockPos position, Direction facing)
 	{
@@ -55,31 +74,192 @@ public abstract class Structure
 		this.type = type;
 		this.position = position;
 		this.facing = facing;
-		this.isConstructed = false;
 		this.tier = 0;
+		this.maxTier = 0;
+		this.isConstructed = false;
+		this.isConstructing = false;
+		this.requiresRepair = false;
+		this.isUpgrading = false;
+		isClearing = true;
 		this.resourceRequirements = new HashMap<>();
 		loadResourceRequirements();
 	}
-
-	public void startConstruction(ServerWorld world)
+	
+	public void spawnStructure(ServerWorld world)
 	{
-		this.isConstructed = true;
+		this.isConstructing = true;
 		this.uuid = UUID.randomUUID();
+		processStructure(world, (blockPos, blockState) -> world.setBlockState(blockPos, blockState));
+		isConstructing = false;
+		isConstructed = true;
 		onConstruction();
-		spawnStructure(world);
 	}
-
-	public void upgrade()
+	
+	public void constructStructure(ServerWorld world)
 	{
-		if (isConstructed)
-		{
-			tier++;
-			loadResourceRequirements();
-			onUpgrade();
-		}
+		this.isConstructing = true;
+		this.uuid = UUID.randomUUID();
+		prepareClearingQueue(world);     // prepare queue of blocks to be cleared
+        prepareConstructionQueue(world); // prepare queue of blocks to be placed
+        registerConstructionTick(world); // register tick event
+	}
+	
+	public void upgradeStructure(ServerWorld world)
+	{
+	    if (tier >= maxTier)
+	    {
+	    	System.err.println(getName() + " in " + getFaction() + " is already at max tier!");
+	    	return;
+	    }
+
+	    int nextTier = tier + 1;
+	    upgradeMap = loadStructure(nextTier);
+
+	    processStructure(world, (blockPos, blockState) ->
+	    {
+	        if (upgradeMap.containsKey(blockPos))
+	        {
+	            Block currentBlock = blockState.getBlock();
+
+	            // skip chests & furnaces
+	            if (!(currentBlock instanceof ChestBlock) && !(currentBlock instanceof FurnaceBlock))
+	                upgradeQueue.add(blockPos);
+	        }
+	    });
+
+	    tier = nextTier;
+	    loadResourceRequirements();
+	    isUpgrading = true;
+	    registerUpgradeTick(world);
 	}
 
-	protected void loadResourceRequirements()
+	public void upgrade(ServerWorld world)
+	{
+		if (isConstructed && upgradeAvailable())
+		{
+			System.out.println("Upgrading!");
+			upgradeStructure(world);
+		}	
+	}
+
+	private void prepareClearingQueue(ServerWorld world)
+	{
+        processStructure(world, (blockPos, blockState) -> clearingQueue.add(blockPos));
+    }
+
+    private void prepareConstructionQueue(ServerWorld world)
+    {
+        processStructure(world, (blockPos, blockState) ->
+        {
+            if (blockState.isOf(Blocks.AIR))
+                airBlocksQueue.add(blockPos);
+            else
+                otherBlocksQueue.add(blockPos);
+            constructionMap.put(blockPos, blockState);
+        });
+    }
+
+    private void registerConstructionTick(ServerWorld world)
+    {
+        ServerTickEvents.END_SERVER_TICK.register(server ->
+        {
+            if (server.getOverworld() == world && isConstructing)
+            {
+                ticksElapsed++;
+                if (isClearing)
+                {
+                    // clear air blocks instantly
+                    while (!clearingQueue.isEmpty() && world.getBlockState(clearingQueue.peek()).isAir())
+                    {
+                        BlockPos pos = clearingQueue.poll();
+                        world.setBlockState(pos, Blocks.AIR.getDefaultState());
+                    }
+
+                    // clear non-air blocks every 5 ticks
+                    if (ticksElapsed >= 5)
+                    {
+                        ticksElapsed = 0;
+                        if (!clearingQueue.isEmpty())
+                        {
+                            BlockPos pos = clearingQueue.poll();
+                            world.breakBlock(pos, true);
+                        }
+                        else
+                        {
+                            isClearing = false;
+                            ticksElapsed = 0; // Reset tick counter for construction phase
+                        }
+                    }
+                }
+                else
+                {
+                	// place air blocks instantly
+                	while (!airBlocksQueue.isEmpty() && constructionMap.get(airBlocksQueue.peek()).isAir())
+                    {
+                        BlockPos pos = airBlocksQueue.poll();
+                        BlockState state = constructionMap.get(pos);
+                        world.setBlockState(pos, state);
+                    }
+
+                    // place non-air blocks every 5 ticks
+                    if (ticksElapsed >= 5)
+                    {
+                        ticksElapsed = 0;
+                        if (!otherBlocksQueue.isEmpty())
+                        {
+                            BlockPos pos = otherBlocksQueue.poll();
+                            BlockState state = constructionMap.get(pos);
+                            world.setBlockState(pos, state);
+                        }
+                        else if (airBlocksQueue.isEmpty())
+                        {
+                            this.isConstructing = false;
+                            this.isConstructed = true;
+                            onConstruction();
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+	private void registerUpgradeTick(ServerWorld world)
+	{
+		ServerTickEvents.END_SERVER_TICK.register(server ->
+		{
+			if (server.getOverworld() == world && isUpgrading)
+			{
+				upgradeTicksElapsed++;
+				
+				// process air blocks instantly
+				while (!upgradeQueue.isEmpty() && world.getBlockState(upgradeQueue.peek()).isAir())
+				{
+					BlockPos pos = upgradeQueue.poll();
+					BlockState newState = upgradeMap.get(pos);
+					world.setBlockState(pos, newState);
+				}
+
+				// process non-air blocks every 5 ticks
+				if (upgradeTicksElapsed >= 5)
+				{
+					upgradeTicksElapsed = 0;
+					if (!upgradeQueue.isEmpty())
+					{
+						BlockPos pos = upgradeQueue.poll();
+						BlockState newState = upgradeMap.get(pos);
+						world.setBlockState(pos, newState);
+					}
+					else
+					{
+						isUpgrading = false;
+						onUpgrade();
+					}
+				}
+			}
+		});
+	}
+    
+    protected void loadResourceRequirements()
 	{
 		String path = String.format("data/frontier/structures/settlement/%s_%d.nbt", name.toLowerCase(), tier);
 		try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path))
@@ -111,12 +291,54 @@ public abstract class Structure
 		}
 		catch (IOException e) { e.printStackTrace(); }
 	}
+	
+    private Map<BlockPos, BlockState> loadStructure(int tier)
+    {
+        Map<BlockPos, BlockState> structureMap = new HashMap<>();
+        String path = String.format("data/frontier/structures/settlement/%s_%d.nbt", name.toLowerCase(), tier);
 
-	protected void spawnStructure(ServerWorld world)
-	{
-		processStructure(world, (blockPos, blockState) -> world.setBlockState(blockPos, blockState));
-	}
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path))
+        {
+            if (inputStream != null)
+            {
+                NbtCompound tag = NbtIo.readCompressed(inputStream);
+                NbtList blocksList = tag.getList("blocks", 10);
+                NbtList paletteList = tag.getList("palette", 10);
 
+                Map<Integer, BlockState> paletteMap = buildPaletteMap(paletteList);
+
+                for (int i = 0; i < blocksList.size(); i++)
+                {
+                    NbtCompound blockEntry = blocksList.getCompound(i);
+                    int state = blockEntry.getInt("state");
+                    BlockState blockState = paletteMap.get(state);
+
+                    NbtList posList = blockEntry.getList("pos", 3);
+                    int x = posList.getInt(0);
+                    int y = posList.getInt(1);
+                    int z = posList.getInt(2);
+
+                    BlockPos originalPos = new BlockPos(x - 7, y - 1, z - 10);
+                    BlockPos rotatedPos = rotatePos(originalPos);
+                    BlockPos blockPos = position.add(rotatedPos);
+                    BlockState rotatedState = rotateBlockState(blockState);
+
+                    structureMap.put(blockPos, rotatedState);
+                }
+            }
+            else
+            {
+                System.err.println("NBT file not found: " + path);
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return structureMap;
+    }
+    
 	public boolean isDamaged(ServerWorld world)
 	{
 	    final boolean[] isDamaged = { false };
@@ -142,7 +364,7 @@ public abstract class Structure
 	        // ignore direction of bells
 	        if (expectedState.getBlock() instanceof BellBlock && currentState.getBlock() instanceof BellBlock)
 	        {
-	            // check all properties except facing
+	            // check all properties except facing for bells
 	            for (Property<?> property : expectedState.getProperties())
 	            {
 	                if (!property.getName().equals("facing") && !currentState.get(property).equals(expectedState.get(property)))
@@ -402,7 +624,25 @@ public abstract class Structure
 	public boolean isConstructed() {
 		return isConstructed;
 	}
-
+	
+	public boolean isConstructing() {
+		return isConstructing;
+	}
+	
+	public boolean requiresRepair() {
+		return requiresRepair;
+	}
+	
+	public boolean isUpgrading() {
+		return isUpgrading;
+	}
+	
+	public boolean upgradeAvailable() {
+		if (this.tier < this.maxTier)
+			return true;
+		return false;
+	}
+	
 	public int getTier() {
 		return tier;
 	}
@@ -410,6 +650,14 @@ public abstract class Structure
 	public void setTier(int tier) {
 		this.tier = tier;
 		loadResourceRequirements();
+	}
+	
+	public int getMaxTier() {
+		return maxTier;
+	}
+	
+	public void setMaxTier(int maxTier) {
+		this.maxTier = maxTier;
 	}
 
 	public UUID getUUID() {
