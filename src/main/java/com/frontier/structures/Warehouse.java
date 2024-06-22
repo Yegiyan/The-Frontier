@@ -21,10 +21,4 @@ public class Warehouse extends Structure
     {
         System.out.println("Upgraded Warehouse to tier " + tier + " at " + position);
     }
-
-	@Override
-	protected void onUpdate()
-	{
-		
-	}
 }

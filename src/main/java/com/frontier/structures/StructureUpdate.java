@@ -23,25 +23,21 @@ public class StructureUpdate
         if (tickCounter >= 20 * SECONDS)
         {
             tickCounter = 0;
-            checkStructuresForDamage(server);
+            updateStructures(server);
         }
     }
 
-    private void checkStructuresForDamage(MinecraftServer server)
+    private void updateStructures(MinecraftServer server)
     {
         for (Settlement settlement : SettlementManager.getSettlements().values())
         {
             ServerWorld world = server.getOverworld();
             for (Structure structure : settlement.getStructures())
             {
-            	//System.out.println(structure.getFurnaceOutputContents(world));
-            	if (!structure.isUpgrading() && !structure.isConstructing())
-            		structure.upgrade(world);
-            	
             	if (structure.isDamaged(world) && !structure.isUpgrading() && !structure.isConstructing())
             	{
             		structure.requiresRepair = true;
-            		System.out.println("Structure '" + structure.getName() + "' in settlement '" + settlement.getName() + "' is damaged!");
+            		System.out.println("'" + structure.getName() + "' in settlement '" + settlement.getName() + "' is damaged!");
             	}
             	else
             		structure.requiresRepair = false;

@@ -22,10 +22,4 @@ public class TownHall extends Structure
     {
         System.out.println("Upgraded Town Hall to tier " + tier + " at " + position);
     }
-
-	@Override
-	protected void onUpdate()
-	{
-		
-	}
 }

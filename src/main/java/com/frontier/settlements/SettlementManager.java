@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -19,19 +22,26 @@ import com.frontier.structures.TownHall;
 import com.frontier.structures.Warehouse;
 
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtLong;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.state.property.Property;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -286,6 +296,21 @@ public class SettlementManager
 	            structureNbt.putString("Facing", structure.getFacing().getName());
 	            structureNbt.putInt("Tier", structure.getTier());
 	            structureNbt.putUuid("UUID", structure.getUUID());
+	            structureNbt.putBoolean("isConstructed", structure.isConstructed());
+	            structureNbt.putBoolean("isConstructing", structure.isConstructing());
+	            structureNbt.putBoolean("isUpgrading", structure.isUpgrading());
+	            structureNbt.putBoolean("isClearing", structure.isClearing());
+	            structureNbt.putInt("ConstructionTicksElapsed", structure.getConstructionTicksElapsed());
+	            structureNbt.putInt("UpgradeTicksElapsed", structure.getUpgradeTicksElapsed());
+	            
+	            structureNbt.put("AirBlocksQueue", serializeQueue(structure.getAirBlocksQueue()));
+	            structureNbt.put("NonAirBlocksQueue", serializeQueue(structure.getNonAirBlocksQueue()));
+	            structureNbt.put("ClearingQueue", serializeQueue(structure.getClearingQueue()));
+	            structureNbt.put("UpgradeQueue", serializeQueue(structure.getUpgradeQueue()));
+	            
+	            structureNbt.put("ConstructionMap", serializeMap(structure.getConstructionMap()));
+	            structureNbt.put("UpgradeMap", serializeMap(structure.getUpgradeMap()));
+	            
 	            structuresNbt.add(structureNbt);
 	        }
 
@@ -402,6 +427,23 @@ public class SettlementManager
 	                    
 	                    structure.setTier(tier);
 	                    structure.setUUID(uuid);
+	                    structure.setConstructed(structureNbt.getBoolean("isConstructed"));
+	                    structure.setConstructing(structureNbt.getBoolean("isConstructing"));
+	                    structure.setUpgrading(structureNbt.getBoolean("isUpgrading"));
+	                    structure.setClearing(structureNbt.getBoolean("isClearing"));
+	                    structure.setConstructionTicksElapsed(structureNbt.getInt("ConstructionTicksElapsed"));
+	                    structure.setUpgradeTicksElapsed(structureNbt.getInt("UpgradeTicksElapsed"));
+	                    
+	                    structure.setAirBlocksQueue(deserializeQueue(structureNbt.getList("AirBlocksQueue", 10)));
+	                    structure.setNonAirBlocksQueue(deserializeQueue(structureNbt.getList("NonAirBlocksQueue", 10)));
+	                    structure.setClearingQueue(deserializeQueue(structureNbt.getList("ClearingQueue", 10)));
+	                    structure.setUpgradeQueue(deserializeQueue(structureNbt.getList("UpgradeQueue", 10)));
+	                    
+	                    structure.setConstructionMap(deserializeMap(structureNbt.getList("ConstructionMap", 10)));
+	                    structure.setUpgradeMap(deserializeMap(structureNbt.getList("UpgradeMap", 10)));
+	                    
+	                    structure.update(server.getOverworld());
+	                    
 	                    settlement.getStructures().add(structure);
 	                }
 
@@ -412,6 +454,74 @@ public class SettlementManager
 	    catch (IOException e) { e.printStackTrace(); }
 	}
 	
+	private static NbtList serializeMap(Map<BlockPos, BlockState> map)
+	{
+		NbtList list = new NbtList();
+		for (Map.Entry<BlockPos, BlockState> entry : map.entrySet())
+		{
+			NbtCompound mapEntry = new NbtCompound();
+			mapEntry.putLong("Position", entry.getKey().asLong());
+			mapEntry.put("BlockState", NbtHelper.fromBlockState(entry.getValue()));
+			list.add(mapEntry);
+		}
+		return list;
+	}
+
+	private static Map<BlockPos, BlockState> deserializeMap(NbtList list)
+	{
+		Map<BlockPos, BlockState> map = new HashMap<>();
+		for (int i = 0; i < list.size(); i++)
+		{
+			NbtCompound mapEntry = list.getCompound(i);
+			BlockPos pos = BlockPos.fromLong(mapEntry.getLong("Position"));
+			BlockState state = deserializeBlockState(mapEntry.getCompound("BlockState"));
+			map.put(pos, state);
+		}
+		return map;
+	}
+
+	private static BlockState deserializeBlockState(NbtCompound compound)
+	{
+		String blockName = compound.getString("Name");
+		Block block = Registries.BLOCK.get(new Identifier(blockName));
+		BlockState state = block.getDefaultState();
+		NbtCompound properties = compound.getCompound("Properties");
+		for (String key : properties.getKeys())
+		{
+			Property<?> property = block.getStateManager().getProperty(key);
+			if (property != null)
+				state = applyProperty(state, property, properties.getString(key));
+		}
+		return state;
+	}
+
+	private static <T extends Comparable<T>> BlockState applyProperty(BlockState state, Property<T> property, String value)
+	{
+		Optional<T> optional = property.parse(value);
+		if (optional.isPresent())
+			return state.with(property, optional.get());
+		return state;
+	}
+	
+	private static NbtList serializeQueue(Queue<BlockPos> queue)
+	{
+	    NbtList list = new NbtList();
+	    for (BlockPos pos : queue)
+	        list.add(NbtLong.of(pos.asLong()));
+	    return list;
+	}
+	
+	private static Queue<BlockPos> deserializeQueue(NbtList list)
+	{
+	    Queue<BlockPos> queue = new LinkedList<>();
+	    list.forEach(item ->
+	    {
+	        long posLong = ((NbtLong) item).longValue();
+	        queue.add(BlockPos.fromLong(posLong));
+	    });
+	    return queue;
+	}
+
 	private static BlockPos getFrontPosition(ServerPlayerEntity player, int distance)
 	{
 	    Direction facing = player.getHorizontalFacing();

@@ -68,9 +68,9 @@ public class Frontier implements ModInitializer
 		EntityRendererRegistry.register(ARCHITECT_ENTITY,(EntityRendererFactory.Context context) -> new SettlerEntityRenderer(context));
 		FabricDefaultAttributeRegistry.register(ARCHITECT_ENTITY, SettlerEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1));
 	}
-		
-	// Persist construction/upgrading across world loads
-	// Save more of the structure data to the settlement nbt
+	
+	// add requiresRepair to structure nbt data
+	// create repairStructure() method
 	
 	// Convert nomad to architect
 	// Save settlers to settlement data
@@ -95,8 +95,8 @@ public class Frontier implements ModInitializer
 		SettlementManager.registerCallback();
 		RequestNomads.registerCallback();
 		
-		StructureUpdate damageChecker = new StructureUpdate();
-        damageChecker.register();
+		StructureUpdate structureUpdate = new StructureUpdate();
+        structureUpdate.register();
 		
 		updateWorldEvents();
 	}

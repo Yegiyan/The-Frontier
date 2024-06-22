@@ -52,13 +52,13 @@ public abstract class Structure
 	protected Map<String, Integer> resourceRequirements;
 	
 	private Queue<BlockPos> airBlocksQueue = new LinkedList<>();
-    private Queue<BlockPos> otherBlocksQueue = new LinkedList<>();
-    private Queue<BlockPos> clearingQueue = new LinkedList<>();
-    private Queue<BlockPos> upgradeQueue = new LinkedList<>();
-    private Map<BlockPos, BlockState> upgradeMap = new HashMap<>();
-    private Map<BlockPos, BlockState> constructionMap = new HashMap<>();
-    private int ticksElapsed = 0;
-    private int upgradeTicksElapsed = 0;
+	private Queue<BlockPos> nonAirBlocksQueue = new LinkedList<>();
+	private Queue<BlockPos> clearingQueue = new LinkedList<>();
+	private Queue<BlockPos> upgradeQueue = new LinkedList<>();
+	private Map<BlockPos, BlockState> upgradeMap = new HashMap<>();
+	private Map<BlockPos, BlockState> constructionMap = new HashMap<>();
+	private int constructionTicksElapsed = 0;
+	private int upgradeTicksElapsed = 0;
     
     private static final int BLOCK_PLACE_TICKS = 1;
     private static final int BLOCK_CLEAR_TICKS = 5;
@@ -68,7 +68,6 @@ public abstract class Structure
 
 	protected abstract void onConstruction();
 	protected abstract void onUpgrade();
-	protected abstract void onUpdate();
 
 	public Structure(String name, String faction, StructureType type, BlockPos position, Direction facing)
 	{
@@ -79,19 +78,34 @@ public abstract class Structure
 		this.facing = facing;
 		this.tier = 0;
 		this.maxTier = 0;
+		this.uuid = UUID.randomUUID();
 		this.isConstructed = false;
 		this.isConstructing = false;
 		this.requiresRepair = false;
 		this.isUpgrading = false;
-		isClearing = true;
+		this.isClearing = true;
 		this.resourceRequirements = new HashMap<>();
 		loadResourceRequirements();
+	}
+	
+	public void update(ServerWorld world)
+	{
+		if (isClearing)
+			prepareClearingQueue(world);
+		
+	    if (isConstructing)
+	    {
+	    	prepareConstructionQueue(world);
+	    	registerConstructionTick(world);
+	    }
+	    
+	    if (isUpgrading)
+	        registerUpgradeTick(world);
 	}
 	
 	public void spawnStructure(ServerWorld world)
 	{
 		this.isConstructing = true;
-		this.uuid = UUID.randomUUID();
 		processStructure(world, (blockPos, blockState) -> world.setBlockState(blockPos, blockState));
 		isConstructing = false;
 		isConstructed = true;
@@ -101,7 +115,6 @@ public abstract class Structure
 	public void constructStructure(ServerWorld world)
 	{
 		this.isConstructing = true;
-		this.uuid = UUID.randomUUID();
 		prepareClearingQueue(world);     // prepare queue of blocks to be cleared
         prepareConstructionQueue(world); // prepare queue of blocks to be placed
         registerConstructionTick(world); // register tick event
@@ -157,7 +170,7 @@ public abstract class Structure
             if (blockState.isOf(Blocks.AIR))
                 airBlocksQueue.add(blockPos);
             else
-                otherBlocksQueue.add(blockPos);
+                nonAirBlocksQueue.add(blockPos);
             constructionMap.put(blockPos, blockState);
         });
     }
@@ -168,7 +181,7 @@ public abstract class Structure
         {
             if (server.getOverworld() == world && isConstructing)
             {
-                ticksElapsed++;
+                constructionTicksElapsed++;
                 if (isClearing)
                 {
                     // clear air blocks instantly
@@ -179,9 +192,9 @@ public abstract class Structure
                     }
 
                     // clear non-air blocks
-                    if (ticksElapsed >= BLOCK_CLEAR_TICKS)
+                    if (constructionTicksElapsed >= BLOCK_CLEAR_TICKS)
                     {
-                        ticksElapsed = 0;
+                        constructionTicksElapsed = 0;
                         if (!clearingQueue.isEmpty())
                         {
                             BlockPos pos = clearingQueue.poll();
@@ -190,7 +203,7 @@ public abstract class Structure
                         else
                         {
                             isClearing = false;
-                            ticksElapsed = 0; // reset tick counter for construction phase
+                            constructionTicksElapsed = 0; // reset tick counter for construction phase
                         }
                     }
                 }
@@ -205,12 +218,12 @@ public abstract class Structure
                     }
 
                     // place non-air blocks
-                    if (ticksElapsed >= BLOCK_PLACE_TICKS)
+                    if (constructionTicksElapsed >= BLOCK_PLACE_TICKS)
                     {
-                        ticksElapsed = 0;
-                        if (!otherBlocksQueue.isEmpty())
+                        constructionTicksElapsed = 0;
+                        if (!nonAirBlocksQueue.isEmpty())
                         {
-                            BlockPos pos = otherBlocksQueue.poll();
+                            BlockPos pos = nonAirBlocksQueue.poll();
                             BlockState state = constructionMap.get(pos);
                             world.setBlockState(pos, state);
                         }
@@ -588,6 +601,13 @@ public abstract class Structure
         return furnaceOutputs;
     }
 
+    public boolean upgradeAvailable()
+    {
+		if (this.tier < this.maxTier)
+			return true;
+		return false;
+	}
+    
 	public String getName() {
 		return name;
 	}
@@ -623,28 +643,6 @@ public abstract class Structure
 	public Direction getFacing() {
 		return facing;
 	}
-
-	public boolean isConstructed() {
-		return isConstructed;
-	}
-	
-	public boolean isConstructing() {
-		return isConstructing;
-	}
-	
-	public boolean requiresRepair() {
-		return requiresRepair;
-	}
-	
-	public boolean isUpgrading() {
-		return isUpgrading;
-	}
-	
-	public boolean upgradeAvailable() {
-		if (this.tier < this.maxTier)
-			return true;
-		return false;
-	}
 	
 	public int getTier() {
 		return tier;
@@ -669,5 +667,104 @@ public abstract class Structure
 	
 	public void setUUID(UUID uuid) {
 	    this.uuid = uuid;
+	}
+	
+	public boolean isConstructed() {
+		return isConstructed;
+	}
+	
+	public void setConstructed(boolean isConstructed) {
+		this.isConstructed = isConstructed;
+	}
+	
+	public boolean isConstructing() {
+		return isConstructing;
+	}
+	
+	public void setConstructing(boolean isConstructing) {
+		this.isConstructing = isConstructing;
+	}
+	
+	public boolean requiresRepair() {
+		return requiresRepair;
+	}
+	
+	public boolean isUpgrading() {
+		return isUpgrading;
+	}
+	
+	public void setUpgrading(boolean isUpgrading) {
+		this.isUpgrading = isUpgrading;
+	}
+	
+	public boolean isClearing() {
+		return isClearing;
+	}
+	
+	public void setClearing(boolean isClearing) {
+		this.isClearing = isClearing;
+	}
+	
+	public int getConstructionTicksElapsed() {
+		return constructionTicksElapsed;
+	}
+	
+	public void setConstructionTicksElapsed(int constructionTicksElapsed) {
+		this.constructionTicksElapsed = constructionTicksElapsed;
+	}
+	
+	public int getUpgradeTicksElapsed() {
+		return upgradeTicksElapsed;
+	}
+	
+	public void setUpgradeTicksElapsed(int upgradeTicksElapsed) {
+		this.upgradeTicksElapsed = upgradeTicksElapsed;
+	}
+	
+	public Queue<BlockPos> getAirBlocksQueue() {
+		return airBlocksQueue;
+	}
+	
+	public void setAirBlocksQueue(Queue<BlockPos> airBlocksQueue) {
+		this.airBlocksQueue = airBlocksQueue;
+	}
+	
+	public Queue<BlockPos> getNonAirBlocksQueue() {
+		return nonAirBlocksQueue;
+	}
+	
+	public void setNonAirBlocksQueue(Queue<BlockPos> nonAirBlocksQueue) {
+		this.nonAirBlocksQueue = nonAirBlocksQueue;
+	}
+	
+	public Queue<BlockPos> getClearingQueue() {
+		return clearingQueue;
+	}
+	
+	public void setClearingQueue(Queue<BlockPos> clearingQueue) {
+		this.clearingQueue = clearingQueue;
+	}
+	
+	public Queue<BlockPos> getUpgradeQueue() {
+		return upgradeQueue;
+	}
+	
+	public void setUpgradeQueue(Queue<BlockPos> upgradeQueue) {
+		this.upgradeQueue = upgradeQueue;
+	}
+	
+	public Map<BlockPos, BlockState> getConstructionMap() {
+		return constructionMap;
+	}
+	
+	public void setConstructionMap(Map<BlockPos, BlockState> constructionMap) {
+		this.constructionMap = constructionMap;
+	}
+	
+	public Map<BlockPos, BlockState> getUpgradeMap() {
+		return upgradeMap;
+	}
+	public void setUpgradeMap(Map<BlockPos, BlockState> upgradeMap) {
+		this.upgradeMap = upgradeMap;
 	}
 }

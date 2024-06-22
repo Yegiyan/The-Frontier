@@ -127,6 +127,7 @@ public class SettlerEntity extends PathAwareEntity
 	        System.out.println("Name: " + this.getSettlerName());
 	        System.out.println("Faction: " + this.getSettlerFaction());
 	        System.out.println("Profession: " + this.getSettlerProfession());
+	        System.out.println("Morale: " + this.getSettlerMorale());
 	        System.out.println("Gender: " + this.getSettlerGender());
 	        System.out.println("Texture: " + this.getSettlerTexture());
 	        System.out.println("------------");
