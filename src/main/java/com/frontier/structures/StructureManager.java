@@ -7,9 +7,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 
-public class StructureUpdate
+public class StructureManager
 {
-	private static final int SECONDS = 2; // update interval in seconds
+	private static final int SECONDS = 5; // update interval in seconds
     private int tickCounter = 0;
 
     public void register()
@@ -23,11 +23,11 @@ public class StructureUpdate
         if (tickCounter >= 20 * SECONDS)
         {
             tickCounter = 0;
-            updateStructures(server);
+            updateActivities(server);
         }
     }
 
-    private void updateStructures(MinecraftServer server)
+    private void updateActivities(MinecraftServer server)
     {
         for (Settlement settlement : SettlementManager.getSettlements().values())
         {
@@ -35,14 +35,13 @@ public class StructureUpdate
             for (Structure structure : settlement.getStructures())
             {
             	if (structure.isDamaged(world) && !structure.isUpgrading() && !structure.isConstructing())
-            	{
             		structure.requiresRepair = true;
-            		System.out.println("'" + structure.getName() + "' in settlement '" + settlement.getName() + "' is damaged!");
-            	}
             	else
             		structure.requiresRepair = false;
+            	
+            	structure.update();
             }
-                
+            
         }
     }
 }

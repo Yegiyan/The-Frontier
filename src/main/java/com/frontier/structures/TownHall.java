@@ -10,11 +10,18 @@ public class TownHall extends Structure
         super(name, faction, StructureType.CORE, position, facing);
         setMaxTier(2);
     }
+    
+    @Override
+	protected void update()
+	{
+		System.out.println(getName() + " of " + getFaction() + " is updating!");
+	}
 
     @Override
     protected void onConstruction()
     {
     	System.out.println("Constructed Town Hall at " + position);
+    	setActive(true);
     }
 
     @Override
@@ -22,4 +29,10 @@ public class TownHall extends Structure
     {
         System.out.println("Upgraded Town Hall to tier " + tier + " at " + position);
     }
+    
+    @Override
+	protected void onRemove()
+	{
+		setActive(false);
+	}
 }

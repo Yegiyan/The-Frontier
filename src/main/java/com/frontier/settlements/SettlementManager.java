@@ -2,6 +2,7 @@ package com.frontier.settlements;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -296,17 +297,21 @@ public class SettlementManager
 	            structureNbt.putString("Facing", structure.getFacing().getName());
 	            structureNbt.putInt("Tier", structure.getTier());
 	            structureNbt.putUuid("UUID", structure.getUUID());
-	            structureNbt.putBoolean("isConstructed", structure.isConstructed());
-	            structureNbt.putBoolean("isConstructing", structure.isConstructing());
-	            structureNbt.putBoolean("isUpgrading", structure.isUpgrading());
-	            structureNbt.putBoolean("isClearing", structure.isClearing());
+	            structureNbt.putBoolean("IsActive", structure.isActive());
+	            structureNbt.putBoolean("IsConstructed", structure.isConstructed());
+	            structureNbt.putBoolean("RequiresRepair", structure.requiresRepair());
+	            structureNbt.putBoolean("IsConstructing", structure.isConstructing());
+	            structureNbt.putBoolean("IsUpgrading", structure.isUpgrading());
+	            structureNbt.putBoolean("IsClearing", structure.isClearing());
 	            structureNbt.putInt("ConstructionTicksElapsed", structure.getConstructionTicksElapsed());
 	            structureNbt.putInt("UpgradeTicksElapsed", structure.getUpgradeTicksElapsed());
+	            structureNbt.putInt("RepairTicksElapsed", structure.getRepairTicksElapsed());
 	            
 	            structureNbt.put("AirBlocksQueue", serializeQueue(structure.getAirBlocksQueue()));
 	            structureNbt.put("NonAirBlocksQueue", serializeQueue(structure.getNonAirBlocksQueue()));
 	            structureNbt.put("ClearingQueue", serializeQueue(structure.getClearingQueue()));
 	            structureNbt.put("UpgradeQueue", serializeQueue(structure.getUpgradeQueue()));
+	            structureNbt.put("RepairQueue", serializeRepairQueue(structure.getRepairQueue()));
 	            
 	            structureNbt.put("ConstructionMap", serializeMap(structure.getConstructionMap()));
 	            structureNbt.put("UpgradeMap", serializeMap(structure.getUpgradeMap()));
@@ -427,22 +432,24 @@ public class SettlementManager
 	                    
 	                    structure.setTier(tier);
 	                    structure.setUUID(uuid);
-	                    structure.setConstructed(structureNbt.getBoolean("isConstructed"));
-	                    structure.setConstructing(structureNbt.getBoolean("isConstructing"));
-	                    structure.setUpgrading(structureNbt.getBoolean("isUpgrading"));
-	                    structure.setClearing(structureNbt.getBoolean("isClearing"));
+	                    structure.setActive(structureNbt.getBoolean("IsActive"));
+	                    structure.setConstructed(structureNbt.getBoolean("IsConstructed"));
+	                    structure.setRepair(structureNbt.getBoolean("RequiresRepair"));
+	                    structure.setConstructing(structureNbt.getBoolean("IsConstructing"));
+	                    structure.setUpgrading(structureNbt.getBoolean("IsUpgrading"));
+	                    structure.setClearing(structureNbt.getBoolean("IsClearing"));
 	                    structure.setConstructionTicksElapsed(structureNbt.getInt("ConstructionTicksElapsed"));
 	                    structure.setUpgradeTicksElapsed(structureNbt.getInt("UpgradeTicksElapsed"));
+	                    structure.setRepairTicksElapsed(structureNbt.getInt("RepairTicksElapsed"));
 	                    
 	                    structure.setAirBlocksQueue(deserializeQueue(structureNbt.getList("AirBlocksQueue", 10)));
 	                    structure.setNonAirBlocksQueue(deserializeQueue(structureNbt.getList("NonAirBlocksQueue", 10)));
 	                    structure.setClearingQueue(deserializeQueue(structureNbt.getList("ClearingQueue", 10)));
 	                    structure.setUpgradeQueue(deserializeQueue(structureNbt.getList("UpgradeQueue", 10)));
+	                    structure.setRepairQueue(deserializeRepairQueue(structureNbt.getList("RepairQueue", 10)));
 	                    
 	                    structure.setConstructionMap(deserializeMap(structureNbt.getList("ConstructionMap", 10)));
 	                    structure.setUpgradeMap(deserializeMap(structureNbt.getList("UpgradeMap", 10)));
-	                    
-	                    structure.update(server.getOverworld());
 	                    
 	                    settlement.getStructures().add(structure);
 	                }
@@ -494,14 +501,6 @@ public class SettlementManager
 		}
 		return state;
 	}
-
-	private static <T extends Comparable<T>> BlockState applyProperty(BlockState state, Property<T> property, String value)
-	{
-		Optional<T> optional = property.parse(value);
-		if (optional.isPresent())
-			return state.with(property, optional.get());
-		return state;
-	}
 	
 	private static NbtList serializeQueue(Queue<BlockPos> queue)
 	{
@@ -520,6 +519,41 @@ public class SettlementManager
 	        queue.add(BlockPos.fromLong(posLong));
 	    });
 	    return queue;
+	}
+	
+	private static NbtList serializeRepairQueue(Queue<Map.Entry<BlockPos, BlockState>> queue)
+	{
+		NbtList list = new NbtList();
+		for (Map.Entry<BlockPos, BlockState> entry : queue)
+		{
+			NbtCompound compound = new NbtCompound();
+			compound.putLong("pos", entry.getKey().asLong());
+			compound.put("state", NbtHelper.fromBlockState(entry.getValue()));
+			list.add(compound);
+		}
+		return list;
+	}
+
+	private static Queue<Map.Entry<BlockPos, BlockState>> deserializeRepairQueue(NbtList list)
+	{
+		Queue<Map.Entry<BlockPos, BlockState>> queue = new LinkedList<>();
+		list.forEach(item ->
+		{
+			NbtCompound compound = (NbtCompound) item;
+			long posLong = compound.getLong("pos");
+			BlockPos pos = BlockPos.fromLong(posLong);
+			BlockState state = deserializeBlockState(compound.getCompound("state"));
+			queue.add(new AbstractMap.SimpleEntry<>(pos, state));
+		});
+		return queue;
+	}
+	
+	private static <T extends Comparable<T>> BlockState applyProperty(BlockState state, Property<T> property, String value)
+	{
+		Optional<T> optional = property.parse(value);
+		if (optional.isPresent())
+			return state.with(property, optional.get());
+		return state;
 	}
 
 	private static BlockPos getFrontPosition(ServerPlayerEntity player, int distance)

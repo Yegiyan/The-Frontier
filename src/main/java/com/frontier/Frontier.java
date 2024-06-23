@@ -14,8 +14,10 @@ import com.frontier.network.FrontierPackets;
 import com.frontier.regions.RegionManager;
 import com.frontier.renderers.RegionMapRenderer;
 import com.frontier.renderers.SettlerEntityRenderer;
+import com.frontier.settlements.Settlement;
 import com.frontier.settlements.SettlementManager;
-import com.frontier.structures.StructureUpdate;
+import com.frontier.structures.Structure;
+import com.frontier.structures.StructureManager;
 import com.frontier.util.FrontierCommands;
 import com.frontier.util.FrontierKeyBindings;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -68,14 +70,13 @@ public class Frontier implements ModInitializer
 		EntityRendererRegistry.register(ARCHITECT_ENTITY,(EntityRendererFactory.Context context) -> new SettlerEntityRenderer(context));
 		FabricDefaultAttributeRegistry.register(ARCHITECT_ENTITY, SettlerEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1));
 	}
-	
-	// add requiresRepair to structure nbt data
-	// create repairStructure() method
-	
-	// Convert nomad to architect
-	// Save settlers to settlement data
-	
-	// Display tier 0 and max tier dimensions to player
+
+	// place structure on y-level with most bottom support
+	// convert nomad to architect
+	// create settler ui
+	// create building ui
+	// show dimensions of structure to player when they try to manually place structure location
+	// test warehouse construction/upgrading/repairing with architect
 	
 	@Override
 	public void onInitialize()
@@ -95,9 +96,6 @@ public class Frontier implements ModInitializer
 		SettlementManager.registerCallback();
 		RequestNomads.registerCallback();
 		
-		StructureUpdate structureUpdate = new StructureUpdate();
-        structureUpdate.register();
-		
 		updateWorldEvents();
 	}
 	
@@ -110,6 +108,9 @@ public class Frontier implements ModInitializer
 	
 	public static void updateWorldEvents()
 	{
+		StructureManager structureManager = new StructureManager();
+		structureManager.register();
+		
 	    ServerTickEvents.END_SERVER_TICK.register(server ->
 	    {
 	        repTickCounter++;
@@ -168,7 +169,9 @@ public class Frontier implements ModInitializer
         ServerLifecycleEvents.SERVER_STARTED.register(server ->
         {
         	SettlementManager.loadSettlements(server);
-        	
+        	for (Settlement settlement : SettlementManager.getSettlements().values())
+            	for (Structure structure : settlement.getStructures())
+            		structure.resume(server.getOverworld());
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server ->

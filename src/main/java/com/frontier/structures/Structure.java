@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+
+import com.frontier.settlements.Settlement;
+import com.frontier.settlements.SettlementManager;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BellBlock;
@@ -43,6 +47,7 @@ public abstract class Structure
 	protected int maxTier;
 	protected UUID uuid;
 	
+	protected boolean isActive;
 	protected boolean isConstructed;
 	protected boolean isConstructing;
 	protected boolean requiresRepair;
@@ -55,19 +60,24 @@ public abstract class Structure
 	private Queue<BlockPos> nonAirBlocksQueue = new LinkedList<>();
 	private Queue<BlockPos> clearingQueue = new LinkedList<>();
 	private Queue<BlockPos> upgradeQueue = new LinkedList<>();
+	private Queue<Map.Entry<BlockPos, BlockState>> repairQueue = new LinkedList<>();
 	private Map<BlockPos, BlockState> upgradeMap = new HashMap<>();
 	private Map<BlockPos, BlockState> constructionMap = new HashMap<>();
 	private int constructionTicksElapsed = 0;
 	private int upgradeTicksElapsed = 0;
+	private int repairTicksElapsed = 0;
     
     private static final int BLOCK_PLACE_TICKS = 1;
     private static final int BLOCK_CLEAR_TICKS = 5;
+    private static final int BLOCK_REPAIR_TICKS = 20;
 
 	protected StructureType type;
 	public enum StructureType { CORE, GATHERER, TRADER, CRAFTER, OUTSIDER, RANCHER, MILITIA, MISC }
-
+	
 	protected abstract void onConstruction();
 	protected abstract void onUpgrade();
+	protected abstract void onRemove();
+	protected abstract void update();
 
 	public Structure(String name, String faction, StructureType type, BlockPos position, Direction facing)
 	{
@@ -79,6 +89,7 @@ public abstract class Structure
 		this.tier = 0;
 		this.maxTier = 0;
 		this.uuid = UUID.randomUUID();
+		this.isActive = false;
 		this.isConstructed = false;
 		this.isConstructing = false;
 		this.requiresRepair = false;
@@ -88,7 +99,12 @@ public abstract class Structure
 		loadResourceRequirements();
 	}
 	
-	public void update(ServerWorld world)
+	// when the architect does shit, they'll call:
+	// - constructStructure(world)
+	// - upgradeStructure(world)
+	// - repairStructure(world)
+	
+	public void resume(ServerWorld world)
 	{
 		if (isClearing)
 			prepareClearingQueue(world);
@@ -101,6 +117,9 @@ public abstract class Structure
 	    
 	    if (isUpgrading)
 	        registerUpgradeTick(world);
+	    
+	    if (requiresRepair)
+	    	repairStructure(world);
 	}
 	
 	public void spawnStructure(ServerWorld world)
@@ -461,6 +480,259 @@ public abstract class Structure
 		return paletteMap;
 	}
 
+	public boolean canRepair(ServerWorld world)
+	{
+		if (!requiresRepair)
+			return false;
+
+		// step 1: detect missing blocks
+		Map<BlockPos, BlockState> missingBlocks = detectMissingBlocks(world);
+
+		if (missingBlocks.isEmpty())
+			return true; // no missing blocks
+
+		// step 2: check chests and furnaces for required blocks
+		Settlement settlement = SettlementManager.getSettlement(faction);
+		Map<String, Integer> availableResources = new HashMap<>();
+
+		for (Structure structure : settlement.getStructures())
+		{
+			if (structure.getName().equals("town_hall") || structure.getName().equals("warehouse"))
+			{
+				Map<BlockPos, List<ItemStack>> chestContents = structure.getChestContents(world);
+				Map<BlockPos, ItemStack> furnaceOutputs = structure.getFurnaceOutputContents(world);
+
+				// aggregate resources from chests
+				for (List<ItemStack> items : chestContents.values())
+				{
+					for (ItemStack item : items)
+					{
+						String itemName = item.getItem().getTranslationKey();
+						availableResources.put(itemName, availableResources.getOrDefault(itemName, 0) + item.getCount());
+					}
+				}
+
+				// aggregate resources from furnace outputs
+				for (ItemStack item : furnaceOutputs.values())
+				{
+					String itemName = item.getItem().getTranslationKey();
+					availableResources.put(itemName, availableResources.getOrDefault(itemName, 0) + item.getCount());
+				}
+			}
+		}
+
+		// check if available resources can cover missing blocks
+		for (Map.Entry<BlockPos, BlockState> entry : missingBlocks.entrySet())
+		{
+			String blockName = entry.getValue().getBlock().getTranslationKey();
+			int requiredCount = 1; // Each missing block counts as 1
+
+			if (!availableResources.containsKey(blockName) || availableResources.get(blockName) < requiredCount)
+				return false; // Not enough resources
+
+			// deduct resources
+			availableResources.put(blockName, availableResources.get(blockName) - requiredCount);
+		}
+
+		return true; // all required resources available
+	}
+
+	public void repairStructure(ServerWorld world)
+	{
+		if (!canRepair(world))
+		{
+			System.err.println("Cannot repair: Not enough resources!");
+			return;
+		}
+
+		Map<BlockPos, BlockState> missingBlocks = detectMissingBlocks(world);
+		Settlement settlement = SettlementManager.getSettlement(faction);
+
+		// remove required resources from chests & furnaces
+		for (Structure structure : settlement.getStructures())
+		{
+			if (structure.getName().equals("town_hall") || structure.getName().equals("warehouse"))
+			{
+				Map<BlockPos, List<ItemStack>> chestContents = structure.getChestContents(world);
+				Map<BlockPos, ItemStack> furnaceOutputs = structure.getFurnaceOutputContents(world);
+
+				for (Map.Entry<BlockPos, BlockState> entry : missingBlocks.entrySet())
+				{
+					String blockName = entry.getValue().getBlock().getTranslationKey();
+					int requiredCount = 1; // each missing block counts as 1
+
+					requiredCount = removeResourcesFromInventory(chestContents, blockName, requiredCount);
+					requiredCount = removeResourcesFromFurnaceOutputs(furnaceOutputs, blockName, requiredCount);
+
+					if (requiredCount > 0)
+					{
+						System.err.println("Error: Not enough resources to remove!");
+						return;
+					}
+				}
+			}
+		}
+
+		// initialize repair queue
+		repairQueue.addAll(missingBlocks.entrySet());
+		repairTicksElapsed = 0;
+
+		// register repair tick event
+		ServerTickEvents.END_SERVER_TICK.register(server ->
+		{
+			if (server.getOverworld() == world)
+				repairTick(world);
+		});
+	}
+
+	private void repairTick(ServerWorld world)
+	{
+		repairTicksElapsed++;
+
+		if (repairTicksElapsed >= BLOCK_REPAIR_TICKS)
+		{
+			repairTicksElapsed = 0;
+
+			if (!repairQueue.isEmpty())
+			{
+				Map.Entry<BlockPos, BlockState> entry = repairQueue.poll();
+				world.setBlockState(entry.getKey(), entry.getValue());
+
+				if (repairQueue.isEmpty())
+				{
+					requiresRepair = false;
+					System.out.println(getName() + " repaired!");
+				}
+			}
+		}
+	}
+	
+	private Map<BlockPos, BlockState> detectMissingBlocks(ServerWorld world)
+	{
+		Map<BlockPos, BlockState> missingBlocks = new HashMap<>();
+
+		processStructure(world, (blockPos, expectedState) ->
+		{
+			BlockState currentState = world.getBlockState(blockPos);
+			if (!currentState.equals(expectedState))
+				missingBlocks.put(blockPos, expectedState);
+		});
+		
+		return missingBlocks;
+	}
+
+	private int removeResourcesFromInventory(Map<BlockPos, List<ItemStack>> inventory, String blockName, int requiredCount)
+	{
+		for (List<ItemStack> items : inventory.values())
+		{
+			Iterator<ItemStack> iterator = items.iterator();
+			while (iterator.hasNext())
+			{
+				ItemStack item = iterator.next();
+				if (item.getItem().getTranslationKey().equals(blockName))
+				{
+					int availableCount = item.getCount();
+					int toRemove = Math.min(availableCount, requiredCount);
+					item.decrement(toRemove);
+					requiredCount -= toRemove;
+
+					if (item.isEmpty())
+						iterator.remove();
+
+					if (requiredCount <= 0)
+						return 0; // all required resources removed
+				}
+			}
+		}
+		return requiredCount; // return remaining count
+	}
+
+	private int removeResourcesFromFurnaceOutputs(Map<BlockPos, ItemStack> furnaceOutputs, String blockName, int requiredCount)
+	{
+		for (Iterator<Map.Entry<BlockPos, ItemStack>> it = furnaceOutputs.entrySet().iterator(); it.hasNext();)
+		{
+			Map.Entry<BlockPos, ItemStack> entry = it.next();
+			ItemStack item = entry.getValue();
+			if (item.getItem().getTranslationKey().equals(blockName))
+			{
+				int availableCount = item.getCount();
+				int toRemove = Math.min(availableCount, requiredCount);
+				item.decrement(toRemove);
+				requiredCount -= toRemove;
+
+				if (item.isEmpty())
+					it.remove();
+
+				if (requiredCount <= 0)
+					return 0; // all required resources removed
+			}
+		}
+		return requiredCount; // return remaining count
+	}
+    
+	public Map<BlockPos, List<ItemStack>> getChestContents(ServerWorld world)
+    {
+        List<BlockPos> chestPositions = findChests(world);
+        Map<BlockPos, List<ItemStack>> chestContents = new HashMap<>();
+        for (BlockPos chestPos : chestPositions)
+        {
+            BlockEntity blockEntity = world.getBlockEntity(chestPos);
+            if (blockEntity instanceof ChestBlockEntity)
+            {
+                Inventory inventory = (Inventory) blockEntity;
+                List<ItemStack> items = new ArrayList<>();
+                for (int i = 0; i < inventory.size(); i++)
+                {
+                    ItemStack itemStack = inventory.getStack(i);
+                    if (!itemStack.isEmpty())
+                        items.add(itemStack);
+                }
+                chestContents.put(chestPos, items);
+            }
+        }
+        return chestContents;
+    }
+    
+    public Map<BlockPos, ItemStack> getFurnaceOutputContents(ServerWorld world)
+    {
+        List<BlockPos> furnacePositions = findFurnaces(world);
+        Map<BlockPos, ItemStack> furnaceOutputs = new HashMap<>();
+        for (BlockPos furnacePos : furnacePositions)
+        {
+            BlockEntity blockEntity = world.getBlockEntity(furnacePos);
+            if (blockEntity instanceof FurnaceBlockEntity)
+            {
+                Inventory inventory = (Inventory) blockEntity;
+                ItemStack outputStack = inventory.getStack(2); // output for furnace should be slot 2
+                if (!outputStack.isEmpty())
+                    furnaceOutputs.put(furnacePos, outputStack);
+            }
+        }
+        return furnaceOutputs;
+    }
+    
+    public List<BlockPos> findChests(ServerWorld world)
+	{
+        List<BlockPos> chestPositions = new ArrayList<>();
+        processStructure(world, (blockPos, blockState) ->
+        {
+            if (blockState.isOf(Blocks.CHEST))
+                chestPositions.add(blockPos);
+        });
+        return chestPositions;
+    }
+    
+    public List<BlockPos> findFurnaces(ServerWorld world)
+    {
+        List<BlockPos> furnacePositions = new ArrayList<>();
+        processStructure(world, (blockPos, blockState) ->
+        {
+            if (blockState.isOf(Blocks.FURNACE))
+                furnacePositions.add(blockPos);
+        });
+        return furnacePositions;
+    }
+	
 	private BlockPos rotatePos(BlockPos originalPos)
 	{
 		switch (facing)
@@ -537,69 +809,6 @@ public abstract class Structure
 	{
 		return property.parse(value).map(parsedValue -> state.with(property, parsedValue)).orElse(state);
 	}
-	
-	public List<BlockPos> findChests(ServerWorld world)
-	{
-        List<BlockPos> chestPositions = new ArrayList<>();
-        processStructure(world, (blockPos, blockState) ->
-        {
-            if (blockState.isOf(Blocks.CHEST))
-                chestPositions.add(blockPos);
-        });
-        return chestPositions;
-    }
-
-    public Map<BlockPos, List<ItemStack>> getChestContents(ServerWorld world)
-    {
-        List<BlockPos> chestPositions = findChests(world);
-        Map<BlockPos, List<ItemStack>> chestContents = new HashMap<>();
-        for (BlockPos chestPos : chestPositions)
-        {
-            BlockEntity blockEntity = world.getBlockEntity(chestPos);
-            if (blockEntity instanceof ChestBlockEntity)
-            {
-                Inventory inventory = (Inventory) blockEntity;
-                List<ItemStack> items = new ArrayList<>();
-                for (int i = 0; i < inventory.size(); i++)
-                {
-                    ItemStack itemStack = inventory.getStack(i);
-                    if (!itemStack.isEmpty())
-                        items.add(itemStack);
-                }
-                chestContents.put(chestPos, items);
-            }
-        }
-        return chestContents;
-    }
-    
-    public List<BlockPos> findFurnaces(ServerWorld world)
-    {
-        List<BlockPos> furnacePositions = new ArrayList<>();
-        processStructure(world, (blockPos, blockState) ->
-        {
-            if (blockState.isOf(Blocks.FURNACE))
-                furnacePositions.add(blockPos);
-        });
-        return furnacePositions;
-    }
-
-    public Map<BlockPos, ItemStack> getFurnaceOutputContents(ServerWorld world)
-    {
-        List<BlockPos> furnacePositions = findFurnaces(world);
-        Map<BlockPos, ItemStack> furnaceOutputs = new HashMap<>();
-        for (BlockPos furnacePos : furnacePositions)
-        {
-            BlockEntity blockEntity = world.getBlockEntity(furnacePos);
-            if (blockEntity instanceof FurnaceBlockEntity)
-            {
-                Inventory inventory = (Inventory) blockEntity;
-                ItemStack outputStack = inventory.getStack(2); // output for furnace should be slot 2
-                if (!outputStack.isEmpty())
-                    furnaceOutputs.put(furnacePos, outputStack);
-            }
-        }
-        return furnaceOutputs;
-    }
 
     public boolean upgradeAvailable()
     {
@@ -608,7 +817,7 @@ public abstract class Structure
 		return false;
 	}
     
-	public String getName() {
+    public String getName() {
 		return name;
 	}
 
@@ -669,6 +878,14 @@ public abstract class Structure
 	    this.uuid = uuid;
 	}
 	
+	public boolean isActive() {
+		return isActive;
+	}
+	
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
+	}
+	
 	public boolean isConstructed() {
 		return isConstructed;
 	}
@@ -687,6 +904,10 @@ public abstract class Structure
 	
 	public boolean requiresRepair() {
 		return requiresRepair;
+	}
+	
+	public void setRepair(boolean requiresRepair) {
+		this.requiresRepair = requiresRepair;
 	}
 	
 	public boolean isUpgrading() {
@@ -721,6 +942,14 @@ public abstract class Structure
 		this.upgradeTicksElapsed = upgradeTicksElapsed;
 	}
 	
+	public int getRepairTicksElapsed() {
+		return repairTicksElapsed;
+	}
+	
+	public void setRepairTicksElapsed(int repairTicksElapsed) {
+		this.repairTicksElapsed = repairTicksElapsed;
+	}
+	
 	public Queue<BlockPos> getAirBlocksQueue() {
 		return airBlocksQueue;
 	}
@@ -753,6 +982,14 @@ public abstract class Structure
 		this.upgradeQueue = upgradeQueue;
 	}
 	
+	public Queue<Map.Entry<BlockPos, BlockState>> getRepairQueue() {
+		return repairQueue;
+	}
+	
+	public void setRepairQueue(Queue<Map.Entry<BlockPos, BlockState>> repairQueue) {
+		this.repairQueue = repairQueue;
+	}
+	
 	public Map<BlockPos, BlockState> getConstructionMap() {
 		return constructionMap;
 	}
@@ -764,6 +1001,7 @@ public abstract class Structure
 	public Map<BlockPos, BlockState> getUpgradeMap() {
 		return upgradeMap;
 	}
+	
 	public void setUpgradeMap(Map<BlockPos, BlockState> upgradeMap) {
 		this.upgradeMap = upgradeMap;
 	}
