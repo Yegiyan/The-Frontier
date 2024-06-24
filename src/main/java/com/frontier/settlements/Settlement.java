@@ -40,6 +40,8 @@ public class Settlement
     private List<String> enemies;
     
     private final int territoryChunkRadius = 1;
+    
+    public boolean abortConstruction = false;
 
     public Settlement(String name, UUID leader, BlockPos position, MinecraftServer server)
     {
@@ -82,6 +84,13 @@ public class Settlement
         }
 
         structure.constructStructure(world);
+        
+        if (!structure.canConstruct())
+        {
+        	abortConstruction = true;
+        	return;
+        }
+        
         structures.add(structure);
     }
     

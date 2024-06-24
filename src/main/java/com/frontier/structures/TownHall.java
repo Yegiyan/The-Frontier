@@ -1,5 +1,7 @@
 package com.frontier.structures;
 
+import java.util.Arrays;
+
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -35,4 +37,10 @@ public class TownHall extends Structure
 	{
 		setActive(false);
 	}
+    
+    public void printStructureSize()
+    {
+        int[] size = getStructureSize();
+        System.out.println("Structure size: " + Arrays.toString(size));
+    }
 }

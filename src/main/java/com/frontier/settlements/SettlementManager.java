@@ -96,6 +96,14 @@ public class SettlementManager
                     BlockPos townHallPos = getFrontPosition(player, 2);
                     Direction facing = player.getHorizontalFacing();
                     settlement.constructStructure("town_hall", townHallPos, server.getOverworld(), facing);
+                    
+                    if (settlement.abortConstruction)
+                    {
+                    	playerData.getPlayer(server).sendMessage(Text.literal("Cannot construct structure here, choose a more suitable location!").styled(style -> style.withColor(Formatting.WHITE)), false);
+                    	settlements.remove(factionName);
+                    	return null;
+                    }
+                    
                     server.getOverworld().setBlockState(bellPos, Blocks.AIR.getDefaultState());
                     return settlement;
                 } 

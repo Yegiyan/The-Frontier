@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
@@ -36,9 +37,13 @@ import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.Heightmap;
 
-public abstract class Structure
+public abstract class Structure //import net.minecraft.world.Heightmap;
 {
+	public enum StructureType { CORE, GATHERER, TRADER, CRAFTER, OUTSIDER, RANCHER, MILITIA, MISC }
+	protected StructureType type;
+	
 	protected String name;
 	protected String faction;
 	protected BlockPos position;
@@ -48,6 +53,7 @@ public abstract class Structure
 	protected UUID uuid;
 	
 	protected boolean isActive;
+	protected boolean canConstruct;
 	protected boolean isConstructed;
 	protected boolean isConstructing;
 	protected boolean requiresRepair;
@@ -60,19 +66,31 @@ public abstract class Structure
 	private Queue<BlockPos> nonAirBlocksQueue = new LinkedList<>();
 	private Queue<BlockPos> clearingQueue = new LinkedList<>();
 	private Queue<BlockPos> upgradeQueue = new LinkedList<>();
+	
 	private Queue<Map.Entry<BlockPos, BlockState>> repairQueue = new LinkedList<>();
 	private Map<BlockPos, BlockState> upgradeMap = new HashMap<>();
 	private Map<BlockPos, BlockState> constructionMap = new HashMap<>();
-	private int constructionTicksElapsed = 0;
+    
+	private static final Set<Block> GROUND_BLOCKS = Set.of(
+	        Blocks.GRASS_BLOCK, 
+	        Blocks.SAND, 
+	        Blocks.DIRT, 
+	        Blocks.COARSE_DIRT, 
+	        Blocks.STONE
+	    );
+	
+	private static final Set<Block> INVALID_BLOCKS = Set.of(
+	        Blocks.WATER,
+	        Blocks.LAVA
+	    );
+	
+	private static final int BLOCK_PLACE_TICKS = 1;
+    private static final int BLOCK_CLEAR_TICKS = 1;
+    private static final int BLOCK_REPAIR_TICKS = 20;
+	
+    private int constructionTicksElapsed = 0;
 	private int upgradeTicksElapsed = 0;
 	private int repairTicksElapsed = 0;
-    
-    private static final int BLOCK_PLACE_TICKS = 1;
-    private static final int BLOCK_CLEAR_TICKS = 5;
-    private static final int BLOCK_REPAIR_TICKS = 20;
-
-	protected StructureType type;
-	public enum StructureType { CORE, GATHERER, TRADER, CRAFTER, OUTSIDER, RANCHER, MILITIA, MISC }
 	
 	protected abstract void onConstruction();
 	protected abstract void onUpgrade();
@@ -90,6 +108,7 @@ public abstract class Structure
 		this.maxTier = 0;
 		this.uuid = UUID.randomUUID();
 		this.isActive = false;
+		this.canConstruct = true;
 		this.isConstructed = false;
 		this.isConstructing = false;
 		this.requiresRepair = false;
@@ -125,18 +144,26 @@ public abstract class Structure
 	public void spawnStructure(ServerWorld world)
 	{
 		this.isConstructing = true;
-		processStructure(world, (blockPos, blockState) -> world.setBlockState(blockPos, blockState));
-		isConstructing = false;
-		isConstructed = true;
-		onConstruction();
+		this.position = adjustToGround(world, this.position);
+		if (canConstruct)
+		{
+			processStructure(world, (blockPos, blockState) -> world.setBlockState(blockPos, blockState));
+			isConstructing = false;
+			isConstructed = true;
+			onConstruction();
+		}
 	}
 	
 	public void constructStructure(ServerWorld world)
 	{
 		this.isConstructing = true;
-		prepareClearingQueue(world);     // prepare queue of blocks to be cleared
-        prepareConstructionQueue(world); // prepare queue of blocks to be placed
-        registerConstructionTick(world); // register tick event
+		this.position = adjustToGround(world, this.position);
+		if (canConstruct)
+		{
+			prepareClearingQueue(world);     // prepare queue of blocks to be cleared
+	        prepareConstructionQueue(world); // prepare queue of blocks to be placed
+	        registerConstructionTick(world); // register tick event
+		}
 	}
 	
 	public void upgradeStructure(ServerWorld world)
@@ -176,87 +203,137 @@ public abstract class Structure
 			upgradeStructure(world);
 		}	
 	}
+	
+	private BlockPos adjustToGround(ServerWorld world, BlockPos originalPosition) // mostly works
+	{
+		int x = originalPosition.getX();
+		int z = originalPosition.getZ();
+		int groundY = world.getTopY(Heightmap.Type.WORLD_SURFACE, x, z);
+		BlockPos groundPos = originalPosition;
+
+		while (groundY > world.getBottomY())
+		{
+			BlockPos pos = new BlockPos(x, groundY, z);
+			Block block = world.getBlockState(pos).getBlock();
+			if (GROUND_BLOCKS.contains(block))
+			{
+				groundPos = pos.up();
+				break; // return position just above the ground block
+			}
+			else if (INVALID_BLOCKS.contains(block))
+			{
+				this.canConstruct = false;
+				return originalPosition; // Return original position if an invalid block is found
+			}
+			groundY--;
+		}
+
+		// check if more than 2/3rds of the blocks one level below the ground level are air
+		int airBlockCount = 0;
+		int totalBlockCount = 0;
+		for (int dx = -getLength() / 2; dx <= getLength() / 2; dx++)
+		{
+			for (int dz = -getWidth() / 2; dz <= getWidth() / 2; dz++)
+			{
+				BlockPos checkPos = groundPos.add(dx, -1, dz); // Check one level below the ground position
+				totalBlockCount++;
+				if (world.getBlockState(checkPos).isAir())
+				{
+					airBlockCount++;
+				}
+			}
+		}
+
+		if (airBlockCount > (2.0 / 3.0) * totalBlockCount)
+		{
+			this.canConstruct = false;
+			return originalPosition; // too many air blocks, invalid position
+		}
+
+		this.canConstruct = true;
+		return groundPos;
+	}
 
 	private void prepareClearingQueue(ServerWorld world)
 	{
-        processStructure(world, (blockPos, blockState) -> clearingQueue.add(blockPos));
-    }
+		processStructure(world, (blockPos, blockState) -> clearingQueue.add(blockPos));
+	}
 
-    private void prepareConstructionQueue(ServerWorld world)
-    {
-        processStructure(world, (blockPos, blockState) ->
-        {
-            if (blockState.isOf(Blocks.AIR))
-                airBlocksQueue.add(blockPos);
-            else
-                nonAirBlocksQueue.add(blockPos);
-            constructionMap.put(blockPos, blockState);
-        });
-    }
+	private void prepareConstructionQueue(ServerWorld world)
+	{
+		processStructure(world, (blockPos, blockState) ->
+		{
+			if (blockState.isOf(Blocks.AIR))
+				airBlocksQueue.add(blockPos);
+			else
+				nonAirBlocksQueue.add(blockPos);
+			constructionMap.put(blockPos, blockState);
+		});
+	}
 
-    private void registerConstructionTick(ServerWorld world)
-    {
-        ServerTickEvents.END_SERVER_TICK.register(server ->
-        {
-            if (server.getOverworld() == world && isConstructing)
-            {
-                constructionTicksElapsed++;
-                if (isClearing)
-                {
-                    // clear air blocks instantly
-                    while (!clearingQueue.isEmpty() && world.getBlockState(clearingQueue.peek()).isAir())
-                    {
-                        BlockPos pos = clearingQueue.poll();
-                        world.setBlockState(pos, Blocks.AIR.getDefaultState());
-                    }
+	private void registerConstructionTick(ServerWorld world)
+	{
+		ServerTickEvents.END_SERVER_TICK.register(server ->
+		{
+			if (server.getOverworld() == world && isConstructing)
+			{
+				constructionTicksElapsed++;
+				if (isClearing)
+				{
+					// clear air blocks instantly
+					while (!clearingQueue.isEmpty() && world.getBlockState(clearingQueue.peek()).isAir())
+					{
+						BlockPos pos = clearingQueue.poll();
+						world.setBlockState(pos, Blocks.AIR.getDefaultState());
+					}
 
-                    // clear non-air blocks
-                    if (constructionTicksElapsed >= BLOCK_CLEAR_TICKS)
-                    {
-                        constructionTicksElapsed = 0;
-                        if (!clearingQueue.isEmpty())
-                        {
-                            BlockPos pos = clearingQueue.poll();
-                            world.breakBlock(pos, true);
-                        }
-                        else
-                        {
-                            isClearing = false;
-                            constructionTicksElapsed = 0; // reset tick counter for construction phase
-                        }
-                    }
-                }
-                else
-                {
-                	// place air blocks instantly
-                	while (!airBlocksQueue.isEmpty() && constructionMap.get(airBlocksQueue.peek()).isAir())
-                    {
-                        BlockPos pos = airBlocksQueue.poll();
-                        BlockState state = constructionMap.get(pos);
-                        world.setBlockState(pos, state);
-                    }
+					// clear non-air blocks
+					if (constructionTicksElapsed >= BLOCK_CLEAR_TICKS)
+					{
+						constructionTicksElapsed = 0;
+						if (!clearingQueue.isEmpty())
+						{
+							BlockPos pos = clearingQueue.poll();
+							world.breakBlock(pos, true);
+						}
+						else
+						{
+							isClearing = false;
+							constructionTicksElapsed = 0; // reset tick counter for construction phase
+						}
+					}
+				}
+				else
+				{
+					// place air blocks instantly
+					while (!airBlocksQueue.isEmpty() && constructionMap.get(airBlocksQueue.peek()).isAir())
+					{
+						BlockPos pos = airBlocksQueue.poll();
+						BlockState state = constructionMap.get(pos);
+						world.setBlockState(pos, state);
+					}
 
-                    // place non-air blocks
-                    if (constructionTicksElapsed >= BLOCK_PLACE_TICKS)
-                    {
-                        constructionTicksElapsed = 0;
-                        if (!nonAirBlocksQueue.isEmpty())
-                        {
-                            BlockPos pos = nonAirBlocksQueue.poll();
-                            BlockState state = constructionMap.get(pos);
-                            world.setBlockState(pos, state);
-                        }
-                        else if (airBlocksQueue.isEmpty())
-                        {
-                            this.isConstructing = false;
-                            this.isConstructed = true;
-                            onConstruction();
-                        }
-                    }
-                }
-            }
-        });
-    }
+					// place non-air blocks
+					if (constructionTicksElapsed >= BLOCK_PLACE_TICKS)
+					{
+						constructionTicksElapsed = 0;
+						if (!nonAirBlocksQueue.isEmpty())
+						{
+							BlockPos pos = nonAirBlocksQueue.poll();
+							BlockState state = constructionMap.get(pos);
+							world.setBlockState(pos, state);
+						}
+						else if (airBlocksQueue.isEmpty())
+						{
+							this.isConstructing = false;
+							this.isConstructed = true;
+							onConstruction();
+						}
+					}
+				}
+			}
+		});
+	}
     
 	private void registerUpgradeTick(ServerWorld world)
 	{
@@ -817,6 +894,45 @@ public abstract class Structure
 		return false;
 	}
     
+	public int[] getStructureSize()
+	{
+		String path = String.format("data/frontier/structures/settlement/%s_%d.nbt", name.toLowerCase(), tier);
+		int[] size = new int[3]; // [length, width, height]
+
+		try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path))
+		{
+			if (inputStream != null)
+			{
+				NbtCompound tag = NbtIo.readCompressed(inputStream);
+				NbtList sizeList = tag.getList("size", 3);
+
+				size[0] = sizeList.getInt(0); // length
+				size[1] = sizeList.getInt(1); // width
+				size[2] = sizeList.getInt(2); // height
+			}
+			else
+				System.err.println("NBT file not found: " + path);
+		}
+		catch (IOException e) { e.printStackTrace(); }
+		return size;
+	}
+	
+	public int getLength() {
+        return getStructureSize()[0];
+    }
+
+    public int getWidth() {
+        return getStructureSize()[1];
+    }
+
+    public int getHeight() {
+        return getStructureSize()[2];
+    }
+    
+    public UUID getLeader() {
+		return SettlementManager.getSettlement(faction).getLeader();
+	}
+    
     public String getName() {
 		return name;
 	}
@@ -886,6 +1002,9 @@ public abstract class Structure
 		this.isActive = isActive;
 	}
 	
+	public boolean canConstruct() {
+		return canConstruct;
+	}
 	public boolean isConstructed() {
 		return isConstructed;
 	}
