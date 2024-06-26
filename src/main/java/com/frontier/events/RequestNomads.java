@@ -4,8 +4,8 @@ import java.util.Random;
 
 import com.frontier.Frontier;
 import com.frontier.PlayerData;
-import com.frontier.SpawnEntity;
 import com.frontier.entities.NomadEntity;
+import com.frontier.entities.SpawnSettler;
 
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.Blocks;
@@ -41,7 +41,7 @@ public class RequestNomads
 		            NomadEntity nomad = Frontier.NOMAD_ENTITY.create(world);
 		            nomad.setBellPosition(bellPos);
 		            nomad.refreshPositionAndAngles(spawnPos, 0, 0);
-		            SpawnEntity.nomad((NomadEntity) nomad, "N/A", "Nomad", world);
+		            SpawnSettler.nomad((NomadEntity) nomad, "N/A", "Nomad", world);
 
 		            Frontier.sendMessage((ServerPlayerEntity) player, "Bell rung!", Formatting.WHITE);
 		            return ActionResult.SUCCESS;

@@ -39,13 +39,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.Heightmap;
 
-public abstract class Structure //import net.minecraft.world.Heightmap;
+public abstract class Structure
 {
 	public enum StructureType { CORE, GATHERER, TRADER, CRAFTER, OUTSIDER, RANCHER, MILITIA, MISC }
-	protected StructureType type;
 	
 	protected String name;
 	protected String faction;
+	protected StructureType type;
 	protected BlockPos position;
 	protected Direction facing;
 	protected int tier;
@@ -204,7 +204,8 @@ public abstract class Structure //import net.minecraft.world.Heightmap;
 		}	
 	}
 	
-	private BlockPos adjustToGround(ServerWorld world, BlockPos originalPosition) // mostly works
+	// works GOOD ENOUGH for now
+	private BlockPos adjustToGround(ServerWorld world, BlockPos originalPosition)
 	{
 		int x = originalPosition.getX();
 		int z = originalPosition.getZ();
@@ -574,7 +575,7 @@ public abstract class Structure //import net.minecraft.world.Heightmap;
 
 		for (Structure structure : settlement.getStructures())
 		{
-			if (structure.getName().equals("town_hall") || structure.getName().equals("warehouse"))
+			if (structure.getName().equals("townhall") || structure.getName().equals("warehouse"))
 			{
 				Map<BlockPos, List<ItemStack>> chestContents = structure.getChestContents(world);
 				Map<BlockPos, ItemStack> furnaceOutputs = structure.getFurnaceOutputContents(world);
@@ -628,7 +629,7 @@ public abstract class Structure //import net.minecraft.world.Heightmap;
 		// remove required resources from chests & furnaces
 		for (Structure structure : settlement.getStructures())
 		{
-			if (structure.getName().equals("town_hall") || structure.getName().equals("warehouse"))
+			if (structure.getName().equals("townhall") || structure.getName().equals("warehouse"))
 			{
 				Map<BlockPos, List<ItemStack>> chestContents = structure.getChestContents(world);
 				Map<BlockPos, ItemStack> furnaceOutputs = structure.getFurnaceOutputContents(world);

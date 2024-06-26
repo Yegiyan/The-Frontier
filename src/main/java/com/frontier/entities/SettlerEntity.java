@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,6 +27,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.WorldSavePath;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
@@ -36,12 +39,18 @@ public class SettlerEntity extends PathAwareEntity
 	private static final TrackedData<String> SETTLER_NAME = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.STRING);
 	private static final TrackedData<String> SETTLER_FACTION = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.STRING);
 	private static final TrackedData<String> SETTLER_PROFESSION = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.STRING);
+	private static final TrackedData<String> SETTLER_EXPERTISE = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.STRING);
 	private static final TrackedData<Integer> SETTLER_MORALE = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+	private static final TrackedData<Integer> SETTLER_SKILL = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+	private static final TrackedData<Integer> SETTLER_HUNGER = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	private static final TrackedData<String> SETTLER_GENDER = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.STRING);
 	private static final TrackedData<Integer> SETTLER_TEXTURE = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	
-	public List<String> genders = Arrays.asList("Male", "Female");
 	private UUID uuid;
+	
+	public enum Expertise { GATHERING, TRADING, CRAFTING, RANCHING, FIGHTING }
+	
+	public List<String> genders = Arrays.asList("Male", "Female");
 	
 	public List<String> maleSettlerNames = Arrays.asList(
 		    "Alden", "Balin", "Cedric", "Darian", "Eamon", "Fabian", "Gawain", "Hadrian", "Ivor", "Jareth", 
@@ -91,7 +100,10 @@ public class SettlerEntity extends PathAwareEntity
         this.dataTracker.startTracking(SETTLER_NAME, "");
         this.dataTracker.startTracking(SETTLER_FACTION, "");
         this.dataTracker.startTracking(SETTLER_PROFESSION, "");
-        this.dataTracker.startTracking(SETTLER_MORALE, 0);
+        this.dataTracker.startTracking(SETTLER_EXPERTISE, "");
+        this.dataTracker.startTracking(SETTLER_MORALE, 50);
+        this.dataTracker.startTracking(SETTLER_SKILL, 0);
+        this.dataTracker.startTracking(SETTLER_HUNGER, 100);
         this.dataTracker.startTracking(SETTLER_GENDER, "");
         this.dataTracker.startTracking(SETTLER_TEXTURE, 0);
     }
@@ -103,7 +115,7 @@ public class SettlerEntity extends PathAwareEntity
 	}
 	
 	@Override
-	public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) 
+	public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand)
 	{
 	    ItemStack itemStack = player.getStackInHand(hand);
 	    
@@ -119,21 +131,7 @@ public class SettlerEntity extends PathAwareEntity
 	        }
 	    }
 	    
-	    // for debugging purposes
-	    /*
-	    if (!this.getWorld().isClient && player.getStackInHand(hand).isEmpty() && hand.equals(Hand.MAIN_HAND)) 
-	    {
-	    	System.out.println("------------");
-	        System.out.println("Name: " + this.getSettlerName());
-	        System.out.println("Faction: " + this.getSettlerFaction());
-	        System.out.println("Profession: " + this.getSettlerProfession());
-	        System.out.println("Morale: " + this.getSettlerMorale());
-	        System.out.println("Gender: " + this.getSettlerGender());
-	        System.out.println("Texture: " + this.getSettlerTexture());
-	        System.out.println("------------");
-	    }
-	    */
-	    
+	    printEntityInfo(player, hand);
 	    return super.interactAt(player, hitPos, hand);
 	}
 	
@@ -147,8 +145,14 @@ public class SettlerEntity extends PathAwareEntity
 	        setSettlerFaction(entityNbt.getString("Faction"));
 	    if (entityNbt.contains("Profession")) 
 	        setSettlerProfession(entityNbt.getString("Profession"));
+	    if (entityNbt.contains("Expertise"))
+	    	setSettlerExpertise(entityNbt.getString("Expertise"));
 	    if (entityNbt.contains("Morale"))
 	        setSettlerMorale(entityNbt.getInt("Morale"));
+	    if (entityNbt.contains("Skill"))
+	        setSettlerSkill(entityNbt.getInt("Skill"));
+	    if (entityNbt.contains("Hunger"))
+	        setSettlerHunger(entityNbt.getInt("Hunger"));
 	    if (entityNbt.contains("Gender")) 
 	        setSettlerGender(entityNbt.getString("Gender"));
 	    this.getDataTracker().set(SETTLER_TEXTURE, getSettlerTexture());
@@ -167,8 +171,14 @@ public class SettlerEntity extends PathAwareEntity
 	        this.getDataTracker().set(SETTLER_FACTION, nbt.getString("Faction"));
 	    if (nbt.contains("Profession"))
 	        this.getDataTracker().set(SETTLER_PROFESSION, nbt.getString("Profession"));
+	    if (nbt.contains("Expertise"))
+	    	this.getDataTracker().set(SETTLER_EXPERTISE, nbt.getString("Expertise"));
 	    if (nbt.contains("Morale"))
 	        this.getDataTracker().set(SETTLER_MORALE, nbt.getInt("Morale"));
+	    if (nbt.contains("Skill"))
+	        this.getDataTracker().set(SETTLER_SKILL, nbt.getInt("Skill"));
+	    if (nbt.contains("Hunger"))
+	        this.getDataTracker().set(SETTLER_HUNGER, nbt.getInt("Hunger"));
 	    if (nbt.contains("Gender"))
 	        this.getDataTracker().set(SETTLER_GENDER, nbt.getString("Gender"));
 	    if (nbt.contains("SettlerTexture"))
@@ -184,7 +194,10 @@ public class SettlerEntity extends PathAwareEntity
 	    nbt.putString("Name", getSettlerName());
 	    nbt.putString("Faction", getSettlerFaction());
 	    nbt.putString("Profession", getSettlerProfession());
+	    nbt.putString("Expertise", this.getDataTracker().get(SETTLER_EXPERTISE));
 	    nbt.putInt("Morale", this.getDataTracker().get(SETTLER_MORALE));
+	    nbt.putInt("Skill", this.getDataTracker().get(SETTLER_SKILL));
+	    nbt.putInt("Hunger", this.getDataTracker().get(SETTLER_HUNGER));
 	    nbt.putString("Gender", getSettlerGender());
 	    nbt.putInt("SettlerTexture", this.getDataTracker().get(SETTLER_TEXTURE));
 	}
@@ -215,7 +228,10 @@ public class SettlerEntity extends PathAwareEntity
 	    
 	    settlerNbt.putString("Name", settler.getSettlerName());
 	    settlerNbt.putString("Profession", settler.getSettlerProfession());
+	    settlerNbt.putString("Expertise", settler.getSettlerExpertise());
 	    settlerNbt.putInt("Morale", settler.getSettlerMorale());
+	    settlerNbt.putInt("Skill", settler.getSettlerSkill());
+	    settlerNbt.putInt("Hunger", settler.getSettlerHunger());
 	    settlerNbt.putString("Gender", settler.getSettlerGender());
 	    settlerNbt.putInt("Texture", settler.getSettlerTexture());
 	    faction.put(settlerUUID, settlerNbt); 
@@ -331,10 +347,41 @@ public class SettlerEntity extends PathAwareEntity
 	    }
 	    nbt.put("Settlers", settlers);
 
-	    try { NbtIo.writeCompressed(nbt, nbtFile); } 
+	    try { NbtIo.writeCompressed(nbt, nbtFile); }
 	    catch (IOException e) { e.printStackTrace(); }
 	}
+	
+	public static SettlerEntity findSettlerEntity(World world, BlockPos pos, String name)
+	{
+	    List<SettlerEntity> settlers = world.getEntitiesByClass(SettlerEntity.class, new Box(pos), settler -> settler.getSettlerName().equals(name));
+	    return settlers.isEmpty() ? null : settlers.get(0);
+	}
 
+	public static Expertise chooseRandomExpertise()
+	{
+		int pick = new Random().nextInt(Expertise.values().length);
+	    return Expertise.values()[pick];
+	}
+	
+	@SuppressWarnings("resource")
+	private void printEntityInfo(PlayerEntity player, Hand hand)
+	{
+		if (!this.getWorld().isClient && player.getStackInHand(hand).isEmpty() && hand.equals(Hand.MAIN_HAND)) 
+	    {
+	    	System.out.println("------------");
+	        System.out.println("Name: " + this.getSettlerName());
+	        System.out.println("Faction: " + this.getSettlerFaction());
+	        System.out.println("Profession: " + this.getSettlerProfession());
+	        System.out.println("Expertise: " + this.getSettlerExpertise());
+	        System.out.println("Morale: " + this.getSettlerMorale());
+	        System.out.println("Skill: " + this.getSettlerSkill());
+	        System.out.println("Hunger: " + this.getSettlerHunger());
+	        System.out.println("Gender: " + this.getSettlerGender());
+	        System.out.println("Texture: " + this.getSettlerTexture());
+	        System.out.println("------------");
+	    }
+	}
+	
 	@Override
 	public void mobTick() 
 	{
@@ -349,12 +396,19 @@ public class SettlerEntity extends PathAwareEntity
         return false;
     }
 	
-	@Override
-	public void remove(RemovalReason reason) {
-	    super.remove(reason);
-	    removeSettlerFromData(this.getSettlerName(), getEntityWorld());
+	@Override @SuppressWarnings("resource")
+	public void remove(RemovalReason reason)
+	{
+		if (!this.getWorld().isClient)
+		{
+			if (this.getServer() != null)
+				removeSettlerFromData(this.getSettlerName(), this.getEntityWorld());
+			else
+				System.err.println("getServer() is null!");
+		}
+		super.remove(reason);
 	}
-	
+
 	@Override
 	public Text getName() {
 	    if (this.hasCustomName())
@@ -391,12 +445,36 @@ public class SettlerEntity extends PathAwareEntity
 	    this.dataTracker.set(SETTLER_PROFESSION, profession);
 	}
 	
+	public String getSettlerExpertise() {
+	    return this.dataTracker.get(SETTLER_EXPERTISE);
+	}
+
+	public void setSettlerExpertise(String expertise) {
+	    this.dataTracker.set(SETTLER_EXPERTISE, expertise);
+	}
+	
 	public int getSettlerMorale() {
 	    return this.dataTracker.get(SETTLER_MORALE);
 	}
 
 	public void setSettlerMorale(int morale) {
 	    this.dataTracker.set(SETTLER_MORALE, morale);
+	}
+	
+	public int getSettlerSkill() {
+	    return this.dataTracker.get(SETTLER_SKILL);
+	}
+
+	public void setSettlerSkill(int skill) {
+	    this.dataTracker.set(SETTLER_SKILL, skill);
+	}
+	
+	public int getSettlerHunger() {
+	    return this.dataTracker.get(SETTLER_HUNGER);
+	}
+
+	public void setSettlerHunger(int hunger) {
+	    this.dataTracker.set(SETTLER_HUNGER, hunger);
 	}
 	
 	public String getSettlerGender() {

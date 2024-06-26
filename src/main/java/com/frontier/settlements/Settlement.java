@@ -39,9 +39,9 @@ public class Settlement
     private List<String> allies;
     private List<String> enemies;
     
-    private final int territoryChunkRadius = 1;
+    private final int TERRITORY_CHUNK_RADIUS = 4; // 4 = 128x128 radius
     
-    public boolean abortConstruction = false;
+    public boolean abortSettlementCreation = false;
 
     public Settlement(String name, UUID leader, BlockPos position, MinecraftServer server)
     {
@@ -58,12 +58,12 @@ public class Settlement
         generateTerritory();
     }
     
-    private void generateTerritory() // everytime we loadSettlements() this method is called so faction territories persist across sessions
+    private void generateTerritory()
 	{
         int centerX = this.position.getX() >> 4;
         int centerZ = this.position.getZ() >> 4;
-        for (int dx = -territoryChunkRadius; dx <= territoryChunkRadius; dx++)
-            for (int dz = -territoryChunkRadius; dz <= territoryChunkRadius; dz++)
+        for (int dx = -TERRITORY_CHUNK_RADIUS; dx <= TERRITORY_CHUNK_RADIUS; dx++)
+            for (int dz = -TERRITORY_CHUNK_RADIUS; dz <= TERRITORY_CHUNK_RADIUS; dz++)
                 this.territory.add(new ChunkPos(centerX + dx, centerZ + dz));
         // TODO: add territory expansion from watchtowers here
     }
@@ -73,7 +73,7 @@ public class Settlement
         Structure structure;
         switch (structureName)
         {
-            case "town_hall":
+            case "townhall":
                 structure = new TownHall(structureName, this.name, position, facing);
                 break;
             case "warehouse":
@@ -87,7 +87,7 @@ public class Settlement
         
         if (!structure.canConstruct())
         {
-        	abortConstruction = true;
+        	abortSettlementCreation = true;
         	return;
         }
         

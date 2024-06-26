@@ -16,7 +16,7 @@ public class TownHall extends Structure
     @Override
 	protected void update()
 	{
-		System.out.println(getName() + " of " + getFaction() + " is updating!");
+		//System.out.println(getName() + " of " + getFaction() + " is updating!");
 	}
 
     @Override

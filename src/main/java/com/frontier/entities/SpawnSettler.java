@@ -1,11 +1,9 @@
-package com.frontier;
+package com.frontier.entities;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-
-import com.frontier.entities.NomadEntity;
 
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.SpawnReason;
@@ -14,7 +12,7 @@ import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 
-public class SpawnEntity
+public class SpawnSettler
 {
 	public static void nomad(NomadEntity nomad, String faction, String profession, World world)
 	{
@@ -49,16 +47,17 @@ public class SpawnEntity
 	    nomad.setSettlerName(name);
 	    occupiedNames.add(name);
 
-	    // set faction & profession
+	    // set faction, profession, & expertise
 	    nomad.setSettlerProfession(profession);
 	    nomad.setSettlerFaction(faction);
+	    nomad.setSettlerExpertise(SettlerEntity.chooseRandomExpertise().name());
 
 	    // choose random texture depending on gender
 	    int textureIdx;
 	    if (gender.equals("MALE")) 
-	    	textureIdx = rand.nextInt(NomadEntity.NOMAD_TEXTURES_FEMALE.length);
-	    else 
 	    	textureIdx = rand.nextInt(NomadEntity.NOMAD_TEXTURES_MALE.length);
+	    else 
+	    	textureIdx = rand.nextInt(NomadEntity.NOMAD_TEXTURES_FEMALE.length);
 	    nomad.setSettlerTexture(textureIdx);
 	    
 	    nomad.initialize((ServerWorldAccess) world, difficulty, spawnReason, entityData, entityNbt);

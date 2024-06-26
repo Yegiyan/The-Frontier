@@ -3,7 +3,9 @@ package com.frontier.entities;
 import com.frontier.goals.SelfDefenseGoal;
 import com.frontier.goals.nomad.MoveTowardsBellGoal;
 import com.frontier.goals.nomad.MoveTowardsDespawnGoal;
+import com.frontier.gui.HireArchitectScreen;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
@@ -13,6 +15,8 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.ActionResult;
@@ -59,8 +63,14 @@ public class NomadEntity extends SettlerEntity
 	    this.goalSelector.add(3, new SelfDefenseGoal(this));
 	}
 	
+	@Override @SuppressWarnings("resource")
 	public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) 
 	{
+		ItemStack itemStack = player.getStackInHand(hand);
+		
+		if (player.getWorld().isClient && itemStack.getItem() == Items.CLOCK)
+	    	MinecraftClient.getInstance().setScreen(new HireArchitectScreen(this));
+		
 	    return super.interactAt(player, hitPos, hand);
 	}
 	

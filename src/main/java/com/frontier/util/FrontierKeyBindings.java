@@ -13,10 +13,10 @@ public class FrontierKeyBindings
     public static void register() 
     {
         playerCardKey = new KeyBinding(
-                "Toggle Player Card", // key description
+                "Toggle Player Card",  // key description
                 InputUtil.Type.KEYSYM, // KEYSYM = keyboard | MOUSE = mouse
-                GLFW.GLFW_KEY_G, // default key
-                "The Frontier" // category name
+                GLFW.GLFW_KEY_G,       // default key
+                "The Frontier"         // category name
         );
         
         toggleRegionsKey = new KeyBinding(

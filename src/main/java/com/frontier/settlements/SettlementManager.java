@@ -95,11 +95,11 @@ public class SettlementManager
                     ServerPlayerEntity player = playerData.getPlayer(server);
                     BlockPos townHallPos = getFrontPosition(player, 2);
                     Direction facing = player.getHorizontalFacing();
-                    settlement.constructStructure("town_hall", townHallPos, server.getOverworld(), facing);
+                    settlement.constructStructure("townhall", townHallPos, server.getOverworld(), facing);
                     
-                    if (settlement.abortConstruction)
+                    if (settlement.abortSettlementCreation)
                     {
-                    	playerData.getPlayer(server).sendMessage(Text.literal("Cannot construct structure here, choose a more suitable location!").styled(style -> style.withColor(Formatting.WHITE)), false);
+                    	playerData.getPlayer(server).sendMessage(Text.literal("Cannot construct townhall here, choose a more suitable location!").styled(style -> style.withColor(Formatting.WHITE)), false);
                     	settlements.remove(factionName);
                     	return null;
                     }
@@ -428,7 +428,7 @@ public class SettlementManager
 	                    Structure structure;
 	                    switch (structureName)
 	                    {
-	                        case "town_hall":
+	                        case "townhall":
 	                            structure = new TownHall(structureName, faction, structurePos, facing);
 	                            break;
 	                        case "warehouse":

@@ -4,8 +4,12 @@ import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
@@ -42,6 +46,12 @@ public class ArchitectEntity extends SettlerEntity
 	{
 		entityData = super.initialize(world, difficulty, spawnReason, entityData, entityNbt);
 	    return entityData;
+	}
+	
+	@Override
+	public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand)
+	{
+	    return super.interactAt(player, hitPos, hand);
 	}
 	
 	@Override

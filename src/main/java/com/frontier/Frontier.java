@@ -70,9 +70,7 @@ public class Frontier implements ModInitializer
 		EntityRendererRegistry.register(ARCHITECT_ENTITY,(EntityRendererFactory.Context context) -> new SettlerEntityRenderer(context));
 		FabricDefaultAttributeRegistry.register(ARCHITECT_ENTITY, SettlerEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1));
 	}
-
-	// place structure on y-level with most bottom support
-	// convert nomad to architect
+	
 	// create settler ui
 	// create building ui
 	// show dimensions of structure to player when they try to manually place structure location
