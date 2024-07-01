@@ -9,24 +9,39 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
+import com.frontier.gui.SettlerCardScreen;
+import com.frontier.network.FrontierPackets;
+
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.WorldSavePath;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -34,7 +49,7 @@ import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 
-public class SettlerEntity extends PathAwareEntity
+public class SettlerEntity extends PathAwareEntity implements Inventory
 {	
 	private static final TrackedData<String> SETTLER_NAME = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.STRING);
 	private static final TrackedData<String> SETTLER_FACTION = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.STRING);
@@ -46,9 +61,10 @@ public class SettlerEntity extends PathAwareEntity
 	private static final TrackedData<String> SETTLER_GENDER = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.STRING);
 	private static final TrackedData<Integer> SETTLER_TEXTURE = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	
+	private SimpleInventory inventory;
 	private UUID uuid;
 	
-	public enum Expertise { GATHERING, TRADING, CRAFTING, RANCHING, FIGHTING }
+	public enum Expertise { CORE, GATHERING, TRADING, CRAFTING, RANCHING, FIGHTING }
 	
 	public List<String> genders = Arrays.asList("Male", "Female");
 	
@@ -97,6 +113,7 @@ public class SettlerEntity extends PathAwareEntity
     {
         super(entityType, world);
         this.uuid = UUID.randomUUID();
+        this.inventory = new SimpleInventory(27);
         this.dataTracker.startTracking(SETTLER_NAME, "");
         this.dataTracker.startTracking(SETTLER_FACTION, "");
         this.dataTracker.startTracking(SETTLER_PROFESSION, "");
@@ -119,6 +136,9 @@ public class SettlerEntity extends PathAwareEntity
 	{
 	    ItemStack itemStack = player.getStackInHand(hand);
 	    
+	    if (!player.getWorld().isClient)
+	    	syncInventory();
+	    
 	    if (itemStack.getItem() == Items.NAME_TAG) 
 	    {
 	        if (itemStack.hasCustomName() && !this.getWorld().isClient()) 
@@ -130,6 +150,9 @@ public class SettlerEntity extends PathAwareEntity
 	            return ActionResult.SUCCESS;
 	        }
 	    }
+
+	    if (player.getWorld().isClient && hand.equals(Hand.MAIN_HAND) && !this.getSettlerProfession().equals("Nomad"))
+	    	MinecraftClient.getInstance().setScreen(new SettlerCardScreen(this));
 	    
 	    printEntityInfo(player, hand);
 	    return super.interactAt(player, hitPos, hand);
@@ -183,6 +206,16 @@ public class SettlerEntity extends PathAwareEntity
 	        this.getDataTracker().set(SETTLER_GENDER, nbt.getString("Gender"));
 	    if (nbt.contains("SettlerTexture"))
 	        this.getDataTracker().set(SETTLER_TEXTURE, nbt.getInt("SettlerTexture"));
+	    
+	    NbtList inventoryList = nbt.getList("Inventory", NbtElement.COMPOUND_TYPE);
+	    for (int i = 0; i < inventoryList.size(); i++)
+	    {
+	        NbtCompound itemTag = inventoryList.getCompound(i);
+	        int slot = itemTag.getInt("Slot");
+	        if (slot >= 0 && slot < inventory.size())
+	            inventory.setStack(slot, ItemStack.fromNbt(itemTag));
+	    }
+	    
 	    loadData(this.getWorld());
 	}
 
@@ -200,6 +233,20 @@ public class SettlerEntity extends PathAwareEntity
 	    nbt.putInt("Hunger", this.getDataTracker().get(SETTLER_HUNGER));
 	    nbt.putString("Gender", getSettlerGender());
 	    nbt.putInt("SettlerTexture", this.getDataTracker().get(SETTLER_TEXTURE));
+	    
+	    NbtList inventoryList = new NbtList();
+	    for (int i = 0; i < inventory.size(); i++)
+	    {
+	        ItemStack stack = inventory.getStack(i);
+	        if (!stack.isEmpty())
+	        {
+	            NbtCompound itemTag = new NbtCompound();
+	            itemTag.putInt("Slot", i);
+	            stack.writeNbt(itemTag);
+	            inventoryList.add(itemTag);
+	        }
+	    }
+	    nbt.put("Inventory", inventoryList);
 	}
 
 	public static void saveData(SettlerEntity settler, World world)
@@ -363,7 +410,6 @@ public class SettlerEntity extends PathAwareEntity
 	    return Expertise.values()[pick];
 	}
 	
-	@SuppressWarnings("resource")
 	private void printEntityInfo(PlayerEntity player, Hand hand)
 	{
 		if (!this.getWorld().isClient && player.getStackInHand(hand).isEmpty() && hand.equals(Hand.MAIN_HAND)) 
@@ -378,6 +424,7 @@ public class SettlerEntity extends PathAwareEntity
 	        System.out.println("Hunger: " + this.getSettlerHunger());
 	        System.out.println("Gender: " + this.getSettlerGender());
 	        System.out.println("Texture: " + this.getSettlerTexture());
+	        System.out.println("Inventory: " + this.getInventory());
 	        System.out.println("------------");
 	    }
 	}
@@ -392,11 +439,25 @@ public class SettlerEntity extends PathAwareEntity
 	}
 	
 	@Override
-    public boolean canImmediatelyDespawn(double distanceSquared) {
-        return false;
+	public void onDeath(DamageSource source)
+	{
+	    super.onDeath(source);
+	    this.dropInventory();
+	}
+	
+	@Override
+    public void dropInventory()
+	{
+        super.dropInventory();
+        for (int i = 0; i < inventory.size(); i++)
+        {
+            ItemStack stack = inventory.getStack(i);
+            if (!stack.isEmpty())
+                this.dropStack(stack);
+        }
     }
 	
-	@Override @SuppressWarnings("resource")
+	@Override
 	public void remove(RemovalReason reason)
 	{
 		if (!this.getWorld().isClient)
@@ -409,6 +470,79 @@ public class SettlerEntity extends PathAwareEntity
 		super.remove(reason);
 	}
 
+	public void syncInventory()
+	{
+	    PacketByteBuf buf = PacketByteBufs.create();
+	    buf.writeInt(this.getId());
+	    buf.writeInt(inventory.size());
+	    for (int i = 0; i < inventory.size(); i++)
+	        buf.writeItemStack(inventory.getStack(i));
+	    // send packet to all players tracking this entity
+	    for (ServerPlayerEntity player : PlayerLookup.tracking(this))
+	        ServerPlayNetworking.send(player, FrontierPackets.SYNC_SETTLER_INVENTORY_ID, buf);
+	}
+
+	public void setClientInventory(DefaultedList<ItemStack> inventory)
+	{
+	    this.inventory.clear();
+	    for (int i = 0; i < inventory.size(); i++)
+	        this.inventory.setStack(i, inventory.get(i));
+	}
+	
+	public SimpleInventory getInventory() {
+		return inventory;
+	}
+	
+	@Override
+    public int size() {
+        return inventory.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return inventory.isEmpty();
+    }
+
+    @Override
+    public ItemStack getStack(int slot) {
+        return inventory.getStack(slot);
+    }
+
+    @Override
+    public ItemStack removeStack(int slot, int amount) {
+        return inventory.removeStack(slot, amount);
+    }
+
+    @Override
+    public ItemStack removeStack(int slot) {
+        return inventory.removeStack(slot);
+    }
+
+    @Override
+    public void setStack(int slot, ItemStack stack) {
+        inventory.setStack(slot, stack);
+    }
+
+    @Override
+    public void markDirty() {
+        inventory.markDirty();
+    }
+
+    @Override
+    public boolean canPlayerUse(PlayerEntity player) {
+        return true;
+    }
+
+    @Override
+    public void clear() {
+        inventory.clear();
+    }
+	
+    @Override
+    public boolean canImmediatelyDespawn(double distanceSquared) {
+        return false;
+    }
+    
 	@Override
 	public Text getName() {
 	    if (this.hasCustomName())

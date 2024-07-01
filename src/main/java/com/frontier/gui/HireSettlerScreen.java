@@ -1,9 +1,12 @@
 package com.frontier.gui;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.frontier.PlayerData;
 import com.frontier.entities.SettlerEntity;
+import com.frontier.gui.util.TextureElement;
 import com.frontier.network.FrontierPackets;
 
 import io.netty.buffer.Unpooled;
@@ -19,7 +22,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-public class HireArchitectScreen extends Screen
+public class HireSettlerScreen extends Screen
 {
 	public static final int UI_OFFSET_X = 0;
     public static final int UI_OFFSET_Y = 0;
@@ -30,21 +33,52 @@ public class HireArchitectScreen extends Screen
     
     private int backgroundPosX;
     private int backgroundPosY;
+    
+    List<TextureElement> textures = new ArrayList<>();
 	
+    private static Identifier expertiseTexture;
+    private String expertise;
+    
     private Text titleText;
     private Text tip1Text;
     private Text tip2Text;
     private Text tip3Text;
     private Text tip4Text;
     
-    private ButtonWidget recruitButton;
+    private ButtonWidget hireButton;
     
     private SettlerEntity settler;
     
-    public HireArchitectScreen(SettlerEntity settler)
+    public HireSettlerScreen(SettlerEntity settler)
     {
-        super(Text.literal("Hire an Architect Screen"));
+        super(Text.literal("Hire a Settler Screen"));
         this.settler = settler;
+        this.expertise = settler.getSettlerExpertise();
+        
+        switch (expertise)
+        {
+        	case "CORE":
+        		expertiseTexture = new Identifier("minecraft", "textures/item/writable_book.png");
+        		break;
+        	case "GATHERING":
+        		expertiseTexture = new Identifier("minecraft", "textures/item/bundle_filled.png");
+        		break;
+        	case "TRADING":
+        		expertiseTexture = new Identifier("minecraft", "textures/item/raw_gold.png");
+        		break;
+        	case "CRAFTING":
+        		expertiseTexture = new Identifier("minecraft", "textures/item/cauldron.png");
+        		break;
+        	case "RANCHING":
+        		expertiseTexture = new Identifier("minecraft", "textures/item/egg.png");
+        		break;
+        	case "FIGHTING":
+        		expertiseTexture = new Identifier("minecraft", "textures/item/chainmail_helmet.png");
+        		break;
+        	default:
+        		System.err.println("No settler expertise found!");
+        		break;
+        }
     }
     
     @Override
@@ -53,13 +87,14 @@ public class HireArchitectScreen extends Screen
     	backgroundPosX = ((this.width - BACKGROUND_WIDTH) / 2) + UI_OFFSET_X;
         backgroundPosY = ((this.height - BACKGROUND_HEIGHT) / 2) + UI_OFFSET_Y;
         
+        textures.add(new TextureElement(expertiseTexture, (backgroundPosX + 160), (backgroundPosY + 8), 12, 12, "Expertise in " + expertise));
         titleText = ((MutableText) Text.literal("Recruit Architect to Begin")).formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
         tip1Text = ((MutableText) Text.literal("* Can have two architects per settlement"));
         tip2Text = ((MutableText) Text.literal("* Townhall is the architect's home"));
         tip3Text = ((MutableText) Text.literal("* Right-click settlers for options"));
         tip4Text = ((MutableText) Text.literal("* Rename settlers with nametags"));
 
-        this.recruitButton = ButtonWidget.builder(Text.literal("Recruit"), button ->
+        this.hireButton = ButtonWidget.builder(Text.literal("Recruit"), button ->
         {
         	PlayerEntity player = MinecraftClient.getInstance().player;
         	PlayerData playerData = PlayerData.map.get(player.getUuid());
@@ -75,8 +110,8 @@ public class HireArchitectScreen extends Screen
                 MinecraftClient.getInstance().setScreen(null);
         	}
         }).dimensions(backgroundPosX + 173, backgroundPosY + 91, 60, 20).build();
-        //recruitButton.active = false;
-        addDrawableChild(recruitButton);
+        //hireButton.active = false;
+        addDrawableChild(hireButton);
     }
     
     @Override
@@ -92,7 +127,20 @@ public class HireArchitectScreen extends Screen
         context.drawText(this.textRenderer, tip3Text, (backgroundPosX + 10), (backgroundPosY + 65), new Color(100, 100, 100).getRGB(), false);
         context.drawText(this.textRenderer, tip4Text, (backgroundPosX + 10), (backgroundPosY + 80), new Color(100, 100, 100).getRGB(), false);
         
+        for (TextureElement element : textures)
+    	{
+            element.draw(context);
+            if (element.isMouseOver(mouseX, mouseY))
+                renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+        }
+        
         super.render(context, mouseX, mouseY, delta);
+    }
+    
+    private void renderTooltip(DrawContext context, String text, int mouseX, int mouseY) 
+    {
+    	if (text != null)
+    		context.drawTooltip(textRenderer, Text.literal(text), mouseX, mouseY);
     }
     
     @Override

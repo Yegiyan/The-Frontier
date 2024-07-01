@@ -25,6 +25,8 @@ public class HireSettler
 	    architect.setSettlerProfession(profession);
 	    architect.setSettlerFaction(faction);
 	    architect.setSettlerExpertise(expertise);
+	    
+	    // TODO: Set skill level depending on expertise and chosen profession
 
 	    // choose random texture depending on gender
 	    int textureIdx;

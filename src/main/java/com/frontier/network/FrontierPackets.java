@@ -7,8 +7,11 @@ import com.frontier.entities.SettlerEntity;
 import com.frontier.settlements.SettlementManager;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.Entity.RemovalReason;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -16,6 +19,8 @@ public class FrontierPackets
 {
 	public static final Identifier CREATE_SETTLEMENT_ID = new Identifier(Frontier.MOD_ID, "create_settlement");
 	public static final Identifier ABANDON_SETTLEMENT_ID = new Identifier(Frontier.MOD_ID, "abandon_settlement");
+	
+	public static final Identifier SYNC_SETTLER_INVENTORY_ID = new Identifier(Frontier.MOD_ID, "sync_settler_inventory");
 	
 	public static final Identifier HIRE_ARCHITECT_ID = new Identifier(Frontier.MOD_ID, "hire_architect");
 	
@@ -36,6 +41,20 @@ public class FrontierPackets
 	        server.execute(() ->
 	        {
 	        	SettlementManager.abandon(player.getUuid(), factionName, server);
+	        });
+	    });
+		
+		ServerPlayNetworking.registerGlobalReceiver(SYNC_SETTLER_INVENTORY_ID, (server, player, handler, buf, responseSender) ->
+		{
+	        int entityId = buf.readInt();
+	        DefaultedList<ItemStack> inventory = DefaultedList.ofSize(buf.readInt(), ItemStack.EMPTY);
+	        for (int i = 0; i < inventory.size(); i++)
+	            inventory.set(i, buf.readItemStack());
+	        server.execute(() ->
+	        {
+	            Entity entity = player.getWorld().getEntityById(entityId);
+	            if (entity instanceof SettlerEntity)
+	                ((SettlerEntity) entity).setClientInventory(inventory);
 	        });
 	    });
 		

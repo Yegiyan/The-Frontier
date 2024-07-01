@@ -72,6 +72,7 @@ public class Frontier implements ModInitializer
 	}
 	
 	// create settler ui
+	
 	// create building ui
 	// show dimensions of structure to player when they try to manually place structure location
 	// test warehouse construction/upgrading/repairing with architect

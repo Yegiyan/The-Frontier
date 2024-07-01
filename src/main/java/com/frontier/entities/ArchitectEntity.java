@@ -1,10 +1,15 @@
 package com.frontier.entities;
 
+import java.util.List;
+
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -33,6 +38,7 @@ public class ArchitectEntity extends SettlerEntity
 	public ArchitectEntity(EntityType<? extends PathAwareEntity> entityType, World world) 
 	{
 	    super(entityType, world);
+	    getInventory().setStack(0, new ItemStack(Items.WOODEN_SHOVEL)); // put comma for # of items
 	}
 	
 	@Override
@@ -46,6 +52,14 @@ public class ArchitectEntity extends SettlerEntity
 	{
 		entityData = super.initialize(world, difficulty, spawnReason, entityData, entityNbt);
 	    return entityData;
+	}
+	
+	@Override
+	public void mobTick() 
+	{
+	    super.mobTick();
+	    if (!this.getWorld().isClient)
+            pickUpNearbyItems();
 	}
 	
 	@Override
@@ -65,4 +79,24 @@ public class ArchitectEntity extends SettlerEntity
 	{
 	    super.writeCustomDataToNbt(nbt);
 	}
+	
+	private void pickUpNearbyItems()
+	{
+        List<ItemEntity> items = this.getWorld().getEntitiesByClass(ItemEntity.class, this.getBoundingBox().expand(2.0D, 1.0D, 2.0D), itemEntity -> !itemEntity.cannotPickup());
+        for (ItemEntity itemEntity : items)
+        {
+            ItemStack itemStack = itemEntity.getStack();
+            ItemStack remainder = this.getInventory().addStack(itemStack);
+
+            if (remainder.isEmpty())
+                itemEntity.discard();
+            else
+                itemEntity.setStack(remainder);
+            
+            if (!getWorld().isClient)
+            	syncInventory();
+            
+            markDirty();
+        }
+    }
 }

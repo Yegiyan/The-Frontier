@@ -1,5 +1,6 @@
 package com.frontier.entities;
 
+import com.frontier.PlayerData;
 import com.frontier.goals.SelfDefenseGoal;
 import com.frontier.goals.nomad.MoveTowardsBellGoal;
 import com.frontier.goals.nomad.MoveTowardsDespawnGoal;
@@ -63,12 +64,13 @@ public class NomadEntity extends SettlerEntity
 	    this.goalSelector.add(3, new SelfDefenseGoal(this));
 	}
 	
-	@Override @SuppressWarnings("resource")
+	@Override
 	public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) 
 	{
+		PlayerData playerData = PlayerData.map.get(player.getUuid());
 		ItemStack itemStack = player.getStackInHand(hand);
 		
-		if (player.getWorld().isClient && itemStack.getItem() == Items.CLOCK)
+		if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && itemStack.getItem() == Items.CLOCK) // maybe check that we're within the settlement borders too
 	    	MinecraftClient.getInstance().setScreen(new HireArchitectScreen(this));
 		
 	    return super.interactAt(player, hitPos, hand);

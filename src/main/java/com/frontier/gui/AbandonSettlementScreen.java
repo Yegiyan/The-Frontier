@@ -21,11 +21,12 @@ import net.minecraft.util.Identifier;
 
 public class AbandonSettlementScreen extends Screen 
 {
+	public static final int UI_OFFSET_X = 0;
+    public static final int UI_OFFSET_Y = 0;
+    
 	private static final Identifier BACKGROUND_TEXTURE = new Identifier("minecraft", "textures/gui/demo_background.png");
 	public static final int BACKGROUND_WIDTH = 248;
     public static final int BACKGROUND_HEIGHT = 180;
-    public static final int BACKGROUND_OFFSET_X = 0;
-    public static final int BACKGROUND_OFFSET_Y = 0;
     
     private int backgroundPosX;
     private int backgroundPosY;
@@ -44,11 +45,11 @@ public class AbandonSettlementScreen extends Screen
     }
     
     
-	@Override @SuppressWarnings("resource")
+	@Override
     protected void init() 
     {
-    	backgroundPosX = (this.width - BACKGROUND_WIDTH) / 2;
-        backgroundPosY = (this.height - BACKGROUND_HEIGHT) / 2;
+		backgroundPosX = ((this.width - BACKGROUND_WIDTH) / 2) + UI_OFFSET_X;
+        backgroundPosY = ((this.height - BACKGROUND_HEIGHT) / 2) + UI_OFFSET_Y;
         
         titleText = ((MutableText) Text.literal("Abandon Settlement")).formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
         tip1Text = ((MutableText) Text.literal("* Settlers will elect someone if you don't"));
