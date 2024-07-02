@@ -3,6 +3,7 @@ package com.frontier.gui;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.frontier.PlayerData;
 import com.frontier.gui.util.TextureElement;
@@ -15,6 +16,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
@@ -85,11 +87,15 @@ public class PlayerCardScreen extends Screen
         if (player != null && playerData != null)
         {
             this.portrait = MinecraftClient.getInstance().getSkinProvider().getTextures(player.getGameProfile()).get(MinecraftProfileTexture.Type.SKIN);
+            Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> textures = MinecraftClient.getInstance().getSkinProvider().getTextures(player.getGameProfile());
             
-            if (portrait != null)
-                skinTexture = new Identifier(portrait.getUrl());
-            else 
-                skinTexture = new Identifier("minecraft", "textures/entity/player/wide/steve.png");
+            if (textures.containsKey(MinecraftProfileTexture.Type.SKIN))
+            {
+                MinecraftProfileTexture texture = textures.get(MinecraftProfileTexture.Type.SKIN);
+                skinTexture = MinecraftClient.getInstance().getSkinProvider().loadSkin(texture, MinecraftProfileTexture.Type.SKIN);
+            }
+            else
+                skinTexture = DefaultSkinHelper.getTexture(player.getUuid());
             
             if (player.getWorld().getRegistryKey().equals(World.OVERWORLD))
             	regionText = ((MutableText) Text.literal(RegionManager.getPlayerRegion(player.getBlockPos())));
@@ -165,7 +171,9 @@ public class PlayerCardScreen extends Screen
         	cardButton.active = false;
         	bountyButton.active = true;
         	
-        	context.drawTexture(skinTexture, (backgroundPosX + 13), (backgroundPosY + 15), 8, 8, 8, 8, 64, 64);
+        	if (skinTexture != null)
+                context.drawTexture(skinTexture, (backgroundPosX + 13), (backgroundPosY + 15), 8, 8, 8, 8, 64, 64);
+        	
         	for (TextureElement element : textures) 
         	{
                 element.draw(context);
@@ -186,12 +194,6 @@ public class PlayerCardScreen extends Screen
         
         super.render(context, mouseX, mouseY, delta);
     }
-
-    @Override
-    public boolean shouldPause() 
-    {
-    	return false;
-    }
     
     private void renderTooltip(DrawContext context, String text, int mouseX, int mouseY) 
     {
@@ -205,5 +207,11 @@ public class PlayerCardScreen extends Screen
         int textWidth = textRenderer.getWidth(text);
         int x = rightEdgeX - textWidth;
         context.drawText(textRenderer, text, x, y, color, shadow);
+    }
+    
+    @Override
+    public boolean shouldPause() 
+    {
+    	return false;
     }
 }

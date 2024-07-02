@@ -68,18 +68,6 @@ public class ArchitectEntity extends SettlerEntity
 	    return super.interactAt(player, hitPos, hand);
 	}
 	
-	@Override
-	public void readCustomDataFromNbt(NbtCompound nbt) 
-	{
-	    super.readCustomDataFromNbt(nbt);
-	}
-
-	@Override
-	public void writeCustomDataToNbt(NbtCompound nbt) 
-	{
-	    super.writeCustomDataToNbt(nbt);
-	}
-	
 	private void pickUpNearbyItems()
 	{
         List<ItemEntity> items = this.getWorld().getEntitiesByClass(ItemEntity.class, this.getBoundingBox().expand(2.0D, 1.0D, 2.0D), itemEntity -> !itemEntity.cannotPickup());
@@ -98,5 +86,22 @@ public class ArchitectEntity extends SettlerEntity
             
             markDirty();
         }
+    }
+	
+	@Override
+	public void readCustomDataFromNbt(NbtCompound nbt) 
+	{
+	    super.readCustomDataFromNbt(nbt);
+	}
+
+	@Override
+	public void writeCustomDataToNbt(NbtCompound nbt) 
+	{
+	    super.writeCustomDataToNbt(nbt);
+	}
+	
+	@Override
+    public Identifier[] getTextures(boolean isMale) {
+        return isMale ? ARCHITECT_TEXTURES_MALE : ARCHITECT_TEXTURES_FEMALE;
     }
 }

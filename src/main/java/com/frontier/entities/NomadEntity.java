@@ -103,6 +103,11 @@ public class NomadEntity extends SettlerEntity
 	    if (this.getBellPosition() != null)
 	        nbt.put("BellPos", NbtHelper.fromBlockPos(this.getBellPosition()));
 	}
+	
+	@Override
+    public Identifier[] getTextures(boolean isMale) {
+        return isMale ? NOMAD_TEXTURES_MALE : NOMAD_TEXTURES_FEMALE;
+    }
 
 	public BlockPos getBellPosition() {
 	    return this.dataTracker.get(BELL_POSITION);

@@ -40,6 +40,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
@@ -49,7 +50,7 @@ import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.World;
 
-public class SettlerEntity extends PathAwareEntity implements Inventory
+public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 {	
 	private static final TrackedData<String> SETTLER_NAME = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.STRING);
 	private static final TrackedData<String> SETTLER_FACTION = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.STRING);
@@ -108,6 +109,8 @@ public class SettlerEntity extends PathAwareEntity implements Inventory
 		    "Xenobia", "Yasmine", "Zuleika", "Amabel", "Beatrix", "Celestine", "Dove", "Emmeline", "Fleur", 
 		    "Georgiana", "Hildegard", "Isolde", "Jocasta", "Kismet", "Leticia", "Morgana", "Nephele", "Oriole", 
 		    "Perdita", "Rafaela", "Salome", "Tempest", "Lily", "Veronica", "Winola", "Xandria", "Ysabel", "Zelda");
+	
+	public abstract Identifier[] getTextures(boolean isMale);
 	
 	public SettlerEntity(EntityType<? extends PathAwareEntity> entityType, World world)
     {
