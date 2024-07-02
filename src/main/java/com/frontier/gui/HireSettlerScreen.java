@@ -87,7 +87,7 @@ public class HireSettlerScreen extends Screen
     	backgroundPosX = ((this.width - BACKGROUND_WIDTH) / 2) + UI_OFFSET_X;
         backgroundPosY = ((this.height - BACKGROUND_HEIGHT) / 2) + UI_OFFSET_Y;
         
-        textures.add(new TextureElement(expertiseTexture, (backgroundPosX + 160), (backgroundPosY + 8), 12, 12, "Expertise in " + expertise));
+        textures.add(new TextureElement(expertiseTexture, (backgroundPosX + 160), (backgroundPosY + 8), 12, 12, "Expertise in " + expertise, 1.0f));
         titleText = ((MutableText) Text.literal("Recruit Architect to Begin")).formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
         tip1Text = ((MutableText) Text.literal("* Can have two architects per settlement"));
         tip2Text = ((MutableText) Text.literal("* Townhall is the architect's home"));

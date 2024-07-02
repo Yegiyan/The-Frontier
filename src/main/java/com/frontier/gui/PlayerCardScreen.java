@@ -76,11 +76,11 @@ public class PlayerCardScreen extends Screen
     	backgroundPosX = ((this.width - BACKGROUND_WIDTH) / 2) + UI_OFFSET_X;
         backgroundPosY = ((this.height - BACKGROUND_HEIGHT) / 2) + UI_OFFSET_Y;
 
-        textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, (backgroundPosY + 35), 10, 10, "Current Region (" + RegionManager.getPlayerDirection(player.getBlockPos()) + ")" + RegionManager.getRegionWild(player.getBlockPos())));
-        textures.add(new TextureElement(TERRITORY_TEXTURE, (backgroundPosX + 12), (backgroundPosY + 55), 12, 12, "Current Territory"));
-        textures.add(new TextureElement(PROFESSION_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 14), 12, 12, "Profession"));
-        textures.add(new TextureElement(FACTION_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 35), 12, 12, "Faction"));
-        textures.add(new TextureElement(RENOWN_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 55), 12, 12, "Renown"));
+        textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, (backgroundPosY + 35), 10, 10, "Current Region (" + RegionManager.getPlayerDirection(player.getBlockPos()) + ")" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f));
+        textures.add(new TextureElement(TERRITORY_TEXTURE, (backgroundPosX + 12), (backgroundPosY + 55), 12, 12, "Current Territory", 1.0f));
+        textures.add(new TextureElement(PROFESSION_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 14), 12, 12, "Profession", 1.0f));
+        textures.add(new TextureElement(FACTION_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 35), 12, 12, "Faction", 1.0f));
+        textures.add(new TextureElement(RENOWN_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 55), 12, 12, "Renown", 1.0f));
         
         if (player != null && playerData != null)
         {

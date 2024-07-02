@@ -118,9 +118,9 @@ public class SettlerEntity extends PathAwareEntity implements Inventory
         this.dataTracker.startTracking(SETTLER_FACTION, "");
         this.dataTracker.startTracking(SETTLER_PROFESSION, "");
         this.dataTracker.startTracking(SETTLER_EXPERTISE, "");
-        this.dataTracker.startTracking(SETTLER_MORALE, 50);
-        this.dataTracker.startTracking(SETTLER_SKILL, 0);
         this.dataTracker.startTracking(SETTLER_HUNGER, 100);
+        this.dataTracker.startTracking(SETTLER_MORALE, 50);
+        this.dataTracker.startTracking(SETTLER_SKILL, 25);
         this.dataTracker.startTracking(SETTLER_GENDER, "");
         this.dataTracker.startTracking(SETTLER_TEXTURE, 0);
     }
