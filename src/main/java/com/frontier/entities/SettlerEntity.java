@@ -122,8 +122,8 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
         this.dataTracker.startTracking(SETTLER_PROFESSION, "");
         this.dataTracker.startTracking(SETTLER_EXPERTISE, "");
         this.dataTracker.startTracking(SETTLER_HUNGER, 100);
-        this.dataTracker.startTracking(SETTLER_MORALE, 50);
-        this.dataTracker.startTracking(SETTLER_SKILL, 25);
+        this.dataTracker.startTracking(SETTLER_MORALE, 0);
+        this.dataTracker.startTracking(SETTLER_SKILL, 0);
         this.dataTracker.startTracking(SETTLER_GENDER, "");
         this.dataTracker.startTracking(SETTLER_TEXTURE, 0);
     }
@@ -157,7 +157,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    if (player.getWorld().isClient && hand.equals(Hand.MAIN_HAND) && !this.getSettlerProfession().equals("Nomad"))
 	    	MinecraftClient.getInstance().setScreen(new SettlerCardScreen(this));
 	    
-	    printEntityInfo(player, hand);
+	    //printEntityInfo(player, hand);
 	    return super.interactAt(player, hitPos, hand);
 	}
 	
@@ -413,6 +413,24 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    return Expertise.values()[pick];
 	}
 	
+	public static int chooseRandomValue(int min, int max, boolean weightTheRoll)
+	{
+        if (min > max)
+            throw new IllegalArgumentException("generateValue() - Max must be greater than min!");
+        
+        Random random = new Random();
+
+        if (weightTheRoll)
+        {
+            double range = max - min + 1;
+            double scaled = Math.log(random.nextDouble() * (Math.E - 1) + 1) / Math.log(Math.E) * range;
+            return min + (int) scaled;
+        }
+        else
+            return min + random.nextInt((max - min) + 1);
+    }
+	
+	@SuppressWarnings("unused")
 	private void printEntityInfo(PlayerEntity player, Hand hand)
 	{
 		if (!this.getWorld().isClient && player.getStackInHand(hand).isEmpty() && hand.equals(Hand.MAIN_HAND)) 

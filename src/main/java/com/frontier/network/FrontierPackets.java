@@ -64,6 +64,8 @@ public class FrontierPackets
 	        String settlerName = buf.readString(32767);
 	        String settlerGender = buf.readString(32767);
 	        String settlerExpertise = buf.readString(32767);
+	        int settlerMorale = buf.readInt();
+	        int settlerSkill = buf.readInt();
 	        BlockPos settlerPos = buf.readBlockPos();
 	        World world = player.getServerWorld();
 	        
@@ -76,7 +78,7 @@ public class FrontierPackets
 	                
 	                ArchitectEntity architect = Frontier.ARCHITECT_ENTITY.create(world);
 		            architect.refreshPositionAndAngles(settlerPos, 0, 0);
-		            HireSettler.architect((ArchitectEntity) architect, settlerName, settlerFaction, "Architect", settlerExpertise, settlerGender, world);
+		            HireSettler.architect((ArchitectEntity) architect, settlerName, settlerFaction, "Architect", settlerExpertise, settlerMorale, settlerSkill, settlerGender, world);
 	        	}
 	        	else
 	                System.err.println("Nomad entity not found!");

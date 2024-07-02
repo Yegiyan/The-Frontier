@@ -71,7 +71,7 @@ public class Frontier implements ModInitializer
 		FabricDefaultAttributeRegistry.register(ARCHITECT_ENTITY, SettlerEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1));
 	}
 	
-	// create settler ui
+	// create settler hiring ui
 	
 	// create building ui
 	// show dimensions of structure to player when they try to manually place structure location

@@ -22,7 +22,7 @@ import net.minecraft.util.Identifier;
 public class SettlerCardScreen extends Screen
 {
     public static final int UI_OFFSET_X = 0;
-    public static final int UI_OFFSET_Y = 20;
+    public static final int UI_OFFSET_Y = 40;
 
     private static final Identifier BACKGROUND_TEXTURE = new Identifier("minecraft", "textures/gui/demo_background.png");
     public static final int BACKGROUND_WIDTH = 256;
@@ -87,10 +87,10 @@ public class SettlerCardScreen extends Screen
         textures.add(new TextureElement(PROFESSION_TEXTURE, (backgroundPosX + 216), (backgroundPosY + 20), 12, 12, "Profession", 1.0f));
         textures.add(new TextureElement(NOTIFICATION_TEXTURE, (backgroundPosX + 197), (backgroundPosY + 114), 12, 12, notificationText, 2.0f));
         
-        barTextures.add(new TextureElement(HEALTH_TEXTURE, (backgroundPosX + 12), (backgroundPosY + 48), 9, 9, 53, 0, 256, 256, "Health", 1.0f));
-        barTextures.add(new TextureElement(HUNGER_TEXTURE, (backgroundPosX + 12), (backgroundPosY + 59), 9, 8, 53, 28, 256, 256, "Hunger", 1.0f));
-        barTextures.add(new TextureElement(MORALE_TEXTURE, (backgroundPosX + 12), (backgroundPosY + 68), 9, 9, 161, 0, 256, 256, "Morale", 1.0f));
-        barTextures.add(new TextureElement(SKILL_TEXTURE, (backgroundPosX + 12), (backgroundPosY + 78), 9, 9, 89, 0, 256, 256, "Skill", 1.0f));
+        barTextures.add(new TextureElement(HEALTH_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 48), 9, 9, 53, 0, 256, 256, "Health", 1.0f));
+        barTextures.add(new TextureElement(HUNGER_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 59), 9, 8, 53, 28, 256, 256, "Hunger", 1.0f));
+        barTextures.add(new TextureElement(MORALE_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 68), 9, 9, 161, 0, 256, 256, "Morale", 1.0f));
+        barTextures.add(new TextureElement(SKILL_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 78), 9, 9, 89, 0, 256, 256, "Skill", 1.0f));
 
         boolean isMale = settler.getSettlerGender().equals("Male");
         Identifier[] textures = settler.getTextures(isMale);
@@ -162,17 +162,17 @@ public class SettlerCardScreen extends Screen
             context.drawText(this.textRenderer, nameText, (backgroundPosX + 35), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);
             drawTextR(context, this.textRenderer, professionText, (backgroundPosX + 207), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);
 
-            context.drawText(this.textRenderer, healthText, (backgroundPosX + 216), (backgroundPosY + 49), new Color(65, 65, 65).getRGB(), false);
-            context.drawText(this.textRenderer, hungerText, (backgroundPosX + 216), (backgroundPosY + 59), new Color(65, 65, 65).getRGB(), false);
-            context.drawText(this.textRenderer, moraleText, (backgroundPosX + 216), (backgroundPosY + 69), new Color(65, 65, 65).getRGB(), false);
-            context.drawText(this.textRenderer, skillText, (backgroundPosX + 216), (backgroundPosY + 79), new Color(65, 65, 65).getRGB(), false);
+            context.drawText(this.textRenderer, healthText, (backgroundPosX + 218), (backgroundPosY + 49), new Color(65, 65, 65).getRGB(), false);
+            context.drawText(this.textRenderer, hungerText, (backgroundPosX + 218), (backgroundPosY + 59), new Color(65, 65, 65).getRGB(), false);
+            context.drawText(this.textRenderer, moraleText, (backgroundPosX + 218), (backgroundPosY + 69), new Color(65, 65, 65).getRGB(), false);
+            context.drawText(this.textRenderer, skillText, (backgroundPosX + 218), (backgroundPosY + 79), new Color(65, 65, 65).getRGB(), false);
             
             context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 93), 0, 0, 225, 2, 32, 2);
             
-            drawBar(context, backgroundPosX + 27, backgroundPosY + 50, settler.getHealth() / 20.0f, 4);
-            drawBar(context, backgroundPosX + 27, backgroundPosY + 60, settler.getSettlerHunger() / 100.0f, 12);
-            drawBar(context, backgroundPosX + 27, backgroundPosY + 70, settler.getSettlerMorale() / 100.0f, 8);
-            drawBar(context, backgroundPosX + 27, backgroundPosY + 80, settler.getSettlerSkill() / 100.0f, 6);
+            drawBar(context, backgroundPosX + 29, backgroundPosY + 50, settler.getHealth() / 20.0f, 4);
+            drawBar(context, backgroundPosX + 29, backgroundPosY + 60, settler.getSettlerHunger() / 100.0f, 12);
+            drawBar(context, backgroundPosX + 29, backgroundPosY + 70, settler.getSettlerMorale() / 100.0f, 8);
+            drawBar(context, backgroundPosX + 29, backgroundPosY + 80, settler.getSettlerSkill() / 100.0f, 6);
         }
 
         super.render(context, mouseX, mouseY, delta);

@@ -11,7 +11,7 @@ import net.minecraft.world.World;
 
 public class HireSettler
 {	
-	public static void architect(ArchitectEntity architect, String name, String faction, String profession, String expertise, String gender, World world)
+	public static void architect(ArchitectEntity architect, String name, String faction, String profession, String expertise, int morale, int skill, String gender, World world)
 	{
 		LocalDifficulty difficulty = world.getLocalDifficulty(architect.getBlockPos());
 	    SpawnReason spawnReason = SpawnReason.NATURAL;
@@ -25,8 +25,10 @@ public class HireSettler
 	    architect.setSettlerProfession(profession);
 	    architect.setSettlerFaction(faction);
 	    architect.setSettlerExpertise(expertise);
+	    architect.setSettlerMorale(morale);
 	    
 	    // TODO: Set skill level depending on expertise and chosen profession
+	    architect.setSettlerSkill(skill);  
 
 	    // choose random texture depending on gender
 	    int textureIdx;

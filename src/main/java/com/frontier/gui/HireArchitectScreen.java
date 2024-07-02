@@ -70,6 +70,8 @@ public class HireArchitectScreen extends Screen
             	passedData.writeString(settler.getSettlerName());
             	passedData.writeString(settler.getSettlerGender());
             	passedData.writeString(settler.getSettlerExpertise());
+            	passedData.writeInt(settler.getSettlerMorale());
+            	passedData.writeInt(settler.getSettlerSkill());
             	passedData.writeBlockPos(settler.getBlockPos());
         	    ClientPlayNetworking.send(FrontierPackets.HIRE_ARCHITECT_ID, passedData);
                 MinecraftClient.getInstance().setScreen(null);
