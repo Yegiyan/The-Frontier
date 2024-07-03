@@ -87,7 +87,7 @@ public class SettlerCardScreen extends Screen
         textures.add(new TextureElement(PROFESSION_TEXTURE, (backgroundPosX + 216), (backgroundPosY + 20), 12, 12, "Profession", 1.0f));
         textures.add(new TextureElement(NOTIFICATION_TEXTURE, (backgroundPosX + 197), (backgroundPosY + 114), 12, 12, notificationText, 2.0f));
         
-        barTextures.add(new TextureElement(HEALTH_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 48), 9, 9, 53, 0, 256, 256, "Health", 1.0f));
+        barTextures.add(new TextureElement(HEALTH_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 48), 9, 9, 53, 0, 256, 256, "Health (" + settler.getHealth() + " / 20)", 1.0f));
         barTextures.add(new TextureElement(HUNGER_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 59), 9, 8, 53, 28, 256, 256, "Hunger", 1.0f));
         barTextures.add(new TextureElement(MORALE_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 68), 9, 9, 161, 0, 256, 256, "Morale", 1.0f));
         barTextures.add(new TextureElement(SKILL_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 78), 9, 9, 89, 0, 256, 256, "Skill", 1.0f));

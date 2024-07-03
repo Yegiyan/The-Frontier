@@ -4,7 +4,8 @@ import com.frontier.PlayerData;
 import com.frontier.goals.SelfDefenseGoal;
 import com.frontier.goals.nomad.MoveTowardsBellGoal;
 import com.frontier.goals.nomad.MoveTowardsDespawnGoal;
-import com.frontier.gui.HireArchitectScreen;
+import com.frontier.gui.HireSettlerScreen;
+import com.frontier.settlements.SettlementManager;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityData;
@@ -70,8 +71,8 @@ public class NomadEntity extends SettlerEntity
 		PlayerData playerData = PlayerData.map.get(player.getUuid());
 		ItemStack itemStack = player.getStackInHand(hand);
 		
-		if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && itemStack.getItem() == Items.CLOCK) // maybe check that we're within the settlement borders too
-	    	MinecraftClient.getInstance().setScreen(new HireArchitectScreen(this));
+		if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && itemStack.getItem() == Items.CLOCK && SettlementManager.getSettlement(playerData.getFaction()).isWithinTerritory(player.getBlockPos()))
+	    	MinecraftClient.getInstance().setScreen(new HireSettlerScreen(this));
 		
 	    return super.interactAt(player, hitPos, hand);
 	}
