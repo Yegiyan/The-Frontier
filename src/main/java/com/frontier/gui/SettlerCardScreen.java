@@ -43,11 +43,11 @@ public class SettlerCardScreen extends Screen
     private static final Identifier MORALE_TEXTURE = new Identifier("minecraft", "textures/gui/icons.png");
     private static final Identifier SKILL_TEXTURE = new Identifier("minecraft", "textures/gui/icons.png");
 
-    private int backgroundPosX;
-    private int backgroundPosY;
-
     List<TextureElement> textures = new ArrayList<>();
     List<TextureElement> barTextures = new ArrayList<>();
+    
+    private int backgroundPosX;
+    private int backgroundPosY;
 
     private ButtonWidget cardButton;
     private ButtonWidget taskButton;
@@ -157,7 +157,7 @@ public class SettlerCardScreen extends Screen
                     renderTooltip(context, element.getToolTip(), mouseX, mouseY);
             }
             
-            context.drawTexture(skinTexture, (backgroundPosX + 20), (backgroundPosY + 21), 8, 8, 8, 8, 64, 64);
+            context.drawTexture(skinTexture, (backgroundPosX + 20), (backgroundPosY + 22), 8, 8, 8, 8, 64, 64);
 
             context.drawText(this.textRenderer, nameText, (backgroundPosX + 35), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);
             drawTextR(context, this.textRenderer, professionText, (backgroundPosX + 207), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);

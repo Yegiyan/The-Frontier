@@ -65,7 +65,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	private SimpleInventory inventory;
 	private UUID uuid;
 	
-	public enum Expertise { CORE, GATHERING, TRADING, CRAFTING, RANCHING, FIGHTING }
+	public enum Expertise { GOVERNING, HARVESTING, CRAFTING, RANCHING, TRADING, MILITARY }
 	
 	public List<String> genders = Arrays.asList("Male", "Female");
 	

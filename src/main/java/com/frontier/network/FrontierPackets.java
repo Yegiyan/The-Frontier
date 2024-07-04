@@ -23,6 +23,7 @@ public class FrontierPackets
 	public static final Identifier SYNC_SETTLER_INVENTORY_ID = new Identifier(Frontier.MOD_ID, "sync_settler_inventory");
 	
 	public static final Identifier HIRE_ARCHITECT_ID = new Identifier(Frontier.MOD_ID, "hire_architect");
+	public static final Identifier HIRE_SETTLER_ID = new Identifier(Frontier.MOD_ID, "hire_settler");
 	
 	public static void apply()
 	{
@@ -55,6 +56,33 @@ public class FrontierPackets
 	            Entity entity = player.getWorld().getEntityById(entityId);
 	            if (entity instanceof SettlerEntity)
 	                ((SettlerEntity) entity).setClientInventory(inventory);
+	        });
+	    });
+		
+		ServerPlayNetworking.registerGlobalReceiver(HIRE_SETTLER_ID, (server, player, handler, buf, responseSender) ->
+	    {
+	        String settlerFaction = buf.readString(32767);
+	        String settlerName = buf.readString(32767);
+	        String settlerGender = buf.readString(32767);
+	        String settlerExpertise = buf.readString(32767);
+	        int settlerMorale = buf.readInt();
+	        int settlerSkill = buf.readInt();
+	        BlockPos settlerPos = buf.readBlockPos();
+	        World world = player.getServerWorld();
+	        
+	        server.execute(() ->
+	        {
+	        	SettlerEntity settler = SettlerEntity.findSettlerEntity(world, settlerPos, settlerName);
+	        	if (settler != null)
+	        	{
+	        		settler.remove(RemovalReason.DISCARDED);
+	                
+	                ArchitectEntity architect = Frontier.ARCHITECT_ENTITY.create(world);
+		            architect.refreshPositionAndAngles(settlerPos, 0, 0);
+		            HireSettler.architect((ArchitectEntity) architect, settlerName, settlerFaction, "Architect", settlerExpertise, settlerMorale, settlerSkill, settlerGender, world);
+	        	}
+	        	else
+	                System.err.println("Nomad entity not found!");
 	        });
 	    });
 		
