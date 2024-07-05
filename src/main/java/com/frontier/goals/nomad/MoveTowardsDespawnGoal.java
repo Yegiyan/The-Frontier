@@ -2,6 +2,7 @@ package com.frontier.goals.nomad;
 
 import java.util.Random;
 
+import com.frontier.Frontier;
 import com.frontier.entities.NomadEntity;
 import com.frontier.entities.SettlerEntity;
 
@@ -79,7 +80,7 @@ public class MoveTowardsDespawnGoal extends Goal
 
     private void teleportTowardsDespawn() 
     {
-        System.out.println("Nomad stuck at (" + (int)this.nomad.getPos().x + ", " + (int)this.nomad.getPos().y + ", " + (int)this.nomad.getPos().z + "), teleporting!");
+    	Frontier.LOGGER.info("Nomad stuck at (" + (int)this.nomad.getPos().x + ", " + (int)this.nomad.getPos().y + ", " + (int)this.nomad.getPos().z + "), teleporting!");
 
         BlockPos despawnPos = getDespawnPos((ServerWorld) this.nomad.getEntityWorld());
         Vec3d directionToDespawn = new Vec3d(despawnPos.getX() - this.nomad.getX(), despawnPos.getY() - this.nomad.getY(), despawnPos.getZ() - this.nomad.getZ()).normalize();

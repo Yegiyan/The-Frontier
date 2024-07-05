@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
+import com.frontier.Frontier;
 import com.frontier.settlements.Settlement;
 import com.frontier.settlements.SettlementManager;
 
@@ -170,7 +171,7 @@ public abstract class Structure
 	{
 	    if (tier >= maxTier)
 	    {
-	    	System.err.println(getName() + " in " + getFaction() + " is already at max tier!");
+	    	Frontier.LOGGER.info(getName() + " in " + getFaction() + " is already at max tier!");
 	    	return;
 	    }
 
@@ -199,7 +200,7 @@ public abstract class Structure
 	{
 		if (isConstructed && upgradeAvailable())
 		{
-			System.out.println("Upgrading!");
+			Frontier.LOGGER.info("Upgrading!");
 			upgradeStructure(world);
 		}	
 	}
@@ -400,7 +401,7 @@ public abstract class Structure
 				}
 			}
 			else
-				System.err.println("NBT file not found: " + path);
+				Frontier.LOGGER.info("NBT file not found: " + path);
 		}
 		catch (IOException e) { e.printStackTrace(); }
 	}
@@ -441,7 +442,7 @@ public abstract class Structure
             }
             else
             {
-                System.err.println("NBT file not found: " + path);
+            	Frontier.LOGGER.info("NBT file not found: " + path);
             }
         }
         catch (IOException e)
@@ -526,7 +527,7 @@ public abstract class Structure
 				}
 			}
 			else
-				System.err.println("NBT file not found: " + path);
+				Frontier.LOGGER.info("NBT file not found: " + path);
 		}
 		catch (IOException e) { e.printStackTrace(); }
 	}
@@ -619,7 +620,7 @@ public abstract class Structure
 	{
 		if (!canRepair(world))
 		{
-			System.err.println("Cannot repair: Not enough resources!");
+			Frontier.LOGGER.info("Cannot repair: Not enough resources!");
 			return;
 		}
 
@@ -644,7 +645,7 @@ public abstract class Structure
 
 					if (requiredCount > 0)
 					{
-						System.err.println("Error: Not enough resources to remove!");
+						Frontier.LOGGER.info("Cannot repair: Not enough resources in chests!");
 						return;
 					}
 				}
@@ -679,7 +680,7 @@ public abstract class Structure
 				if (repairQueue.isEmpty())
 				{
 					requiresRepair = false;
-					System.out.println(getName() + " repaired!");
+					Frontier.LOGGER.info(getName() + " repaired!");
 				}
 			}
 		}
@@ -912,7 +913,7 @@ public abstract class Structure
 				size[2] = sizeList.getInt(2); // height
 			}
 			else
-				System.err.println("NBT file not found: " + path);
+				Frontier.LOGGER.info("NBT file not found: " + path);
 		}
 		catch (IOException e) { e.printStackTrace(); }
 		return size;

@@ -1,5 +1,6 @@
 package com.frontier.goals.nomad;
 
+import com.frontier.Frontier;
 import com.frontier.entities.NomadEntity;
 import com.frontier.entities.SettlerEntity;
 
@@ -70,7 +71,7 @@ public class MoveTowardsBellGoal extends Goal
 
     private void teleportTowardsBell() 
     {
-        System.out.println("Nomad stuck at (" + (int)this.nomad.getPos().x + ", " + (int)this.nomad.getPos().y + ", " + (int)this.nomad.getPos().z + "), teleporting!");
+    	Frontier.LOGGER.info("Nomad stuck at (" + (int)this.nomad.getPos().x + ", " + (int)this.nomad.getPos().y + ", " + (int)this.nomad.getPos().z + "), teleporting!");
 
         BlockPos bellPos = this.nomad.getBellPosition();
         Vec3d directionToBell = new Vec3d(bellPos.getX() - this.nomad.getX(), bellPos.getY() - this.nomad.getY(), bellPos.getZ() - this.nomad.getZ()).normalize();

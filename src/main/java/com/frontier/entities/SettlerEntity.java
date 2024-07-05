@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
+import com.frontier.Frontier;
 import com.frontier.gui.SettlerCardScreen;
 import com.frontier.network.FrontierPackets;
 
@@ -157,7 +158,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    if (player.getWorld().isClient && hand.equals(Hand.MAIN_HAND) && !this.getSettlerProfession().equals("Nomad"))
 	    	MinecraftClient.getInstance().setScreen(new SettlerCardScreen(this));
 	    
-	    printEntityInfo(player, hand);
+	    //printEntityInfo(player, hand);
 	    return super.interactAt(player, hitPos, hand);
 	}
 	
@@ -436,18 +437,18 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	{
 		if (!this.getWorld().isClient && player.getStackInHand(hand).isEmpty() && hand.equals(Hand.MAIN_HAND)) 
 	    {
-	    	System.out.println("------------");
-	        System.out.println("Name: " + this.getSettlerName());
-	        System.out.println("Faction: " + this.getSettlerFaction());
-	        System.out.println("Profession: " + this.getSettlerProfession());
-	        System.out.println("Expertise: " + this.getSettlerExpertise());
-	        System.out.println("Morale: " + this.getSettlerMorale());
-	        System.out.println("Skill: " + this.getSettlerSkill());
-	        System.out.println("Hunger: " + this.getSettlerHunger());
-	        System.out.println("Gender: " + this.getSettlerGender());
-	        System.out.println("Texture: " + this.getSettlerTexture());
-	        System.out.println("Inventory: " + this.getInventory());
-	        System.out.println("------------");
+			Frontier.LOGGER.info("------------");
+			Frontier.LOGGER.info("Name: " + this.getSettlerName());
+			Frontier.LOGGER.info("Faction: " + this.getSettlerFaction());
+			Frontier.LOGGER.info("Profession: " + this.getSettlerProfession());
+			Frontier.LOGGER.info("Expertise: " + this.getSettlerExpertise());
+			Frontier.LOGGER.info("Morale: " + this.getSettlerMorale());
+			Frontier.LOGGER.info("Skill: " + this.getSettlerSkill());
+			Frontier.LOGGER.info("Hunger: " + this.getSettlerHunger());
+			Frontier.LOGGER.info("Gender: " + this.getSettlerGender());
+			Frontier.LOGGER.info("Texture: " + this.getSettlerTexture());
+			Frontier.LOGGER.info("Inventory: " + this.getInventory());
+			Frontier.LOGGER.info("------------");
 	    }
 	}
 	
@@ -490,7 +491,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 			if (this.getServer() != null)
 				removeSettlerFromData(this.getSettlerName(), this.getEntityWorld());
 			else
-				System.err.println("getServer() is null!");
+				Frontier.LOGGER.info("SettlerEntity() - getServer is null!");
 		}
 		super.remove(reason);
 	}

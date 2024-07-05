@@ -1,5 +1,7 @@
 package com.frontier.structures;
 
+import com.frontier.Frontier;
+
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -14,20 +16,20 @@ public class Warehouse extends Structure
     @Override
 	protected void update()
 	{
-		//System.out.println(getName() + " of " + getFaction() + " is updating!");
+		//Frontier.LOGGER.info(getName() + " of " + getFaction() + " is updating!");
 	}
 
     @Override
     protected void onConstruction()
     {
-    	System.out.println("Constructed Warehouse at " + position);
+    	Frontier.LOGGER.info("Constructed Warehouse at " + position);
     	setActive(true);
     }
 
     @Override
     protected void onUpgrade()
     {
-        System.out.println("Upgraded Warehouse to tier " + tier + " at " + position);
+    	Frontier.LOGGER.info("Upgraded Warehouse to tier " + tier + " at " + position);
     }
 
 	@Override

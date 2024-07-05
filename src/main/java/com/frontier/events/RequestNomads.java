@@ -6,6 +6,7 @@ import com.frontier.Frontier;
 import com.frontier.PlayerData;
 import com.frontier.entities.NomadEntity;
 import com.frontier.entities.SpawnSettler;
+import com.frontier.register.FrontierEntities;
 
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.Blocks;
@@ -36,9 +37,9 @@ public class RequestNomads
 		            int z = bellPos.getZ() + (int) (Math.sin(angle) * distance);
 		            int y = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, x, z);
 		            BlockPos spawnPos = new BlockPos(x, y, z);
-		            System.out.println("Spawn Pos: " + spawnPos);
+		            Frontier.LOGGER.info("Spawn Pos: " + spawnPos);
 
-		            NomadEntity nomad = Frontier.NOMAD_ENTITY.create(world);
+		            NomadEntity nomad = FrontierEntities.NOMAD_ENTITY.create(world);
 		            nomad.setBellPosition(bellPos);
 		            nomad.refreshPositionAndAngles(spawnPos, 0, 0);
 		            SpawnSettler.nomad((NomadEntity) nomad, "N/A", "Nomad", world);
@@ -51,7 +52,7 @@ public class RequestNomads
 	    	}
 	        else
 	        {
-	        	System.err.println("RequestNomads() playerData is null!");
+	        	Frontier.LOGGER.info("RequestNomads() - playerData is null!");
 	        	return ActionResult.PASS;
 	        }
 	    });

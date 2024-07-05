@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.frontier.Frontier;
 import com.frontier.PlayerData;
 import com.frontier.entities.SettlerEntity;
 import com.frontier.gui.util.TextWrapper;
@@ -999,7 +1000,7 @@ public class HireSettlerScreen extends Screen
 				expertiseTexture = new Identifier("minecraft", "textures/item/chainmail_chestplate.png");
 				break;
 			default:
-				System.err.println("HireSettlerScreen() - Invalid settler expertise!");
+				Frontier.LOGGER.info("HireSettlerScreen() - Invalid settler expertise!");
 				break;
 		}
 	}

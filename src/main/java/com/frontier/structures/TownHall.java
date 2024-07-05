@@ -2,6 +2,8 @@ package com.frontier.structures;
 
 import java.util.Arrays;
 
+import com.frontier.Frontier;
+
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -16,20 +18,20 @@ public class TownHall extends Structure
     @Override
 	protected void update()
 	{
-		//System.out.println(getName() + " of " + getFaction() + " is updating!");
+		//Frontier.LOGGER.info(getName() + " of " + getFaction() + " is updating!");
 	}
 
     @Override
     protected void onConstruction()
     {
-    	System.out.println("Constructed Town Hall at " + position);
+    	Frontier.LOGGER.info("Constructed Town Hall at " + position);
     	setActive(true);
     }
 
     @Override
     protected void onUpgrade()
     {
-        System.out.println("Upgraded Town Hall to tier " + tier + " at " + position);
+    	Frontier.LOGGER.info("Upgraded Town Hall to tier " + tier + " at " + position);
     }
     
     @Override
@@ -41,6 +43,6 @@ public class TownHall extends Structure
     public void printStructureSize()
     {
         int[] size = getStructureSize();
-        System.out.println("Structure size: " + Arrays.toString(size));
+        Frontier.LOGGER.info("Structure size: " + Arrays.toString(size));
     }
 }

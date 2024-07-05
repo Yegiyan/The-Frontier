@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import com.frontier.Frontier;
+
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.nbt.NbtCompound;
@@ -40,7 +42,7 @@ public class SpawnSettler
 	    
 	    else
 	    {
-	        System.err.println("We've run out of names to use!");
+	    	Frontier.LOGGER.info("We've run out of names to use!");
 	        name = "Nomad " + (occupiedNames.size() + 1);
 	    }
 

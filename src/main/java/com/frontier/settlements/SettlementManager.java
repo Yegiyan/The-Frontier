@@ -15,6 +15,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
+import com.frontier.Frontier;
 import com.frontier.PlayerData;
 import com.frontier.gui.AbandonSettlementScreen;
 import com.frontier.gui.CreateSettlementScreen;
@@ -119,7 +120,7 @@ public class SettlementManager
                 return null;
             }
         }
-        System.err.println("createSettlement() playerData is null!");
+        Frontier.LOGGER.info("SettlementManager() - createSettlement() playerData is null!");
         return null;
     }
     
@@ -144,7 +145,7 @@ public class SettlementManager
 		    }
 		}
 		else
-			System.err.println("create() playerData is null!");
+			Frontier.LOGGER.info("SettlementManager() - create() playerData is null!");
     }
 	
     public static void abandon(UUID leader, String factionName, MinecraftServer server)
@@ -165,7 +166,7 @@ public class SettlementManager
 	    	}
 		}
 		else
-			System.err.println("abandon() playerData is null!");
+			Frontier.LOGGER.info("SettlementManager() - abandon() playerData is null!");
 		
 		electNewLeader(leader, factionName, server);
     }

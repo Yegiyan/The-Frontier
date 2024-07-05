@@ -5,6 +5,7 @@ import com.frontier.entities.ArchitectEntity;
 import com.frontier.entities.HireSettler;
 import com.frontier.entities.NomadEntity;
 import com.frontier.entities.SettlerEntity;
+import com.frontier.register.FrontierEntities;
 import com.frontier.settlements.SettlementManager;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -71,7 +72,7 @@ public class FrontierPackets
 		    BlockPos settlerPos = buf.readBlockPos();
 		    int emeraldCost = buf.readInt();
 		    World world = player.getServerWorld();
-
+		    
 		    server.execute(() ->
 		    {
 		    	SettlerEntity nomad = NomadEntity.findSettlerEntity(world, settlerPos, settlerName);
@@ -83,12 +84,12 @@ public class FrontierPackets
 		                {
 		                    case "ARCHITECT":
 		                        nomad.remove(RemovalReason.DISCARDED);
-		                        ArchitectEntity architect = Frontier.ARCHITECT_ENTITY.create(world);
+		                        ArchitectEntity architect = FrontierEntities.ARCHITECT_ENTITY.create(world);
 		                        architect.refreshPositionAndAngles(settlerPos, 0, 0);
 		                        HireSettler.architect(architect, settlerName, settlerFaction, "Architect", settlerExpertise, settlerMorale, settlerSkill, settlerGender, world);
 		                        break;
 		                    default:
-		                        System.err.println("apply() - No settler profession found!");
+		                    	Frontier.LOGGER.info("FrontierPackets() - No settler profession found!");
 		                        HireSettler.refundEmeraldsToPlayer(player, emeraldCost);
 		                        break;
 		                }
@@ -97,7 +98,7 @@ public class FrontierPackets
 			            System.err.println(player.getDisplayName() + " does not have enough emeralds!");
 	            }
 	            else
-	                System.err.println("Nomad entity not found!");
+	                System.err.println("FrontierPackets() - Nomad entity not found!");
 		    });
 		});
 	}
