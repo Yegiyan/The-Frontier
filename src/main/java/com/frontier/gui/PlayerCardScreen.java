@@ -29,11 +29,11 @@ import net.minecraft.world.World;
 public class PlayerCardScreen extends Screen
 {
 	public static final int UI_OFFSET_X = 0;
-    public static final int UI_OFFSET_Y = 75;
+    public static final int UI_OFFSET_Y = 70;
     
 	private static final Identifier BACKGROUND_TEXTURE = new Identifier("minecraft", "textures/gui/demo_background.png");
 	public static final int BACKGROUND_WIDTH = 256;
-    public static final int BACKGROUND_HEIGHT = 350;
+    public static final int BACKGROUND_HEIGHT = 330;
     
 	private static final Identifier PROFESSION_TEXTURE = new Identifier("minecraft", "textures/item/bell.png");
 	private static final Identifier FACTION_TEXTURE = new Identifier("minecraft", "textures/mob_effect/resistance.png");

@@ -15,7 +15,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -87,7 +86,7 @@ public class SettlerCardScreen extends Screen
         textures.add(new TextureElement(PROFESSION_TEXTURE, (backgroundPosX + 216), (backgroundPosY + 20), 12, 12, "Profession", 1.0f));
         textures.add(new TextureElement(NOTIFICATION_TEXTURE, (backgroundPosX + 197), (backgroundPosY + 114), 12, 12, notificationText, 2.0f));
         
-        barTextures.add(new TextureElement(HEALTH_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 48), 9, 9, 53, 0, 256, 256, "Health (" + settler.getHealth() + " / 20)", 1.0f));
+        barTextures.add(new TextureElement(HEALTH_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 48), 9, 9, 53, 0, 256, 256, "Health (" + (int) settler.getHealth() + " / 20)", 1.0f));
         barTextures.add(new TextureElement(HUNGER_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 59), 9, 8, 53, 28, 256, 256, "Hunger", 1.0f));
         barTextures.add(new TextureElement(MORALE_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 68), 9, 9, 161, 0, 256, 256, "Morale", 1.0f));
         barTextures.add(new TextureElement(SKILL_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 78), 9, 9, 89, 0, 256, 256, "Skill", 1.0f));
@@ -101,8 +100,8 @@ public class SettlerCardScreen extends Screen
         else
             skinTexture = DefaultSkinHelper.getTexture(settler.getUuid());
 
-        nameText = ((MutableText) Text.literal(settler.getSettlerName()));
-        professionText = ((MutableText) Text.literal(settler.getSettlerProfession()));
+        nameText = Text.literal(settler.getSettlerName());
+        professionText = Text.literal(settler.getSettlerProfession());
 
         healthText = Text.literal(String.format("%.0f", (settler.getHealth() / 20.0f) * 100));
         hungerText = Text.literal(String.valueOf(settler.getSettlerHunger()));
