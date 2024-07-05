@@ -71,7 +71,8 @@ public class Frontier implements ModInitializer
 		FabricDefaultAttributeRegistry.register(ARCHITECT_ENTITY, SettlerEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1));
 	}
 	
-	// create settler hiring ui
+	// fix bug where nomad entity's sometimes aren't found
+	// use emerald requirement to hire settlers
 	
 	// create building ui
 	// show dimensions of structure to player when they try to manually place structure location
