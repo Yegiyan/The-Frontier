@@ -38,7 +38,10 @@ public class ArchitectEntity extends SettlerEntity
 	public ArchitectEntity(EntityType<? extends PathAwareEntity> entityType, World world) 
 	{
 	    super(entityType, world);
-	    getInventory().setStack(0, new ItemStack(Items.WOODEN_SHOVEL, 1)); // TODO: Fix architect spawning with two shovels in the same slot
+	    if (!world.isClient)
+		{
+	    	getInventory().setStack(0, new ItemStack(Items.WOODEN_SHOVEL, 1));
+		}
 	}
 	
 	@Override

@@ -19,6 +19,8 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -178,6 +180,9 @@ public class HireSettlerScreen extends Screen
     private static Identifier expertiseTexture;
     private String expertise;
     
+    PlayerEntity player;
+    int playerEmeralds;
+    
 	public HireSettlerScreen(SettlerEntity settler)
 	{
 		super(Text.literal("Hire a Settler Screen"));
@@ -185,6 +190,9 @@ public class HireSettlerScreen extends Screen
 		this.expertise = settler.getSettlerExpertise();
 		this.page = Page.MAIN;
 		setExpertiseTexture(expertise);
+		
+		this.player = MinecraftClient.getInstance().player;
+		this.playerEmeralds = 0;
 	}
 
 	@Override
@@ -210,8 +218,11 @@ public class HireSettlerScreen extends Screen
 	private void updateButtons()
 	{
 		this.clearChildren();
-		initializeBackButton();
-
+		initializeInfoButton();
+		
+		if (this.player != null)
+			this.playerEmeralds = countEmeralds(this.player);
+		
 		switch (page)
 		{
 			case MAIN:
@@ -240,14 +251,16 @@ public class HireSettlerScreen extends Screen
 		}
 
 		if (hire == Hire.NONE)
-			priceText = Text.literal("-");
+			priceText = Text.literal("0");
 
+		initializeHireButton();
+        addDrawableChild(hireButton);
 		addDrawableChild(infoButton);
 	}
 
-	private void initializeBackButton()
+	private void initializeInfoButton()
 	{
-		infoButton = ButtonWidget.builder(Text.literal("Information"), button ->
+		infoButton = ButtonWidget.builder(Text.literal("Nomad's Info"), button ->
 		{
 			page = Page.MAIN;
 			updateButtons();
@@ -375,6 +388,29 @@ public class HireSettlerScreen extends Screen
 		addDrawableChild(ranchingButton);
 		addDrawableChild(tradingButton);
 	}
+	
+	private void initializeHireButton()
+	{
+        hireButton = ButtonWidget.builder(Text.literal("Hire"), button ->
+        {
+            PlayerData playerData = PlayerData.map.get(this.player.getUuid());
+            if (this.player != null && playerData != null && this.settler != null)
+            {
+                PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+                passedData.writeString(hire.toString());
+                passedData.writeString(playerData.getFaction());
+                passedData.writeString(settler.getSettlerName());
+                passedData.writeString(settler.getSettlerGender());
+                passedData.writeString(settler.getSettlerExpertise());
+                passedData.writeInt(settler.getSettlerMorale());
+                passedData.writeInt(settler.getSettlerSkill());
+                passedData.writeBlockPos(settler.getBlockPos());
+                passedData.writeInt(hire.getValue());
+                ClientPlayNetworking.send(FrontierPackets.HIRE_SETTLER_ID, passedData);
+                MinecraftClient.getInstance().setScreen(null);
+            }
+        }).dimensions(backgroundPosX + 180, backgroundPosY + 70, 45, 20).build();
+    }
 
 	private void setupGoverningPage()
 	{
@@ -628,29 +664,18 @@ public class HireSettlerScreen extends Screen
 		context.drawTexture(BACKGROUND_TEXTURE, backgroundPosX, backgroundPosY, 0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
 		super.render(context, mouseX, mouseY, delta);
 
+		if (page == Page.MAIN)
+			hireButton.visible = false;
+		else
+			hireButton.visible = true;
+		
+		if (page != Page.MAIN && hire != Hire.NONE && this.playerEmeralds >= hire.getValue())
+			hireButton.active = true;
+		else
+			hireButton.active = false;
+		
 		if (page != Page.MAIN)
 		{
-			hireButton = ButtonWidget.builder(Text.literal("Hire"), button ->
-			{
-				PlayerEntity player = MinecraftClient.getInstance().player;
-	        	PlayerData playerData = PlayerData.map.get(player.getUuid());
-	        	if (player != null && playerData != null && settler != null)
-	        	{
-	        		PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
-	        		passedData.writeString(hire.toString());
-	            	passedData.writeString(playerData.getFaction());
-	            	passedData.writeString(settler.getSettlerName());
-	            	passedData.writeString(settler.getSettlerGender());
-	            	passedData.writeString(settler.getSettlerExpertise());
-	            	passedData.writeInt(settler.getSettlerMorale());
-	            	passedData.writeInt(settler.getSettlerSkill());
-	            	passedData.writeBlockPos(settler.getBlockPos());
-	        	    ClientPlayNetworking.send(FrontierPackets.HIRE_SETTLER_ID, passedData);
-	                MinecraftClient.getInstance().setScreen(null);
-	        	}
-			}).dimensions(backgroundPosX + 180, backgroundPosY + 70, 45, 20).build();
-			addDrawableChild(hireButton);
-			
 			context.drawText(this.textRenderer, hireTitle, (backgroundPosX + 175), (backgroundPosY + 16), new Color(255, 255, 255).getRGB(), true);
 			TextWrapper.render(context, this.textRenderer, hireText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 135);
 			TextWrapper.render(context, this.textRenderer, hireText2, backgroundPosX + 14, backgroundPosY + 64, new Color(255, 255, 255).getRGB(), 140);
@@ -722,7 +747,6 @@ public class HireSettlerScreen extends Screen
 
 	private void renderGoverningPage(DrawContext context, int mouseX, int mouseY)
 	{
-		hireButton.active = (hire != Hire.NONE);
 		hireArchitectButton.active = (hire != Hire.ARCHITECT);
 		hireDelivererButton.active = (hire != Hire.DELIVERER);
 		hirePriestButton.active = (hire != Hire.PRIEST);
@@ -730,17 +754,17 @@ public class HireSettlerScreen extends Screen
 		hireInnkeeperButton.active = (hire != Hire.INNKEEPER);
 
 		if (hireArchitectButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.ARCHITECT.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.ARCHITECT);
 		else if (hireDelivererButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.DELIVERER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.DELIVERER);
 		else if (hirePriestButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.PRIEST.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.PRIEST);
 		else if (hireCourierButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.COURIER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.COURIER);
 		else if (hireInnkeeperButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.INNKEEPER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.INNKEEPER);
 		else
-			priceText = hire.getText();
+		    priceText = hire.getText();
 
 		for (TextureElement element : governingTextures)
 		{
@@ -749,22 +773,24 @@ public class HireSettlerScreen extends Screen
 				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
 		}
 
-		TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 192, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+		if (this.playerEmeralds < hire.getValue())
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
+		else
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
 	}
 
 	private void renderMilitaryPage(DrawContext context, int mouseX, int mouseY)
 	{
-		hireButton.active = (hire != Hire.NONE);
 		hireArcherButton.active = (hire != Hire.ARCHER);
 		hireKnightButton.active = (hire != Hire.KNIGHT);
 		hireClericButton.active = (hire != Hire.CLERIC);
 
 		if (hireArcherButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.ARCHER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.ARCHER);
 		else if (hireKnightButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.KNIGHT.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.KNIGHT);
 		else if (hireClericButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.CLERIC.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.CLERIC);
 		else
 			priceText = hire.getText();
 
@@ -775,25 +801,27 @@ public class HireSettlerScreen extends Screen
 				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
 		}
 
-		TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 192, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+		if (this.playerEmeralds < hire.getValue())
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
+		else
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
 	}
 
     private void renderHarvestingPage(DrawContext context, int mouseX, int mouseY)
     {
-    	hireButton.active = (hire != Hire.NONE);
 		hireFarmerButton.active = (hire != Hire.FARMER);
 		hireMinerButton.active = (hire != Hire.MINER);
 		hireLumberjackButton.active = (hire != Hire.LUMBERJACK);
 		hireFishermanButton.active = (hire != Hire.FISHERMAN);
 
 		if (hireFarmerButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.FARMER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.FARMER);
 		else if (hireMinerButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.MINER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.MINER);
 		else if (hireLumberjackButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.LUMBERJACK.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.LUMBERJACK);
 		else if (hireFishermanButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.FISHERMAN.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.FISHERMAN);
 		else
 			priceText = hire.getText();
 
@@ -804,12 +832,14 @@ public class HireSettlerScreen extends Screen
 				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
 		}
 
-		TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 192, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+		if (this.playerEmeralds < hire.getValue())
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
+		else
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
     }
 
     private void renderCraftingPage(DrawContext context, int mouseX, int mouseY)
     {
-    	hireButton.active = (hire != Hire.NONE);
 		hireAlchemistButton.active = (hire != Hire.ALCHEMIST);
 		hireBlacksmithButton.active = (hire != Hire.BLACKSMITH);
 		hireFletcherButton.active = (hire != Hire.FLETCHER);
@@ -818,17 +848,17 @@ public class HireSettlerScreen extends Screen
 		hireCartographerButton.active = (hire != Hire.CARTOGRAPHER);
 
 		if (hireAlchemistButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.ALCHEMIST.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.ALCHEMIST);
 		else if (hireBlacksmithButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.BLACKSMITH.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.BLACKSMITH);
 		else if (hireFletcherButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.FLETCHER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.FLETCHER);
 		else if (hireMasonButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.MASON.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.MASON);
 		else if (hireCarpenterButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.CARPENTER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.CARPENTER);
 		else if (hireCartographerButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.CARTOGRAPHER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.CARTOGRAPHER);
 		else
 			priceText = hire.getText();
 
@@ -839,12 +869,14 @@ public class HireSettlerScreen extends Screen
 				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
 		}
 
-		TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 192, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+		if (this.playerEmeralds < hire.getValue())
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
+		else
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
     }
 
     private void renderRanchingPage(DrawContext context, int mouseX, int mouseY)
     {
-    	hireButton.active = (hire != Hire.NONE);
 		hireBeekeeperButton.active = (hire != Hire.BEEKEEPER);
 		hirePoultrymanButton.active = (hire != Hire.POULTRYMAN);
 		hireCowhandButton.active = (hire != Hire.COWHAND);
@@ -853,17 +885,17 @@ public class HireSettlerScreen extends Screen
 		hireStablehandButton.active = (hire != Hire.STABLEHAND);
 
 		if (hireBeekeeperButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.BEEKEEPER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.BEEKEEPER);
 		else if (hirePoultrymanButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.POULTRYMAN.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.POULTRYMAN);
 		else if (hireCowhandButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.COWHAND.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.COWHAND);
 		else if (hireSwineherdButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.SWINEHERD.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.SWINEHERD);
 		else if (hireShepherdButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.SHEPHERD.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.SHEPHERD);
 		else if (hireStablehandButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.STABLEHAND.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.STABLEHAND);
 		else
 			priceText = hire.getText();
 
@@ -874,12 +906,14 @@ public class HireSettlerScreen extends Screen
 				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
 		}
 
-		TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 192, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+		if (this.playerEmeralds < hire.getValue())
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
+		else
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
     }
 
     private void renderTradingPage(DrawContext context, int mouseX, int mouseY)
     {
-    	hireButton.active = (hire != Hire.NONE);
 		hireBakerButton.active = (hire != Hire.BAKER);
 		hireCookButton.active = (hire != Hire.COOK);
 		hireArcanistButton.active = (hire != Hire.ARCANIST);
@@ -887,15 +921,15 @@ public class HireSettlerScreen extends Screen
 		hireTannerButton.active = (hire != Hire.TANNER);
 
 		if (hireBakerButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.BAKER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.BAKER);
 		else if (hireCookButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.COOK.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.COOK);
 		else if (hireArcanistButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.ARCANIST.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.ARCANIST);
 		else if (hireMerchantButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.MERCHANT.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.MERCHANT);
 		else if (hireTannerButton.isMouseOver(mouseX, mouseY))
-			priceText = Hire.TANNER.getText().formatted(Formatting.GRAY);
+		    priceText = getFormattedPriceText(Hire.TANNER);
 		else
 			priceText = hire.getText();
 
@@ -906,7 +940,10 @@ public class HireSettlerScreen extends Screen
 				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
 		}
 
-		TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 192, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+		if (this.playerEmeralds < hire.getValue())
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
+		else
+			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
     }
     
     private void renderTooltip(DrawContext context, String text, int mouseX, int mouseY) 
@@ -966,6 +1003,23 @@ public class HireSettlerScreen extends Screen
 				break;
 		}
 	}
+    
+    private int countEmeralds(PlayerEntity player)
+    {
+        int emeraldCount = 0;
+        for (ItemStack stack : player.getInventory().main)
+            if (stack.getItem() == Items.EMERALD)
+                emeraldCount += stack.getCount();
+        return emeraldCount;
+    }
+    
+    private Text getFormattedPriceText(Hire hire)
+    {
+        if (this.playerEmeralds >= hire.getValue())
+            return hire.getText().formatted(Formatting.GRAY);
+        else 
+            return hire.getText().formatted(Formatting.RED);
+    }
     
     @Override
     public boolean shouldPause() 

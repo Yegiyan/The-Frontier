@@ -157,7 +157,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    if (player.getWorld().isClient && hand.equals(Hand.MAIN_HAND) && !this.getSettlerProfession().equals("Nomad"))
 	    	MinecraftClient.getInstance().setScreen(new SettlerCardScreen(this));
 	    
-	    //printEntityInfo(player, hand);
+	    printEntityInfo(player, hand);
 	    return super.interactAt(player, hitPos, hand);
 	}
 	
@@ -403,7 +403,8 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	
 	public static SettlerEntity findSettlerEntity(World world, BlockPos pos, String name)
 	{
-	    List<SettlerEntity> settlers = world.getEntitiesByClass(SettlerEntity.class, new Box(pos), settler -> settler.getSettlerName().equals(name));
+		Box searchBox = new Box(pos).expand(10); // 20x20x20 area around pos
+	    List<SettlerEntity> settlers = world.getEntitiesByClass(SettlerEntity.class, searchBox, settler -> settler.getSettlerName().equals(name));
 	    return settlers.isEmpty() ? null : settlers.get(0);
 	}
 
@@ -467,16 +468,19 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	}
 	
 	@Override
-    public void dropInventory()
+	public void dropInventory()
 	{
-        super.dropInventory();
-        for (int i = 0; i < inventory.size(); i++)
-        {
-            ItemStack stack = inventory.getStack(i);
-            if (!stack.isEmpty())
-                this.dropStack(stack);
-        }
-    }
+		super.dropInventory();
+		for (int i = 0; i < inventory.size(); i++)
+		{
+			ItemStack stack = inventory.getStack(i);
+			if (!stack.isEmpty())
+			{
+				this.dropStack(stack);
+				inventory.setStack(i, ItemStack.EMPTY); // Clear the inventory slot after dropping the item
+			}
+		}
+	}
 	
 	@Override
 	public void remove(RemovalReason reason)
@@ -572,7 +576,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	        return Text.of(getSettlerName());
 	}
 	
-	public UUID getUUID() {
+	public UUID getSettlerUUID() {
 	    return this.uuid;
 	}
 	
