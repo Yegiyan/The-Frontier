@@ -59,7 +59,7 @@ public class AbandonSettlementScreen extends Screen
         this.createButton = ButtonWidget.builder(Text.literal("Abandon"), button -> 
         {        	
         	PlayerEntity player = MinecraftClient.getInstance().player;
-        	PlayerData playerData = PlayerData.map.get(player.getUuid());
+        	PlayerData playerData = PlayerData.players.get(player.getUuid());
         	
         	PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
     	    passedData.writeString(playerData.getFaction());

@@ -68,7 +68,7 @@ public class NomadEntity extends SettlerEntity
 	@Override
 	public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) 
 	{
-		PlayerData playerData = PlayerData.map.get(player.getUuid());
+		PlayerData playerData = PlayerData.players.get(player.getUuid());
 		ItemStack itemStack = player.getStackInHand(hand);
 		
 		if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && itemStack.getItem() == Items.CLOCK && SettlementManager.getSettlement(playerData.getFaction()).isWithinTerritory(player.getBlockPos()))

@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import com.frontier.Frontier;
 import com.frontier.renderers.RegionMapRenderer;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -189,7 +190,11 @@ public class RegionManager
         NbtCompound nbt = new NbtCompound();
         nbt.put("Regions", regionsCompound);
 
-        try { NbtIo.writeCompressed(nbt, nbtFile); } 
+        try
+        {
+        	NbtIo.writeCompressed(nbt, nbtFile);
+        	Frontier.LOGGER.info("Saving regions");
+        } 
         catch (IOException e) { e.printStackTrace(); }
     }
 
@@ -239,7 +244,7 @@ public class RegionManager
                     region.addZone(zone);
                 }
             }
-
+            Frontier.LOGGER.info("Loading regions");
         } 
         catch (IOException e) { e.printStackTrace(); }
     }

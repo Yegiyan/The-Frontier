@@ -74,7 +74,7 @@ public class PlayerCardScreen extends Screen
     protected void init() 
     {
 		PlayerEntity player = MinecraftClient.getInstance().player;
-    	PlayerData playerData = PlayerData.map.get(player.getUuid());
+    	PlayerData playerData = PlayerData.players.get(player.getUuid());
     	
     	switch (playerData.getProfession())
     	{
@@ -100,7 +100,7 @@ public class PlayerCardScreen extends Screen
     			professionTexture = new Identifier("minecraft", "textures/mob_effect/bad_omen.png");
     			break;
     		default:
-    			Frontier.LOGGER.info("PlayerCardScreen() - No player profession found!");
+    			Frontier.LOGGER.error("PlayerCardScreen() - No player profession found!");
     			professionTexture = new Identifier("minecraft", "textures/item/barrier.png");
     			break;
     	}

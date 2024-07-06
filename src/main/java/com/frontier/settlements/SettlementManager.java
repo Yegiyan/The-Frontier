@@ -61,7 +61,7 @@ public class SettlementManager
 	{
 	    UseBlockCallback.EVENT.register((player, world, hand, blockHitResult) -> 
 	    {
-	    	PlayerData playerData = PlayerData.map.get(player.getUuid());
+	    	PlayerData playerData = PlayerData.players.get(player.getUuid());
 	    	if (playerData != null)
 	    	{
 	    		if (!world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == Items.CLOCK && world.getBlockState(blockHitResult.getBlockPos()).getBlock() == Blocks.BELL)
@@ -85,7 +85,7 @@ public class SettlementManager
     
     public static Settlement createSettlement(UUID leader, String factionName, MinecraftServer server)
     {
-        PlayerData playerData = PlayerData.map.get(leader);
+        PlayerData playerData = PlayerData.players.get(leader);
         if(playerData != null)
         {
             if (!settlementExists(factionName)) // TODO: check for faction names that aren't necessarily settlements
@@ -123,14 +123,14 @@ public class SettlementManager
                 return null;
             }
         }
-        Frontier.LOGGER.info("SettlementManager() - createSettlement() playerData is null!");
+        Frontier.LOGGER.error("SettlementManager() - createSettlement() playerData is null!");
         return null;
     }
     
     public static void create(UUID leader, String factionName, MinecraftServer server)
 	{
 		Settlement newSettlement = createSettlement(leader, factionName, server);
-		PlayerData playerData = PlayerData.map.get(leader);
+		PlayerData playerData = PlayerData.players.get(leader);
 		
 		if (playerData != null)
 		{
@@ -148,12 +148,12 @@ public class SettlementManager
 		    }
 		}
 		else
-			Frontier.LOGGER.info("SettlementManager() - create() playerData is null!");
+			Frontier.LOGGER.error("SettlementManager() - create() playerData is null!");
     }
 	
     public static void abandon(UUID leader, String factionName, MinecraftServer server)
 	{
-		PlayerData playerData = PlayerData.map.get(leader);
+		PlayerData playerData = PlayerData.players.get(leader);
 		loadSettlements(server);
 
 		if (playerData != null)
@@ -169,14 +169,15 @@ public class SettlementManager
 	    	}
 		}
 		else
-			Frontier.LOGGER.info("SettlementManager() - abandon() playerData is null!");
+			Frontier.LOGGER.error("SettlementManager() - abandon() playerData is null!");
 		
 		electNewLeader(leader, factionName, server);
     }
 	
 	private static void electNewLeader(UUID leader, String faction, MinecraftServer server)
 	{
-		if (getSettlement(faction).getSettlers().isEmpty() && getSettlement(faction).getPlayers().isEmpty())
+		// if there are no players and settlers
+		if (getSettlement(faction).getPlayers().isEmpty() && getSettlement(faction).getSettlers().isEmpty())
 		{
 			if (server != null)
 			{
@@ -188,6 +189,7 @@ public class SettlementManager
 			saveSettlements(server);
 		}
 		
+		// if there are players (except the departing leader)
 		else if (!getSettlement(faction).getPlayers().isEmpty())
 		{
 		    List<UUID> players = new ArrayList<>(getSettlement(faction).getPlayers());
@@ -196,14 +198,19 @@ public class SettlementManager
 		    Random rand = new Random();
 		    UUID newLeader = players.get(rand.nextInt(players.size()));
 		    getSettlement(faction).setLeader(newLeader);
-			PlayerData.map.get(newLeader).setProfession("Leader");
-			PlayerData.map.get(newLeader).saveData();
+			PlayerData.players.get(newLeader).setProfession("Leader");
+			PlayerData.players.get(newLeader).saveData();
 			saveSettlements(server);
 		}
 		
-		else
+		// if there are no players but there are settlers
+		else if (getSettlement(faction).getPlayers().isEmpty() && !getSettlement(faction).getSettlers().isEmpty())
 		{
-			// TODO: assign the most appropriate settler as the leader
+			// TODO: !!! assign the most appropriate settler as the leader (architect or commander)
+			// need a contingency for when the leader is killed
+			// need a contingency for when there are no players and all settlers are killed
+			Frontier.LOGGER.info("TODO: Assign the most appropriate settler as the leader!");
+			getSettlement(faction).setLeader(new UUID(0L, 0L)); // empty uuid
 			saveSettlements(server);
 		}
 	}

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.frontier.PlayerData;
 import com.frontier.entities.SettlerEntity;
 import com.frontier.structures.Structure;
 import com.frontier.structures.TownHall;
@@ -34,8 +35,8 @@ public class Settlement
     private List<Structure> structures;
     
     private List<SettlerEntity> settlers;
-    private List<UUID> players;
     
+    private List<UUID> players;
     private List<UUID> allies;
     private List<UUID> enemies;
     
@@ -232,6 +233,10 @@ public class Settlement
 
 	public List<UUID> getPlayers() {
 		return players;
+	}
+	
+	public PlayerData getPlayerData(UUID uuid) {
+		return  PlayerData.players.get(uuid);
 	}
 
 	public void addPlayer(UUID player) {

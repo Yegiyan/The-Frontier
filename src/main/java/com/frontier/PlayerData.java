@@ -16,7 +16,7 @@ import net.minecraft.util.WorldSavePath;
 
 public class PlayerData 
 {
-	public static Map<UUID, PlayerData> map = new HashMap<>();
+	public static Map<UUID, PlayerData> players = new HashMap<>();
     protected ServerPlayerEntity player;
     private MinecraftServer server;
     private UUID uuid;
@@ -66,9 +66,9 @@ public class PlayerData
         }
 
         NbtCompound playersNbt = new NbtCompound();
-        for (UUID uuid : map.keySet()) 
+        for (UUID uuid : players.keySet()) 
         {
-            PlayerData playerData = map.get(uuid);
+            PlayerData playerData = players.get(uuid);
             NbtCompound playerNbt = new NbtCompound();
             String playerFaction = playerData.getFaction();
             NbtCompound factionNbt = playersNbt.getCompound(playerFaction);
@@ -82,7 +82,11 @@ public class PlayerData
 
         rootNbt.put("Players", playersNbt);
 
-        try { NbtIo.writeCompressed(rootNbt, nbtFile); } 
+        try
+        {
+        	NbtIo.writeCompressed(rootNbt, nbtFile);
+        	Frontier.LOGGER.info("Saving player data");
+        } 
         catch (IOException e) { e.printStackTrace(); }
     }
 
@@ -114,10 +118,11 @@ public class PlayerData
                         playerNbt.getInt("Renown"),
                         server
                     );
-                    map.put(uuid, playerData);
+                    players.put(uuid, playerData);
                 }
             }
-        } 
+            Frontier.LOGGER.info("Loading player data");
+        }
         catch (IOException e) { e.printStackTrace(); }
     }
     
@@ -176,7 +181,7 @@ public class PlayerData
     }
     
     public static void reset() {
-        map.clear();
+        players.clear();
     }
     
     int clamp(int value, int min, int max) {

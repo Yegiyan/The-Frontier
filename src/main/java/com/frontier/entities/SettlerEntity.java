@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.Set;
 
 import com.frontier.Frontier;
+import com.frontier.PlayerData;
 import com.frontier.gui.SettlerCardScreen;
 import com.frontier.network.FrontierPackets;
 import com.frontier.settlements.SettlementManager;
@@ -137,6 +138,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand)
 	{
 	    ItemStack itemStack = player.getStackInHand(hand);
+	    PlayerData playerData = PlayerData.players.get(player.getUuid());
 	    
 	    if (!player.getWorld().isClient)
 	    	syncInventory();
@@ -153,7 +155,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	        }
 	    }
 
-	    if (player.getWorld().isClient && hand.equals(Hand.MAIN_HAND) && !this.getSettlerProfession().equals("Nomad"))
+	    if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && hand.equals(Hand.MAIN_HAND) && !this.getSettlerProfession().equals("Nomad"))
 	    	MinecraftClient.getInstance().setScreen(new SettlerCardScreen(this));
 	    
 	    //printEntityInfo(player, hand);

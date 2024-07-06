@@ -23,7 +23,7 @@ public class RequestNomads
 	{
 	    UseBlockCallback.EVENT.register((player, world, hand, blockHitResult) -> 
 	    {
-	    	PlayerData playerData = PlayerData.map.get(player.getUuid());
+	    	PlayerData playerData = PlayerData.players.get(player.getUuid());
 	    	if (playerData != null)
 	    	{
 	    		if (!world.isClient && world.isDay() && playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == Items.CLOCK && world.getBlockState(blockHitResult.getBlockPos()).getBlock() == Blocks.BELL) 
@@ -37,7 +37,7 @@ public class RequestNomads
 		            int z = bellPos.getZ() + (int) (Math.sin(angle) * distance);
 		            int y = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, x, z);
 		            BlockPos spawnPos = new BlockPos(x, y, z);
-		            Frontier.LOGGER.info("Spawn Pos: " + spawnPos);
+		            Frontier.LOGGER.info("Nomad spawned at " + spawnPos);
 
 		            NomadEntity nomad = FrontierEntities.NOMAD_ENTITY.create(world);
 		            nomad.setBellPosition(bellPos);

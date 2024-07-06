@@ -20,7 +20,7 @@ public class FrontierCommands
 	public static int getRenown(CommandContext<ServerCommandSource> context, String playerName) 
     {
         ServerPlayerEntity player = context.getSource().getServer().getPlayerManager().getPlayer(playerName);
-        PlayerData playerData = PlayerData.map.get(player.getUuid());
+        PlayerData playerData = PlayerData.players.get(player.getUuid());
         if(playerData != null) 
         {
         	Frontier.sendMessage(player, playerData.getName() + " currently has " + playerData.getRenown() + " renown!", Formatting.WHITE);
@@ -31,7 +31,7 @@ public class FrontierCommands
     public static int setRenown(CommandContext<ServerCommandSource> context, String playerName, int renown) 
     {
         ServerPlayerEntity player = context.getSource().getServer().getPlayerManager().getPlayer(playerName);
-        PlayerData playerData = PlayerData.map.get(player.getUuid());
+        PlayerData playerData = PlayerData.players.get(player.getUuid());
         if(playerData != null) 
         {
             playerData.setRenown(renown);
@@ -44,7 +44,7 @@ public class FrontierCommands
     public static int getFaction(CommandContext<ServerCommandSource> context, String playerName) 
     {
         ServerPlayerEntity player = context.getSource().getServer().getPlayerManager().getPlayer(playerName);
-        PlayerData playerData = PlayerData.map.get(player.getUuid());
+        PlayerData playerData = PlayerData.players.get(player.getUuid());
         if(playerData != null) 
         {
             String faction = playerData.getFaction();
@@ -59,7 +59,7 @@ public class FrontierCommands
     public static int setFaction(CommandContext<ServerCommandSource> context, String playerName, String faction)
     {
         ServerPlayerEntity player = context.getSource().getServer().getPlayerManager().getPlayer(playerName);
-        PlayerData playerData = PlayerData.map.get(player.getUuid());
+        PlayerData playerData = PlayerData.players.get(player.getUuid());
 
         SettlementManager.switchPlayerSettlement(playerData.getUUID(), playerData.getFaction(), faction, context.getSource().getServer());
         
@@ -76,7 +76,7 @@ public class FrontierCommands
     public static int getProfession(CommandContext<ServerCommandSource> context, String playerName) 
     {
         ServerPlayerEntity player = context.getSource().getServer().getPlayerManager().getPlayer(playerName);
-        PlayerData playerData = PlayerData.map.get(player.getUuid());
+        PlayerData playerData = PlayerData.players.get(player.getUuid());
         if(playerData != null) 
         {
             String profession = playerData.getProfession();
@@ -88,7 +88,7 @@ public class FrontierCommands
     public static int setProfession(CommandContext<ServerCommandSource> context, String playerName, String profession) 
     {
         ServerPlayerEntity player = context.getSource().getServer().getPlayerManager().getPlayer(playerName);
-        PlayerData playerData = PlayerData.map.get(player.getUuid());
+        PlayerData playerData = PlayerData.players.get(player.getUuid());
         if(playerData != null) 
         {
             playerData.setProfession(profession);

@@ -37,10 +37,10 @@ public class FrontierManager
 		{
 		    ServerPlayerEntity player = handler.player;
 		    UUID playerUUID = player.getUuid();
-		    PlayerData playerData = PlayerData.map.getOrDefault(playerUUID, new PlayerData(playerUUID, player.getEntityName(), "N/A", "Adventurer", 0, server));
-		    if (!PlayerData.map.containsKey(playerUUID))
+		    PlayerData playerData = PlayerData.players.getOrDefault(playerUUID, new PlayerData(playerUUID, player.getEntityName(), "N/A", "Adventurer", 0, server));
+		    if (!PlayerData.players.containsKey(playerUUID))
 		    {
-		    	PlayerData.map.put(playerUUID, playerData);
+		    	PlayerData.players.put(playerUUID, playerData);
 		    	playerData.saveData();
 		    }
 		});

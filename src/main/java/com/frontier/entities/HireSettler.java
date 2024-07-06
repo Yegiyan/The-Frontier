@@ -99,7 +99,7 @@ public class HireSettler
 		}
 	}
 
-	public static void architect(ArchitectEntity architect, String name, String faction, String profession, String expertise, int morale, int skill, UUID uuid, String gender, World world)
+	public static void architect(ArchitectEntity architect, String name, String faction, String profession, String expertise, int hunger, int morale, int skill, UUID uuid, String gender, World world)
 	{
 		LocalDifficulty difficulty = world.getLocalDifficulty(architect.getBlockPos());
 	    SpawnReason spawnReason = SpawnReason.NATURAL;
@@ -113,6 +113,7 @@ public class HireSettler
 	    architect.setSettlerProfession(profession);
 	    architect.setSettlerFaction(faction);
 	    architect.setSettlerExpertise(expertise);
+	    architect.setSettlerHunger(hunger);
 	    architect.setSettlerMorale(morale);
 	    architect.setUuid(uuid);
 	    

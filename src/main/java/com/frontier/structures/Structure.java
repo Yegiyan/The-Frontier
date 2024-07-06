@@ -401,7 +401,7 @@ public abstract class Structure
 				}
 			}
 			else
-				Frontier.LOGGER.info("NBT file not found: " + path);
+				Frontier.LOGGER.error("NBT file not found: " + path);
 		}
 		catch (IOException e) { e.printStackTrace(); }
 	}
@@ -442,7 +442,7 @@ public abstract class Structure
             }
             else
             {
-            	Frontier.LOGGER.info("NBT file not found: " + path);
+            	Frontier.LOGGER.error("NBT file not found: " + path);
             }
         }
         catch (IOException e)
@@ -527,7 +527,7 @@ public abstract class Structure
 				}
 			}
 			else
-				Frontier.LOGGER.info("NBT file not found: " + path);
+				Frontier.LOGGER.error("NBT file not found: " + path);
 		}
 		catch (IOException e) { e.printStackTrace(); }
 	}
@@ -913,7 +913,7 @@ public abstract class Structure
 				size[2] = sizeList.getInt(2); // height
 			}
 			else
-				Frontier.LOGGER.info("NBT file not found: " + path);
+				Frontier.LOGGER.error("NBT file not found: " + path);
 		}
 		catch (IOException e) { e.printStackTrace(); }
 		return size;

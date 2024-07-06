@@ -42,7 +42,7 @@ public class SpawnSettler
 	    
 	    else
 	    {
-	    	Frontier.LOGGER.info("We've run out of names to use!");
+	    	Frontier.LOGGER.error("We've run out of names to use!");
 	        name = "Nomad " + (occupiedNames.size() + 1);
 	    }
 

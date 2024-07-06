@@ -69,6 +69,7 @@ public class FrontierPackets
 		    String settlerName = buf.readString(32767);
 		    String settlerGender = buf.readString(32767);
 		    String settlerExpertise = buf.readString(32767);
+		    int settlerHunger = buf.readInt();
 		    int settlerMorale = buf.readInt();
 		    int settlerSkill = buf.readInt();
 		    UUID settlerUUID = buf.readUuid();
@@ -89,7 +90,7 @@ public class FrontierPackets
 		                        nomad.remove(RemovalReason.DISCARDED);
 		                        ArchitectEntity architect = FrontierEntities.ARCHITECT_ENTITY.create(world);
 		                        architect.refreshPositionAndAngles(settlerPos, 0, 0);
-		                        HireSettler.architect(architect, settlerName, settlerFaction, "Architect", settlerExpertise, settlerMorale, settlerSkill, settlerUUID, settlerGender, world);
+		                        HireSettler.architect(architect, settlerName, settlerFaction, "Architect", settlerExpertise, settlerHunger, settlerMorale, settlerSkill, settlerUUID, settlerGender, world);
 		                        break;
 		                    default:
 		                    	Frontier.LOGGER.error("FrontierPackets() - No settler profession found!");
@@ -98,7 +99,7 @@ public class FrontierPackets
 		                }
 			        }
 			        else
-			        	Frontier.LOGGER.info(player.getDisplayName() + " does not have enough emeralds!");
+			        	Frontier.LOGGER.info(player.getDisplayName() + " does not have enough emeralds to hire " + settlerName + "!");
 	            }
 	            else
 	            	Frontier.LOGGER.error("FrontierPackets() - Nomad entity not found!");

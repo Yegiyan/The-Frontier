@@ -394,7 +394,7 @@ public class HireSettlerScreen extends Screen
 	{
         hireButton = ButtonWidget.builder(Text.literal("Hire"), button ->
         {
-            PlayerData playerData = PlayerData.map.get(this.player.getUuid());
+            PlayerData playerData = PlayerData.players.get(this.player.getUuid());
             if (this.player != null && playerData != null && this.settler != null)
             {
                 PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
@@ -403,6 +403,7 @@ public class HireSettlerScreen extends Screen
                 passedData.writeString(settler.getSettlerName());
                 passedData.writeString(settler.getSettlerGender());
                 passedData.writeString(settler.getSettlerExpertise());
+                passedData.writeInt(settler.getSettlerHunger());
                 passedData.writeInt(settler.getSettlerMorale());
                 passedData.writeInt(settler.getSettlerSkill());
                 passedData.writeUuid(settler.getUuid());
@@ -1001,7 +1002,7 @@ public class HireSettlerScreen extends Screen
 				expertiseTexture = new Identifier("minecraft", "textures/item/chainmail_chestplate.png");
 				break;
 			default:
-				Frontier.LOGGER.info("HireSettlerScreen() - Invalid settler expertise!");
+				Frontier.LOGGER.error("HireSettlerScreen() - Invalid settler expertise!");
 				break;
 		}
 	}
