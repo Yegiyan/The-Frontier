@@ -1,4 +1,4 @@
-package com.frontier.util;
+package com.frontier.register;
 
 import org.lwjgl.glfw.GLFW;
 

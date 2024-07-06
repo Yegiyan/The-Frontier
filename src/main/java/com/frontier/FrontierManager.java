@@ -5,11 +5,11 @@ import java.util.UUID;
 import com.frontier.entities.SettlerEntity;
 import com.frontier.gui.PlayerCardScreen;
 import com.frontier.regions.RegionManager;
+import com.frontier.register.FrontierKeyBindings;
 import com.frontier.renderers.RegionMapRenderer;
 import com.frontier.settlements.Settlement;
 import com.frontier.settlements.SettlementManager;
 import com.frontier.structures.Structure;
-import com.frontier.util.FrontierKeyBindings;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
