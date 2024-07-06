@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.frontier.Frontier;
 import com.frontier.PlayerData;
 import com.frontier.gui.util.TextureElement;
 import com.frontier.regions.RegionManager;
@@ -35,7 +36,6 @@ public class PlayerCardScreen extends Screen
 	public static final int BACKGROUND_WIDTH = 256;
     public static final int BACKGROUND_HEIGHT = 330;
     
-	private static final Identifier PROFESSION_TEXTURE = new Identifier("minecraft", "textures/item/bell.png");
 	private static final Identifier FACTION_TEXTURE = new Identifier("minecraft", "textures/mob_effect/resistance.png");
 	private static final Identifier RENOWN_TEXTURE = new Identifier("minecraft", "textures/mob_effect/hero_of_the_village.png");
 	private static final Identifier REGION_TEXTURE = new Identifier("minecraft", "textures/mob_effect/darkness.png");
@@ -61,6 +61,7 @@ public class PlayerCardScreen extends Screen
     private ButtonWidget bountyButton;
     private boolean toggleMenu = false;
     
+    private static Identifier professionTexture;
     MinecraftProfileTexture portrait;
     Identifier skinTexture;
 
@@ -75,12 +76,41 @@ public class PlayerCardScreen extends Screen
 		PlayerEntity player = MinecraftClient.getInstance().player;
     	PlayerData playerData = PlayerData.map.get(player.getUuid());
     	
+    	switch (playerData.getProfession())
+    	{
+    		case "Adventurer":
+    			professionTexture = new Identifier("minecraft", "textures/mob_effect/speed.png");
+    			break;
+    		case "Denizen":
+    			professionTexture = new Identifier("minecraft", "textures/item/totem_of_undying.png");
+    			break;
+    		case "Merchant":
+    			professionTexture = new Identifier("minecraft", "textures/item/bundle.png");
+    			break;
+    		case "Commander":
+    			professionTexture = new Identifier("minecraft", "textures/mob_effect/strength.png");
+    			break;
+    		case "Leader":
+    			professionTexture = new Identifier("minecraft", "textures/item/bell.png");
+    			break;
+    		case "Outlaw":
+    			professionTexture = new Identifier("minecraft", "textures/item/spyglass.png");
+    			break;
+    		case "Maverick":
+    			professionTexture = new Identifier("minecraft", "textures/mob_effect/bad_omen.png");
+    			break;
+    		default:
+    			Frontier.LOGGER.info("PlayerCardScreen() - No player profession found!");
+    			professionTexture = new Identifier("minecraft", "textures/item/barrier.png");
+    			break;
+    	}
+    	
     	backgroundPosX = ((this.width - BACKGROUND_WIDTH) / 2) + UI_OFFSET_X;
         backgroundPosY = ((this.height - BACKGROUND_HEIGHT) / 2) + UI_OFFSET_Y;
 
         textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, (backgroundPosY + 35), 10, 10, "Current Region (" + RegionManager.getPlayerDirection(player.getBlockPos()) + ")" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f));
         textures.add(new TextureElement(TERRITORY_TEXTURE, (backgroundPosX + 12), (backgroundPosY + 55), 12, 12, "Current Territory", 1.0f));
-        textures.add(new TextureElement(PROFESSION_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 14), 12, 12, "Profession", 1.0f));
+        textures.add(new TextureElement(professionTexture, (backgroundPosX + 225), (backgroundPosY + 14), 12, 12, "Profession", 1.0f));
         textures.add(new TextureElement(FACTION_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 35), 12, 12, "Faction", 1.0f));
         textures.add(new TextureElement(RENOWN_TEXTURE, (backgroundPosX + 225), (backgroundPosY + 55), 12, 12, "Renown", 1.0f));
         
@@ -112,24 +142,24 @@ public class PlayerCardScreen extends Screen
             	int playerReputation = playerData.getReputation(territory);
             	
             	if (playerData.getProfession().equals("Leader") && playerData.getFaction().equals(territory))
-            		territoryText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.BLUE));
+            		territoryText = Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.BLUE);
             	
             	else if (playerReputation >= -10 && playerReputation <= 10)
-                	territoryText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.WHITE));
+                	territoryText = Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.WHITE);
             	
                 else if (playerReputation >= 11 && playerReputation <= 50)
-                	territoryText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.GREEN));
+                	territoryText = Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.GREEN);
                 else if (playerReputation >= 51 && playerReputation <= 99)
-                	territoryText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.DARK_AQUA));
+                	territoryText = Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.DARK_AQUA);
                 else if (playerReputation == 100)
-                	territoryText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.BLUE));
+                	territoryText = Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.BLUE);
             	
                 else if (playerReputation >= -11 && playerReputation <= -50)
-                	territoryText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.YELLOW));
+                	territoryText = Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.YELLOW);
                 else if (playerReputation >= -51 && playerReputation <= -99)
-                	territoryText = (MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(ORANGE)));
+                	territoryText = Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(ORANGE)));
                 else if (playerReputation == -100)
-                	territoryText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.RED));
+                	territoryText = Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.RED);
             }
             else
             	territoryText = ((MutableText) Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.WHITE));

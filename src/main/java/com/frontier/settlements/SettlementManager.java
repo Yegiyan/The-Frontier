@@ -281,19 +281,35 @@ public class SettlementManager
 	        for (Map.Entry<UUID, Integer> repEntry : settlement.getReputations().entrySet())
 	            reputationsNbt.putInt(repEntry.getKey().toString(), repEntry.getValue());
 
+	        // save settlers
+	        NbtList settlersNbt = new NbtList();
+	        for (UUID settlerUuid : settlement.getSettlers())
+	        	settlersNbt.add(NbtString.of(settlerUuid.toString()));
+	        
 	        // save players
 	        NbtList playersNbt = new NbtList();
 	        for (UUID playerUuid : settlement.getPlayers())
 	            playersNbt.add(NbtString.of(playerUuid.toString()));
 
-	        // save allies and enemies
+	        // save allies
 	        NbtList alliesNbt = new NbtList();
-	        for (String ally : settlement.getAllies())
-	            alliesNbt.add(NbtString.of(ally));
-
+	        for (UUID ally : settlement.getAllies())
+	            alliesNbt.add(NbtString.of(ally.toString()));
+	        
+	        // save enemies
 	        NbtList enemiesNbt = new NbtList();
-	        for (String enemy : settlement.getEnemies())
-	            enemiesNbt.add(NbtString.of(enemy));
+	        for (UUID enemy : settlement.getEnemies())
+	            enemiesNbt.add(NbtString.of(enemy.toString()));
+	        
+	        // save allied factions
+	        NbtList alliedFactionsNbt = new NbtList();
+	        for (String ally : settlement.getAlliedFactions())
+	        	alliedFactionsNbt.add(NbtString.of(ally));
+	        
+	        // save enemy factions
+	        NbtList enemyFactionsNbt = new NbtList();
+	        for (String enemy : settlement.getEnemyFactions())
+	            enemyFactionsNbt.add(NbtString.of(enemy));
 
 	        // save structures
 	        NbtList structuresNbt = new NbtList();
@@ -332,9 +348,12 @@ public class SettlementManager
 	        settlementNbt.putLong("Position", settlement.getPosition().asLong());
 	        settlementNbt.put("Territory", territoryNbt);
 	        settlementNbt.put("Reputations", reputationsNbt);
+	        settlementNbt.put("Settlers", settlersNbt);
 	        settlementNbt.put("Players", playersNbt);
 	        settlementNbt.put("Allies", alliesNbt);
 	        settlementNbt.put("Enemies", enemiesNbt);
+	        settlementNbt.put("AlliedFactions", alliedFactionsNbt);
+	        settlementNbt.put("EnemyFactions", enemyFactionsNbt);
 	        settlementNbt.put("Structures", structuresNbt);
 
 	        settlementsNbt.put(factionName, settlementNbt);
@@ -404,15 +423,40 @@ public class SettlementManager
 	                    UUID playerUuid = UUID.fromString(playersNbt.getString(i));
 	                    settlement.addPlayer(playerUuid);
 	                }
-
-	                // load allies and enemies
+	                
+	                // load players
+	                NbtList settlersNbt = settlementNbt.getList("Settlers", 8);
+	                for (int i = 0; i < settlersNbt.size(); i++)
+	                {
+	                    UUID settlerUuid = UUID.fromString(settlersNbt.getString(i));
+	                    settlement.addPlayer(settlerUuid);
+	                }
+	                
+	                // load allies
 	                NbtList alliesNbt = settlementNbt.getList("Allies", 8);
 	                for (int i = 0; i < alliesNbt.size(); i++)
-	                    settlement.addAlly(alliesNbt.getString(i));
+	                {
+	                    UUID alliedUuid = UUID.fromString(alliesNbt.getString(i));
+	                    settlement.addAlly(alliedUuid);
+	                }
 
+	                // load enemies
 	                NbtList enemiesNbt = settlementNbt.getList("Enemies", 8);
 	                for (int i = 0; i < enemiesNbt.size(); i++)
-	                    settlement.addEnemy(enemiesNbt.getString(i));
+	                {
+	                    UUID enemyUuid = UUID.fromString(enemiesNbt.getString(i));
+	                    settlement.addEnemy(enemyUuid);
+	                }
+
+	                // load allied factions
+	                NbtList alliedFactionsNbt = settlementNbt.getList("AlliedFactions", 8);
+	                for (int i = 0; i < alliedFactionsNbt.size(); i++)
+	                    settlement.addAllyFaction(alliedFactionsNbt.getString(i));
+
+	                // load enemy factions
+	                NbtList enemyFactionsNbt = settlementNbt.getList("EnemyFactions", 8);
+	                for (int i = 0; i < enemyFactionsNbt.size(); i++)
+	                    settlement.addEnemyFaction(enemyFactionsNbt.getString(i));
 
 	                // load structures
 	                NbtList structuresNbt = settlementNbt.getList("Structures", 10);

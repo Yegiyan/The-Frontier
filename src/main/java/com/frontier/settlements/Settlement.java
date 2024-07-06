@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.frontier.entities.SettlerEntity;
 import com.frontier.structures.Structure;
 import com.frontier.structures.TownHall;
 import com.frontier.structures.Warehouse;
@@ -33,13 +32,16 @@ public class Settlement
     private Map<UUID, Integer> reputations;
     private List<Structure> structures;
     
-    private List<SettlerEntity> settlers;
+    private List<UUID> settlers;
     private List<UUID> players;
     
-    private List<String> allies;
-    private List<String> enemies;
+    private List<UUID> allies;
+    private List<UUID> enemies;
     
-    private final int TERRITORY_CHUNK_RADIUS = 4; // 4 = 128x128 radius
+    private List<String> alliedFactions;
+    private List<String> enemyFactions;
+    
+    private final int TERRITORY_CHUNK_RADIUS = 4; // 4 = 128x128 radius (4 chunks in each direction)
     
     public boolean abortSettlementCreation = false;
 
@@ -55,6 +57,8 @@ public class Settlement
         this.players = new ArrayList<>();
         this.allies = new ArrayList<>();
         this.enemies = new ArrayList<>();
+        this.alliedFactions = new ArrayList<>();
+        this.enemyFactions = new ArrayList<>();
         generateTerritory();
     }
     
@@ -213,15 +217,15 @@ public class Settlement
 		return structures;
 	}
 
-	public List<SettlerEntity> getSettlers() {
+	public List<UUID> getSettlers() {
 		return settlers;
 	}
 
-	public void addSettler(SettlerEntity settler) {
+	public void addSettler(UUID settler) {
 		this.settlers.add(settler);
 	}
 	
-	public void removeSettler(SettlerEntity settler) {
+	public void removeSettler(UUID settler) {
 		this.settlers.remove(settler);
 	}
 
@@ -237,21 +241,37 @@ public class Settlement
 	{
 		this.players.remove(player);
 	}
-
-	public List<String> getAllies() {
+	
+	public List<UUID> getAllies() {
 		return allies;
 	}
 
-	public void addAlly(String faction) {
+	public void addAlly(UUID faction) {
 		this.allies.add(faction);
 	}
 
-	public List<String> getEnemies() {
+	public List<UUID> getEnemies() {
 		return enemies;
 	}
 
-	public void addEnemy(String faction) {
+	public void addEnemy(UUID faction) {
 		this.enemies.add(faction);
+	}
+
+	public List<String> getAlliedFactions() {
+		return alliedFactions;
+	}
+
+	public void addAllyFaction(String faction) {
+		this.alliedFactions.add(faction);
+	}
+
+	public List<String> getEnemyFactions() {
+		return enemyFactions;
+	}
+
+	public void addEnemyFaction(String faction) {
+		this.enemyFactions.add(faction);
 	}
 	
 	int clamp(int value, int min, int max) {

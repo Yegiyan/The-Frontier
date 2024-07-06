@@ -3,6 +3,9 @@ package com.frontier.entities;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
+
+import com.frontier.settlements.SettlementManager;
 
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.SpawnReason;
@@ -96,7 +99,7 @@ public class HireSettler
 		}
 	}
 
-	public static void architect(ArchitectEntity architect, String name, String faction, String profession, String expertise, int morale, int skill, String gender, World world)
+	public static void architect(ArchitectEntity architect, String name, String faction, String profession, String expertise, int morale, int skill, UUID uuid, String gender, World world)
 	{
 		LocalDifficulty difficulty = world.getLocalDifficulty(architect.getBlockPos());
 	    SpawnReason spawnReason = SpawnReason.NATURAL;
@@ -111,6 +114,7 @@ public class HireSettler
 	    architect.setSettlerFaction(faction);
 	    architect.setSettlerExpertise(expertise);
 	    architect.setSettlerMorale(morale);
+	    architect.setUuid(uuid);
 	    
 	    int settlerSkill = expertise.equals(SKILL_TRANSFERS.get(profession.toUpperCase())) ? skill : 0;
 	    architect.setSettlerSkill(settlerSkill);
@@ -124,6 +128,8 @@ public class HireSettler
 	    architect.setSettlerTexture(textureIdx);
 	    
 	    architect.initialize((ServerWorldAccess) world, difficulty, spawnReason, entityData, entityNbt);
+	    SettlementManager.getSettlement(faction).addSettler(uuid);
+	    SettlementManager.saveSettlements(world.getServer());
 	    ArchitectEntity.saveData(architect, world);
 	    world.spawnEntity(architect);
 	}

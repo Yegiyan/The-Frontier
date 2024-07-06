@@ -405,6 +405,7 @@ public class HireSettlerScreen extends Screen
                 passedData.writeString(settler.getSettlerExpertise());
                 passedData.writeInt(settler.getSettlerMorale());
                 passedData.writeInt(settler.getSettlerSkill());
+                passedData.writeUuid(settler.getUuid());
                 passedData.writeBlockPos(settler.getBlockPos());
                 passedData.writeInt(hire.getValue());
                 ClientPlayNetworking.send(FrontierPackets.HIRE_SETTLER_ID, passedData);
@@ -991,7 +992,7 @@ public class HireSettlerScreen extends Screen
 				expertiseTexture = new Identifier("minecraft", "textures/item/bundle_filled.png");
 				break;
 			case "CRAFTING":
-				expertiseTexture = new Identifier("minecraft", "textures/item/redstone.png");
+				expertiseTexture = new Identifier("minecraft", "textures/item/flint.png");
 				break;
 			case "RANCHING":
 				expertiseTexture = new Identifier("minecraft", "textures/item/lead.png");

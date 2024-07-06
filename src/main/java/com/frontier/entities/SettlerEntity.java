@@ -7,11 +7,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
 
 import com.frontier.Frontier;
 import com.frontier.gui.SettlerCardScreen;
 import com.frontier.network.FrontierPackets;
+import com.frontier.settlements.SettlementManager;
 
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -64,7 +64,6 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	private static final TrackedData<Integer> SETTLER_TEXTURE = DataTracker.registerData(SettlerEntity.class, TrackedDataHandlerRegistry.INTEGER);
 	
 	private SimpleInventory inventory;
-	private UUID uuid;
 	
 	public enum Expertise { GOVERNING, HARVESTING, CRAFTING, RANCHING, TRADING, MILITARY }
 	
@@ -116,7 +115,6 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	public SettlerEntity(EntityType<? extends PathAwareEntity> entityType, World world)
     {
         super(entityType, world);
-        this.uuid = UUID.randomUUID();
         this.inventory = new SimpleInventory(27);
         this.dataTracker.startTracking(SETTLER_NAME, "");
         this.dataTracker.startTracking(SETTLER_FACTION, "");
@@ -158,7 +156,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    if (player.getWorld().isClient && hand.equals(Hand.MAIN_HAND) && !this.getSettlerProfession().equals("Nomad"))
 	    	MinecraftClient.getInstance().setScreen(new SettlerCardScreen(this));
 	    
-	    //printEntityInfo(player, hand);
+	    printEntityInfo(player, hand);
 	    return super.interactAt(player, hitPos, hand);
 	}
 	
@@ -438,6 +436,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 		if (!this.getWorld().isClient && player.getStackInHand(hand).isEmpty() && hand.equals(Hand.MAIN_HAND)) 
 	    {
 			Frontier.LOGGER.info("------------");
+			Frontier.LOGGER.info("UUID: " + getUuid());
 			Frontier.LOGGER.info("Name: " + this.getSettlerName());
 			Frontier.LOGGER.info("Faction: " + this.getSettlerFaction());
 			Frontier.LOGGER.info("Profession: " + this.getSettlerProfession());
@@ -489,7 +488,11 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 		if (!this.getWorld().isClient)
 		{
 			if (this.getServer() != null)
+			{
+				if (SettlementManager.getSettlement(getSettlerFaction()) != null)
+					SettlementManager.getSettlement(getSettlerFaction()).getSettlers().remove(getUuid());
 				removeSettlerFromData(this.getSettlerName(), this.getEntityWorld());
+			}
 			else
 				Frontier.LOGGER.info("SettlerEntity() - getServer is null!");
 		}
@@ -575,10 +578,6 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	        return this.getCustomName();
 	    else 
 	        return Text.of(getSettlerName());
-	}
-	
-	public UUID getSettlerUUID() {
-	    return this.uuid;
 	}
 	
 	public String getSettlerName() {
