@@ -284,15 +284,15 @@ public class HireSettlerScreen extends Screen
 		barTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f));
 		mainTextures.add(new TextureElement(expertiseTexture, (backgroundPosX + 214), (backgroundPosY + 18), 12, 12, "Expertise", 1.2f));
 
+		governingTextures.add(new TextureElement(ARCHITECT_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Uses settlement supplies to construct buildings", 1.0f));
+		governingTextures.add(new TextureElement(DELIVERER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Disperses settlement supplies to other settlers", 1.0f));
+		governingTextures.add(new TextureElement(PRIEST_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Tends to the cemetery and provides decursing services", 1.0f));
+		governingTextures.add(new TextureElement(COURIER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Sends your requests or demands to other settlements", 1.0f));
+		governingTextures.add(new TextureElement(INNKEEPER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Provides shelter and rest for foreigners", 1.0f));
+		
 		militaryTextures.add(new TextureElement(ARCHER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Ranged fighter that wears leather armor", 1.0f));
 		militaryTextures.add(new TextureElement(KNIGHT_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Melee fighter that wears leather or heavy armor", 1.0f));
 		militaryTextures.add(new TextureElement(CLERIC_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Armored medic that heals allies in and out of combat", 1.0f));
-		
-		governingTextures.add(new TextureElement(ARCHITECT_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Uses settlement supplies to construct buildings", 1.0f));
-		governingTextures.add(new TextureElement(DELIVERER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Disperses settlement supplies to other settlers", 1.0f));
-		governingTextures.add(new TextureElement(PRIEST_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Tends to the cemetary and provides decursing services", 1.0f));
-		governingTextures.add(new TextureElement(COURIER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Sends your requests or demands to other settlements", 1.0f));
-		governingTextures.add(new TextureElement(INNKEEPER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Provides shelter and rest for foreigners", 1.0f));
 		
 		harvestingTextures.add(new TextureElement(FARMER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Plants and harvests various types of crops", 1.0f));
 		harvestingTextures.add(new TextureElement(MINER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "DIGGY DIGGY HOLE, I'M DIGGING A HOLE", 1.0f));
