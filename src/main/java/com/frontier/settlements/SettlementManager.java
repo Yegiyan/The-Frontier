@@ -59,7 +59,7 @@ public class SettlementManager
 
     public static void registerCallback()
 	{
-	    UseBlockCallback.EVENT.register((player, world, hand, blockHitResult) -> 
+	    UseBlockCallback.EVENT.register((player, world, hand, blockHitResult) ->
 	    {
 	    	PlayerData playerData = PlayerData.players.get(player.getUuid());
 	    	if (playerData != null)
@@ -195,6 +195,7 @@ public class SettlementManager
 		    List<UUID> players = new ArrayList<>(getSettlement(faction).getPlayers());
 		    players.removeIf(uuid -> uuid.equals(leader));
 
+		    // choose random player at the moment
 		    Random rand = new Random();
 		    UUID newLeader = players.get(rand.nextInt(players.size()));
 		    getSettlement(faction).setLeader(newLeader);

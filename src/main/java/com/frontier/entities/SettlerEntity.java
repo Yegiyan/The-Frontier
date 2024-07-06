@@ -143,9 +143,9 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    if (!player.getWorld().isClient)
 	    	syncInventory();
 	    
-	    if (itemStack.getItem() == Items.NAME_TAG) 
+	    if (itemStack.getItem() == Items.NAME_TAG)
 	    {
-	        if (itemStack.hasCustomName() && !this.getWorld().isClient()) 
+	        if (itemStack.hasCustomName() && !this.getWorld().isClient())
 	        {
 	            this.setCustomName(itemStack.getName());
 	            itemStack.decrement(1);
@@ -163,7 +163,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	}
 	
 	@Override
-	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, EntityData entityData, NbtCompound entityNbt) 
+	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, EntityData entityData, NbtCompound entityNbt)
 	{
 		entityData = super.initialize(world, difficulty, spawnReason, entityData, entityNbt);
 	    if (entityNbt.contains("Name")) 
@@ -187,7 +187,39 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	}
 
 	@Override
-	public void readCustomDataFromNbt(NbtCompound nbt) 
+	public void writeCustomDataToNbt(NbtCompound nbt) 
+	{
+	    super.writeCustomDataToNbt(nbt);
+	    nbt.putUuid("UUID", this.uuid);
+	    nbt.putString("Name", getSettlerName());
+	    nbt.putString("Faction", getSettlerFaction());
+	    nbt.putString("Profession", getSettlerProfession());
+	    nbt.putString("Expertise", this.getDataTracker().get(SETTLER_EXPERTISE));
+	    nbt.putInt("Morale", this.getDataTracker().get(SETTLER_MORALE));
+	    nbt.putInt("Skill", this.getDataTracker().get(SETTLER_SKILL));
+	    nbt.putInt("Hunger", this.getDataTracker().get(SETTLER_HUNGER));
+	    nbt.putString("Gender", getSettlerGender());
+	    nbt.putInt("Texture", this.getDataTracker().get(SETTLER_TEXTURE));
+	    
+	    nbt.putString("EntityType", this.getType().toString());
+	    
+	    NbtList inventoryList = new NbtList();
+	    for (int i = 0; i < inventory.size(); i++)
+	    {
+	        ItemStack stack = inventory.getStack(i);
+	        if (!stack.isEmpty())
+	        {
+	            NbtCompound itemTag = new NbtCompound();
+	            itemTag.putInt("Slot", i);
+	            stack.writeNbt(itemTag);
+	            inventoryList.add(itemTag);
+	        }
+	    }
+	    nbt.put("Inventory", inventoryList);
+	}
+	
+	@Override
+	public void readCustomDataFromNbt(NbtCompound nbt)
 	{
 	    super.readCustomDataFromNbt(nbt);
 	    if (nbt.contains("UUID")) 
@@ -208,8 +240,8 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	        this.getDataTracker().set(SETTLER_HUNGER, nbt.getInt("Hunger"));
 	    if (nbt.contains("Gender"))
 	        this.getDataTracker().set(SETTLER_GENDER, nbt.getString("Gender"));
-	    if (nbt.contains("SettlerTexture"))
-	        this.getDataTracker().set(SETTLER_TEXTURE, nbt.getInt("SettlerTexture"));
+	    if (nbt.contains("Texture"))
+	        this.getDataTracker().set(SETTLER_TEXTURE, nbt.getInt("Texture"));
 	    
 	    NbtList inventoryList = nbt.getList("Inventory", NbtElement.COMPOUND_TYPE);
 	    for (int i = 0; i < inventoryList.size(); i++)
@@ -221,38 +253,6 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    }
 	    
 	    loadData(this.getWorld());
-	}
-
-	@Override
-	public void writeCustomDataToNbt(NbtCompound nbt) 
-	{
-	    super.writeCustomDataToNbt(nbt);
-	    nbt.putUuid("UUID", this.uuid);
-	    nbt.putString("Name", getSettlerName());
-	    nbt.putString("Faction", getSettlerFaction());
-	    nbt.putString("Profession", getSettlerProfession());
-	    nbt.putString("Expertise", this.getDataTracker().get(SETTLER_EXPERTISE));
-	    nbt.putInt("Morale", this.getDataTracker().get(SETTLER_MORALE));
-	    nbt.putInt("Skill", this.getDataTracker().get(SETTLER_SKILL));
-	    nbt.putInt("Hunger", this.getDataTracker().get(SETTLER_HUNGER));
-	    nbt.putString("Gender", getSettlerGender());
-	    nbt.putInt("SettlerTexture", this.getDataTracker().get(SETTLER_TEXTURE));
-	    
-	    nbt.putString("EntityType", this.getType().toString());
-	    
-	    NbtList inventoryList = new NbtList();
-	    for (int i = 0; i < inventory.size(); i++)
-	    {
-	        ItemStack stack = inventory.getStack(i);
-	        if (!stack.isEmpty())
-	        {
-	            NbtCompound itemTag = new NbtCompound();
-	            itemTag.putInt("Slot", i);
-	            stack.writeNbt(itemTag);
-	            inventoryList.add(itemTag);
-	        }
-	    }
-	    nbt.put("Inventory", inventoryList);
 	}
 
 	public static void saveData(SettlerEntity settler, World world)
