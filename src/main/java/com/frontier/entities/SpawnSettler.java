@@ -49,15 +49,13 @@ public class SpawnSettler
 	    nomad.setSettlerName(name);
 	    occupiedNames.add(name);
 
-	    // set faction, profession, & expertise
 	    nomad.setSettlerProfession(profession);
 	    nomad.setSettlerFaction(faction);
 	    nomad.setSettlerExpertise(SettlerEntity.chooseRandomExpertise().name());
-	    
-	    // set morale & skill
+	    nomad.setSettlerHunger(100);
 	    nomad.setSettlerMorale(SettlerEntity.chooseRandomValue(40, 60, false));
 	    nomad.setSettlerSkill(SettlerEntity.chooseRandomValue(1, 20, true));
-
+	    
 	    // choose random texture depending on gender
 	    int textureIdx;
 	    if (gender.equals("MALE")) 

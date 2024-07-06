@@ -1,5 +1,6 @@
 package com.frontier.register;
 
+import com.frontier.Frontier;
 import com.frontier.entities.ArchitectEntity;
 import com.frontier.entities.NomadEntity;
 import com.frontier.entities.SettlerEntity;
@@ -33,4 +34,18 @@ public class FrontierEntities
 		EntityRendererRegistry.register(ARCHITECT_ENTITY,(EntityRendererFactory.Context context) -> new SettlerEntityRenderer(context));
 		FabricDefaultAttributeRegistry.register(ARCHITECT_ENTITY, SettlerEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 1));
 	}
+	
+	public static EntityType<? extends SettlerEntity> getEntityType(String profession)
+	{
+        switch (profession)
+        {
+            case "Architect":
+                return ARCHITECT_ENTITY;
+            case "Nomad":
+            	return NOMAD_ENTITY;
+            default:
+            	Frontier.LOGGER.error("FrontierEntities() - SettlerEntity type not found!");
+            	return null;
+        }
+    }
 }

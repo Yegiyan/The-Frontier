@@ -17,7 +17,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-public class Frontier implements ModInitializer 
+public class Frontier implements ModInitializer
 {
 	public static String MOD_ID = "frontier";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
@@ -28,11 +28,11 @@ public class Frontier implements ModInitializer
 	private static int repTickCounter = 0;
 	private static int borderTickCounter = 0;
 	
+	// fully develop architect NPC
+	
 	// create building ui
 	// show dimensions of structure to player when they try to manually place structure location
 	// test warehouse construction/upgrading/repairing with architect
-	
-	// Frontier.LOGGER.info(
 	
 	@Override
 	public void onInitialize()

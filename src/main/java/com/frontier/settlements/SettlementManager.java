@@ -17,8 +17,10 @@ import java.util.UUID;
 
 import com.frontier.Frontier;
 import com.frontier.PlayerData;
+import com.frontier.entities.SettlerEntity;
 import com.frontier.gui.AbandonSettlementScreen;
 import com.frontier.gui.CreateSettlementScreen;
+import com.frontier.register.FrontierEntities;
 import com.frontier.structures.Structure;
 import com.frontier.structures.TownHall;
 import com.frontier.structures.Warehouse;
@@ -28,6 +30,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
@@ -283,8 +286,12 @@ public class SettlementManager
 
 	        // save settlers
 	        NbtList settlersNbt = new NbtList();
-	        for (UUID settlerUuid : settlement.getSettlers())
-	        	settlersNbt.add(NbtString.of(settlerUuid.toString()));
+	        for (SettlerEntity settler : settlement.getSettlers())
+	        {
+	            NbtCompound settlerNbt = new NbtCompound();
+	            settler.writeCustomDataToNbt(settlerNbt);
+	            settlersNbt.add(settlerNbt);
+	        }
 	        
 	        // save players
 	        NbtList playersNbt = new NbtList();
@@ -416,20 +423,26 @@ public class SettlementManager
 	                    settlement.setReputation(uuid, reputation);
 	                }
 
+	                // load settlers
+	                NbtList settlersNbt = settlementNbt.getList("Settlers", 10);
+					for (int i = 0; i < settlersNbt.size(); i++)
+					{
+						NbtCompound settlerNbt = settlersNbt.getCompound(i);
+						String profession = settlerNbt.getString("Profession");
+						EntityType<? extends SettlerEntity> entityType = FrontierEntities.getEntityType(profession);
+
+						SettlerEntity settler = entityType.create(server.getOverworld());
+
+						settler.readCustomDataFromNbt(settlerNbt);
+						settlement.addSettler(settler);
+					}
+	                
 	                // load players
 	                NbtList playersNbt = settlementNbt.getList("Players", 8);
 	                for (int i = 0; i < playersNbt.size(); i++)
 	                {
 	                    UUID playerUuid = UUID.fromString(playersNbt.getString(i));
 	                    settlement.addPlayer(playerUuid);
-	                }
-	                
-	                // load players
-	                NbtList settlersNbt = settlementNbt.getList("Settlers", 8);
-	                for (int i = 0; i < settlersNbt.size(); i++)
-	                {
-	                    UUID settlerUuid = UUID.fromString(settlersNbt.getString(i));
-	                    settlement.addPlayer(settlerUuid);
 	                }
 	                
 	                // load allies

@@ -42,7 +42,7 @@ public class RequestNomads
 		            NomadEntity nomad = FrontierEntities.NOMAD_ENTITY.create(world);
 		            nomad.setBellPosition(bellPos);
 		            nomad.refreshPositionAndAngles(spawnPos, 0, 0);
-		            SpawnSettler.nomad((NomadEntity) nomad, "N/A", "Nomad", world);
+		            SpawnSettler.nomad(nomad, "N/A", "Nomad", world);
 
 		            Frontier.sendMessage((ServerPlayerEntity) player, "Bell rung!", Formatting.WHITE);
 		            return ActionResult.SUCCESS;
@@ -52,7 +52,7 @@ public class RequestNomads
 	    	}
 	        else
 	        {
-	        	Frontier.LOGGER.info("RequestNomads() - playerData is null!");
+	        	Frontier.LOGGER.error("RequestNomads() - playerData is null!");
 	        	return ActionResult.PASS;
 	        }
 	    });

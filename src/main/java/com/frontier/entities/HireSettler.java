@@ -128,7 +128,7 @@ public class HireSettler
 	    architect.setSettlerTexture(textureIdx);
 	    
 	    architect.initialize((ServerWorldAccess) world, difficulty, spawnReason, entityData, entityNbt);
-	    SettlementManager.getSettlement(faction).addSettler(uuid);
+	    SettlementManager.getSettlement(faction).addSettler(architect);
 	    SettlementManager.saveSettlements(world.getServer());
 	    ArchitectEntity.saveData(architect, world);
 	    world.spawnEntity(architect);

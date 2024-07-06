@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.frontier.entities.SettlerEntity;
 import com.frontier.structures.Structure;
 import com.frontier.structures.TownHall;
 import com.frontier.structures.Warehouse;
@@ -32,7 +33,7 @@ public class Settlement
     private Map<UUID, Integer> reputations;
     private List<Structure> structures;
     
-    private List<UUID> settlers;
+    private List<SettlerEntity> settlers;
     private List<UUID> players;
     
     private List<UUID> allies;
@@ -217,15 +218,15 @@ public class Settlement
 		return structures;
 	}
 
-	public List<UUID> getSettlers() {
+	public List<SettlerEntity> getSettlers() {
 		return settlers;
 	}
 
-	public void addSettler(UUID settler) {
+	public void addSettler(SettlerEntity settler) {
 		this.settlers.add(settler);
 	}
 	
-	public void removeSettler(UUID settler) {
+	public void removeSettler(SettlerEntity settler) {
 		this.settlers.remove(settler);
 	}
 

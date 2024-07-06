@@ -92,7 +92,7 @@ public class FrontierPackets
 		                        HireSettler.architect(architect, settlerName, settlerFaction, "Architect", settlerExpertise, settlerMorale, settlerSkill, settlerUUID, settlerGender, world);
 		                        break;
 		                    default:
-		                    	Frontier.LOGGER.info("FrontierPackets() - No settler profession found!");
+		                    	Frontier.LOGGER.error("FrontierPackets() - No settler profession found!");
 		                        HireSettler.refundEmeraldsToPlayer(player, emeraldCost);
 		                        break;
 		                }
@@ -101,7 +101,7 @@ public class FrontierPackets
 			        	Frontier.LOGGER.info(player.getDisplayName() + " does not have enough emeralds!");
 	            }
 	            else
-	            	Frontier.LOGGER.info("FrontierPackets() - Nomad entity not found!");
+	            	Frontier.LOGGER.error("FrontierPackets() - Nomad entity not found!");
 		    });
 		});
 	}

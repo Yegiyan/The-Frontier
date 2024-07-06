@@ -120,7 +120,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
         this.dataTracker.startTracking(SETTLER_FACTION, "");
         this.dataTracker.startTracking(SETTLER_PROFESSION, "");
         this.dataTracker.startTracking(SETTLER_EXPERTISE, "");
-        this.dataTracker.startTracking(SETTLER_HUNGER, 100);
+        this.dataTracker.startTracking(SETTLER_HUNGER, 0);
         this.dataTracker.startTracking(SETTLER_MORALE, 0);
         this.dataTracker.startTracking(SETTLER_SKILL, 0);
         this.dataTracker.startTracking(SETTLER_GENDER, "");
@@ -156,7 +156,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    if (player.getWorld().isClient && hand.equals(Hand.MAIN_HAND) && !this.getSettlerProfession().equals("Nomad"))
 	    	MinecraftClient.getInstance().setScreen(new SettlerCardScreen(this));
 	    
-	    printEntityInfo(player, hand);
+	    //printEntityInfo(player, hand);
 	    return super.interactAt(player, hitPos, hand);
 	}
 	
@@ -235,6 +235,8 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    nbt.putInt("Hunger", this.getDataTracker().get(SETTLER_HUNGER));
 	    nbt.putString("Gender", getSettlerGender());
 	    nbt.putInt("SettlerTexture", this.getDataTracker().get(SETTLER_TEXTURE));
+	    
+	    nbt.putString("EntityType", this.getType().toString());
 	    
 	    NbtList inventoryList = new NbtList();
 	    for (int i = 0; i < inventory.size(); i++)
@@ -477,7 +479,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 			if (!stack.isEmpty())
 			{
 				this.dropStack(stack);
-				inventory.setStack(i, ItemStack.EMPTY); // Clear the inventory slot after dropping the item
+				inventory.setStack(i, ItemStack.EMPTY); // clear inventory slot after dropping item
 			}
 		}
 	}
@@ -490,11 +492,11 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 			if (this.getServer() != null)
 			{
 				if (SettlementManager.getSettlement(getSettlerFaction()) != null)
-					SettlementManager.getSettlement(getSettlerFaction()).getSettlers().remove(getUuid());
+					SettlementManager.getSettlement(getSettlerFaction()).getSettlers().remove(this);
 				removeSettlerFromData(this.getSettlerName(), this.getEntityWorld());
 			}
 			else
-				Frontier.LOGGER.info("SettlerEntity() - getServer is null!");
+				Frontier.LOGGER.error("SettlerEntity() - getServer is null!");
 		}
 		super.remove(reason);
 	}
@@ -506,7 +508,6 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    buf.writeInt(inventory.size());
 	    for (int i = 0; i < inventory.size(); i++)
 	        buf.writeItemStack(inventory.getStack(i));
-	    // send packet to all players tracking this entity
 	    for (ServerPlayerEntity player : PlayerLookup.tracking(this))
 	        ServerPlayNetworking.send(player, FrontierPackets.SYNC_SETTLER_INVENTORY_ID, buf);
 	}
