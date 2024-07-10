@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 
 import com.frontier.Frontier;
 import com.frontier.PlayerData;
@@ -158,7 +159,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && hand.equals(Hand.MAIN_HAND) && !this.getSettlerProfession().equals("Nomad"))
 	    	MinecraftClient.getInstance().setScreen(new SettlerCardScreen(this));
 	    
-	    //printEntityInfo(player, hand);
+	    printEntityInfo(player, hand);
 	    return super.interactAt(player, hitPos, hand);
 	}
 	
@@ -166,6 +167,8 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, EntityData entityData, NbtCompound entityNbt)
 	{
 		entityData = super.initialize(world, difficulty, spawnReason, entityData, entityNbt);
+		if (entityNbt.contains("UUID"))
+			setUuid(entityNbt.getUuid("UUID"));
 	    if (entityNbt.contains("Name")) 
 	        setSettlerName(entityNbt.getString("Name"));
 	    if (entityNbt.contains("Faction")) 
@@ -252,10 +255,10 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	            inventory.setStack(slot, ItemStack.fromNbt(itemTag));
 	    }
 	    
-	    loadData(this.getWorld());
+	    loadEntityData(this.getWorld());
 	}
 
-	public static void saveData(SettlerEntity settler, World world)
+	public static void saveEntityData(SettlerEntity settler, World world)
 	{
 	    File saveDir = world.getServer().getSavePath(WorldSavePath.ROOT).toFile();
 	    File nbtFile = new File(saveDir, "thefrontier/EntityData.nbt");
@@ -295,7 +298,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    catch (IOException e) { e.printStackTrace(); }
 	}
 
-	public static Set<String> loadData(World world)
+	public static Set<String> loadEntityData(World world)
 	{
 	    Set<String> occupiedNames = new HashSet<>();
 	    File saveDir = world.getServer().getSavePath(WorldSavePath.ROOT).toFile();
@@ -330,6 +333,88 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    } 
 	    catch(IOException e) { e.printStackTrace(); }
 	    return occupiedNames;
+	}
+	
+	public static void removeSettlerFromEntityData(UUID uuid, World world)
+	{
+	    File saveDir = world.getServer().getSavePath(WorldSavePath.ROOT).toFile();
+	    File nbtFile = new File(saveDir, "thefrontier/EntityData.nbt");
+
+	    NbtCompound nbt;
+	    if (nbtFile.exists()) 
+	    {
+	        try { nbt = NbtIo.readCompressed(nbtFile); } 
+	        catch (IOException e) { e.printStackTrace(); return; }
+	    } 
+	    else 
+	        return;
+
+	    NbtCompound settlers = nbt.getCompound("Settlers");
+	    for (String faction : settlers.getKeys()) 
+	    {
+	        NbtCompound factionNbt = settlers.getCompound(faction);
+	        if (factionNbt.contains(uuid.toString())) 
+	        {
+	            factionNbt.remove(uuid.toString());
+	            settlers.put(faction, factionNbt);
+	            break;
+	        }
+	    }
+	    nbt.put("Settlers", settlers);
+
+	    try { NbtIo.writeCompressed(nbt, nbtFile); }
+	    catch (IOException e) { e.printStackTrace(); }
+	}
+	
+	public static void removeSettlerFromSettlementData(UUID uuid, String factionName, World world) 
+	{
+	    File saveDir = world.getServer().getSavePath(WorldSavePath.ROOT).toFile();
+	    File nbtFile = new File(saveDir, "thefrontier/SettlementData.nbt");
+
+	    NbtCompound nbt;
+	    if (nbtFile.exists()) 
+	    {
+	        try { nbt = NbtIo.readCompressed(nbtFile); } 
+	        catch (IOException e) { e.printStackTrace(); return; }
+	    } 
+	    else 
+	        return;
+
+	    if (nbt.contains("Settlements")) 
+	    {
+	        NbtCompound settlements = nbt.getCompound("Settlements");
+	        if (settlements.contains(factionName)) 
+	        {
+	            NbtCompound factionNbt = settlements.getCompound(factionName);
+	            if (factionNbt.contains("Settlers")) 
+	            {
+	                NbtCompound settlers = factionNbt.getCompound("Settlers");
+
+	                for (String key : settlers.getKeys()) 
+	                {
+	                    NbtCompound settlerNbt = settlers.getCompound(key);
+	                    int[] settlerUUID = settlerNbt.getIntArray("UUID");
+	                    UUID settlerUUIDObject = new UUID(
+	                        (long) settlerUUID[0] << 32 | (settlerUUID[1] & 0xFFFFFFFFL),
+	                        (long) settlerUUID[2] << 32 | (settlerUUID[3] & 0xFFFFFFFFL)
+	                    );
+
+	                    if (settlerUUIDObject.equals(uuid)) 
+	                    {
+	                        settlers.remove(key);
+	                        break;
+	                    }
+	                }
+
+	                factionNbt.put("Settlers", settlers);
+	                settlements.put(factionName, factionNbt);
+	                nbt.put("Settlements", settlements);
+
+	                try { NbtIo.writeCompressed(nbt, nbtFile); }
+	                catch (IOException e) { e.printStackTrace(); }
+	            }
+	        }
+	    }
 	}
 	
 	public static void changeSettlerName(String oldName, String newName, World world) 
@@ -369,42 +454,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    catch (IOException e) { e.printStackTrace(); }
 	}
 	
-	public static void removeSettlerFromData(String name, World world) 
-	{
-	    File saveDir = world.getServer().getSavePath(WorldSavePath.ROOT).toFile();
-	    File nbtFile = new File(saveDir, "thefrontier/EntityData.nbt");
-
-	    NbtCompound nbt;
-	    if (nbtFile.exists()) 
-	    {
-	        try { nbt = NbtIo.readCompressed(nbtFile); } 
-	        catch (IOException e) { e.printStackTrace(); return; }
-	    } 
-	    else 
-	        return;
-
-	    NbtCompound settlers = nbt.getCompound("Settlers");
-	    for (String faction : settlers.getKeys()) 
-	    {
-	        NbtCompound factionNbt = settlers.getCompound(faction);
-	        for(String uuid : factionNbt.getKeys()) 
-	        {
-	            NbtCompound settlerNbt = factionNbt.getCompound(uuid);
-	            if(settlerNbt.getString("Name").equals(name)) 
-	            {
-	                factionNbt.remove(uuid);
-	                break;
-	            }
-	        }
-	        settlers.put(faction, factionNbt);
-	    }
-	    nbt.put("Settlers", settlers);
-
-	    try { NbtIo.writeCompressed(nbt, nbtFile); }
-	    catch (IOException e) { e.printStackTrace(); }
-	}
-	
-	public static SettlerEntity findSettlerEntity(World world, BlockPos pos, String name)
+	public static SettlerEntity findSettlerEntityInRadius(World world, BlockPos pos, String name)
 	{
 		Box searchBox = new Box(pos).expand(10); // 20x20x20 area around pos
 	    List<SettlerEntity> settlers = world.getEntitiesByClass(SettlerEntity.class, searchBox, settler -> settler.getSettlerName().equals(name));
@@ -493,9 +543,14 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 		{
 			if (this.getServer() != null)
 			{
-				if (SettlementManager.getSettlement(getSettlerFaction()) != null)
-					SettlementManager.getSettlement(getSettlerFaction()).getSettlers().remove(this);
-				removeSettlerFromData(this.getSettlerName(), this.getEntityWorld());
+				if (!isNomad())
+				{
+					removeSettlerFromSettlementData(uuid, getSettlerFaction(), getEntityWorld());
+					SettlementManager.getSettlement(getSettlerFaction()).removeSettler(getUuid());
+					SettlementManager.saveSettlements(getServer());
+				}
+				
+				removeSettlerFromEntityData(this.getUuid(), this.getEntityWorld());
 			}
 			else
 				Frontier.LOGGER.error("SettlerEntity() - getServer is null!");
@@ -573,6 +628,11 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
     @Override
     public boolean canImmediatelyDespawn(double distanceSquared) {
         return false;
+    }
+    
+    public boolean isNomad()
+    {
+    	return getSettlerFaction().equalsIgnoreCase("N/A");
     }
     
 	@Override

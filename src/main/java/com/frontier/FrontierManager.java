@@ -21,17 +21,17 @@ import net.minecraft.world.World;
 
 public class FrontierManager
 {
-	public static void manageEntityData()
+	public static void entityData()
 	{
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> 
 		{
 	        ServerWorld world = server.getWorld(World.OVERWORLD);
 	        if (world != null && !world.isClient)
-	            SettlerEntity.loadData(world);
+	            SettlerEntity.loadEntityData(world);
 	    });
 	}
 	
-	public static void managePlayerData()
+	public static void playerData()
 	{
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
 		{
@@ -56,7 +56,7 @@ public class FrontierManager
         });
 	}
 	
-	public static void manageSettlementData()
+	public static void settlementData()
 	{
         ServerLifecycleEvents.SERVER_STARTED.register(server ->
         {
@@ -73,7 +73,7 @@ public class FrontierManager
         });
     }
 	
-	public static void manageRegionData()
+	public static void regionData()
 	{
         ServerLifecycleEvents.SERVER_STARTED.register(server ->
         {
@@ -92,7 +92,7 @@ public class FrontierManager
         });
     }
 	
-	public static void manageKeyBindings()
+	public static void keyBindings()
 	{
 		FrontierKeyBindings.register();
         KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.playerCardKey);

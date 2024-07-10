@@ -211,8 +211,8 @@ public class Settlement
 	}
 	
 	public void checkReputation(UUID uuid, MinecraftServer server) { // might have to make a separate method for other entities
-    	reputations.putIfAbsent(uuid, 0);
-    	SettlementManager.saveSettlements(server);
+		if (reputations.putIfAbsent(uuid, 0) == null)
+	        SettlementManager.saveSettlements(server);
     }
 
 	public List<Structure> getStructures() {
@@ -227,8 +227,8 @@ public class Settlement
 		this.settlers.add(settler);
 	}
 	
-	public void removeSettler(SettlerEntity settler) {
-		this.settlers.remove(settler);
+	public void removeSettler(UUID uuid) {
+	    settlers.removeIf(settler -> settler.getUuid().equals(uuid));
 	}
 
 	public List<UUID> getPlayers() {

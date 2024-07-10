@@ -9,10 +9,8 @@ import com.frontier.regions.RegionManager;
 import com.frontier.register.FrontierCommands;
 import com.frontier.register.FrontierEntities;
 import com.frontier.settlements.SettlementManager;
-import com.frontier.structures.StructureManager;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -22,12 +20,8 @@ public class Frontier implements ModInitializer
 	public static String MOD_ID = "frontier";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	
-	// intervals in seconds
-	private static final int playerRepInterval = 5;
-	private static final int borderDrawInterval = 1;
-	private static int repTickCounter = 0;
-	private static int borderTickCounter = 0;
-	
+	// create date system
+	// create 'deaths' list for settlements for cemetary
 	// fully develop architect NPC
 	
 	// create building ui
@@ -40,47 +34,26 @@ public class Frontier implements ModInitializer
 		FrontierEntities.register();
 		FrontierCommands.register();
 		
-		FrontierManager.manageKeyBindings();
-		FrontierManager.manageRegionData();
-		FrontierManager.manageEntityData();
-		FrontierManager.managePlayerData();
-		FrontierManager.manageSettlementData();
-		
-		FrontierPackets.apply();
+		FrontierManager.keyBindings();
+		FrontierManager.regionData();
+		FrontierManager.entityData();
+		FrontierManager.playerData();
+		FrontierManager.settlementData();
 		
 		RegionManager.registerCallback();
 		SettlementManager.registerCallback();
 		RequestNomads.registerCallback();
 		
-		updateWorldEvents();
-	}
-	
-	public static void updateWorldEvents()
-	{
-		StructureManager structureManager = new StructureManager();
-		structureManager.register();
+		FrontierPackets.apply();
 		
-	    ServerTickEvents.END_SERVER_TICK.register(server ->
-	    {
-	        repTickCounter++;
-	        if (repTickCounter >= (20 * playerRepInterval))
-	        {
-	            repTickCounter = 0;
-	            SettlementManager.updatePlayerReputations(server);
-	        }
-
-	        borderTickCounter++;
-	        if (borderTickCounter >= (20 * borderDrawInterval))
-	        {
-	            borderTickCounter = 0;
-	            SettlementManager.drawSettlementBorder(server);
-	        }
-	    });
+		FrontierUpdate.worldEvents();
 	}
 	
 	public static void sendMessage(ServerPlayerEntity player, String message, Formatting color)
 	{
         if (player != null && message != null && color != null)
             player.sendMessage(Text.literal(message).styled(style -> style.withColor(color)), false);
+        else
+        	LOGGER.error("Frontier - null message value!");
     }
 }

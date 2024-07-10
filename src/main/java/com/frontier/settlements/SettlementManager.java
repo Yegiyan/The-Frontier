@@ -298,6 +298,7 @@ public class SettlementManager
 	        {
 	            NbtCompound settlerNbt = new NbtCompound();
 	            settler.writeCustomDataToNbt(settlerNbt);
+	            System.out.println("Save settler with UUID: " + settler.getUuidAsString() + " to faction: " + factionName);
 	            settlersNbt.add(settlerNbt);
 	        }
 	        
@@ -433,17 +434,22 @@ public class SettlementManager
 
 	                // load settlers
 	                NbtList settlersNbt = settlementNbt.getList("Settlers", 10);
-					for (int i = 0; i < settlersNbt.size(); i++)
-					{
-						NbtCompound settlerNbt = settlersNbt.getCompound(i);
-						String profession = settlerNbt.getString("Profession");
-						EntityType<? extends SettlerEntity> entityType = FrontierEntities.getEntityType(profession);
+	                for (int i = 0; i < settlersNbt.size(); i++)
+	                {
+	                    NbtCompound settlerNbt = settlersNbt.getCompound(i);
+	                    String profession = settlerNbt.getString("Profession");
+	                    EntityType<? extends SettlerEntity> entityType = FrontierEntities.getEntityType(profession);
 
-						SettlerEntity settler = entityType.create(server.getOverworld());
+	                    SettlerEntity settler = entityType.create(server.getOverworld());
+	                    
+	                    if (settlerNbt.contains("UUID"))
+	                        settler.setUuid(settlerNbt.getUuid("UUID"));
+	                    
+	                    settler.readCustomDataFromNbt(settlerNbt);
+	                    settlement.addSettler(settler);
+	                    System.out.println("Loaded settler with UUID: " + settler.getUuidAsString() + " to faction: " + factionName);
+	                }
 
-						settler.readCustomDataFromNbt(settlerNbt);
-						settlement.addSettler(settler);
-					}
 	                
 	                // load players
 	                NbtList playersNbt = settlementNbt.getList("Players", 8);

@@ -79,7 +79,7 @@ public class FrontierPackets
 		    
 		    server.execute(() ->
 		    {
-		    	SettlerEntity nomad = NomadEntity.findSettlerEntity(world, settlerPos, settlerName);
+		    	SettlerEntity nomad = NomadEntity.findSettlerEntityInRadius(world, settlerPos, settlerName);
 	            if (nomad != null)
 	            {
 	            	if (HireSettler.removeEmeraldsFromPlayer(player, emeraldCost))

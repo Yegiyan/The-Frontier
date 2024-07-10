@@ -33,7 +33,7 @@ public class SpawnSettler
 	    String name = "";
 	    List<String> availableNames = gender.equals("Male") ? new ArrayList<>(nomad.maleSettlerNames) : new ArrayList<>(nomad.femaleSettlerNames);
 
-	    Set<String> occupiedNames = NomadEntity.loadData(world);
+	    Set<String> occupiedNames = NomadEntity.loadEntityData(world);
 	    availableNames.removeAll(occupiedNames);
 
 	    // check if there are any available names left
@@ -65,7 +65,7 @@ public class SpawnSettler
 	    nomad.setSettlerTexture(textureIdx);
 	    
 	    nomad.initialize((ServerWorldAccess) world, difficulty, spawnReason, entityData, entityNbt);
-	    NomadEntity.saveData(nomad, world);
+	    NomadEntity.saveEntityData(nomad, world);
 	    world.spawnEntity(nomad);
 	}
 }

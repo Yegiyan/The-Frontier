@@ -74,8 +74,8 @@ public class CreateSettlementScreen extends Screen
         
         nameField.setChangedListener((text) -> 
         {
-        	if (text.isBlank() || text.contentEquals("N/A") || text.contentEquals("n/A") || text.contentEquals("N/a") || text.contentEquals("n/a"))
-        		createButton.active = false;
+        	if (text.isBlank() || text.equalsIgnoreCase("N/A") || text.length() < 3 || !text.matches("[a-zA-Z ]+"))
+        	    createButton.active = false;
         	else
         		createButton.active = true;
         });

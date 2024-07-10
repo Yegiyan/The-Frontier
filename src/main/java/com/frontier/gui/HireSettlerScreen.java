@@ -30,8 +30,13 @@ import net.minecraft.util.Identifier;
 
 public class HireSettlerScreen extends Screen
 {
-    // textures
+	public static final int UI_OFFSET_X = 0;
+    public static final int UI_OFFSET_Y = 60;
+    
     private static final Identifier BACKGROUND_TEXTURE = new Identifier("minecraft", "textures/gui/demo_background.png");
+    public static final int BACKGROUND_WIDTH = 256;
+    public static final int BACKGROUND_HEIGHT = 285;
+	
     private static final Identifier NAMEPLATE_TEXTURE = new Identifier("minecraft", "textures/gui/social_interactions.png");
     private static final Identifier SEPARATOR_TEXTURE = new Identifier("minecraft", "textures/gui/header_separator.png");
     private static final Identifier BARS_TEXTURE = new Identifier("minecraft", "textures/gui/bars.png");
@@ -74,7 +79,6 @@ public class HireSettlerScreen extends Screen
     private static final Identifier MERCHANT_TEXTURE = new Identifier("minecraft", "textures/item/bundle_filled.png");
     private static final Identifier TANNER_TEXTURE = new Identifier("minecraft", "textures/item/leather.png");
     
-    // textures lists
     private List<TextureElement> mainTextures = new ArrayList<>();
     private List<TextureElement> barTextures = new ArrayList<>();
     private List<TextureElement> governingTextures = new ArrayList<>();
@@ -84,17 +88,9 @@ public class HireSettlerScreen extends Screen
     private List<TextureElement> ranchingTextures = new ArrayList<>();
     private List<TextureElement> tradingTextures = new ArrayList<>();
     
-    
-    // UI & background dimensions
-    public static final int UI_OFFSET_X = 0;
-    public static final int UI_OFFSET_Y = 60;
-    
-    public static final int BACKGROUND_WIDTH = 256;
-    public static final int BACKGROUND_HEIGHT = 285;
     private int backgroundPosX;
     private int backgroundPosY;
     
-    // page and hire enums
     public enum Page { MAIN, GOVERNING, MILITARY, HARVESTING, CRAFTING, RANCHING, TRADING }
     private Page page;
     
@@ -115,7 +111,6 @@ public class HireSettlerScreen extends Screen
     }
     private Hire hire;
     
-    // buttons
     private ButtonWidget infoButton;
     
     private ButtonWidget governingButton;
@@ -161,7 +156,6 @@ public class HireSettlerScreen extends Screen
     private ButtonWidget hireKnightButton;
     private ButtonWidget hireClericButton;
     
-    // texts
     private Text priceText;
     private Text hireTitle;
     private Text hireText1;
@@ -175,7 +169,6 @@ public class HireSettlerScreen extends Screen
     private Text moraleText;
     private Text skillText;
 
-    // settler vars
     private SettlerEntity settler;
     private Identifier skinTexture;
     private static Identifier expertiseTexture;

@@ -131,7 +131,7 @@ public class HireSettler
 	    architect.initialize((ServerWorldAccess) world, difficulty, spawnReason, entityData, entityNbt);
 	    SettlementManager.getSettlement(faction).addSettler(architect);
 	    SettlementManager.saveSettlements(world.getServer());
-	    ArchitectEntity.saveData(architect, world);
+	    ArchitectEntity.saveEntityData(architect, world);
 	    world.spawnEntity(architect);
 	}
 }
