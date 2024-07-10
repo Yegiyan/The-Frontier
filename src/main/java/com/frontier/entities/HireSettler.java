@@ -25,39 +25,40 @@ public class HireSettler
     {
         Map<String, String> skillTransfers = new HashMap<>();
         skillTransfers.put("ARCHITECT", "GOVERNING");
-        skillTransfers.put("DELIVERER", "GOVERNING");
         skillTransfers.put("COURIER",   "GOVERNING");
-        skillTransfers.put("PRIEST",    "GOVERNING");
+        skillTransfers.put("DELIVERER", "GOVERNING");
         skillTransfers.put("INNKEEPER", "GOVERNING");
+        skillTransfers.put("MERCHANT",  "GOVERNING");
+        skillTransfers.put("PRIEST",    "GOVERNING");
 
         skillTransfers.put("ARCHER", "MILITARY");
-        skillTransfers.put("KNIGHT", "MILITARY");
         skillTransfers.put("CLERIC", "MILITARY");
+        skillTransfers.put("KNIGHT", "MILITARY");
 
-        skillTransfers.put("FARMER",     "HARVESTING");
-        skillTransfers.put("MINER",      "HARVESTING");
-        skillTransfers.put("LUMBERJACK", "HARVESTING");
-        skillTransfers.put("FISHERMAN",  "HARVESTING");
+        skillTransfers.put("FARMER",     "LABORING");
+        skillTransfers.put("FISHERMAN",  "LABORING");
+        skillTransfers.put("LUMBERJACK", "LABORING");
+        skillTransfers.put("MINER",      "LABORING");
 
         skillTransfers.put("ALCHEMIST",    "CRAFTING");
+        skillTransfers.put("ARCANIST",     "CRAFTING");
         skillTransfers.put("BLACKSMITH",   "CRAFTING");
-        skillTransfers.put("FLETCHER",     "CRAFTING");
-        skillTransfers.put("MASON",        "CRAFTING");
-        skillTransfers.put("CARPENTER",    "CRAFTING");
         skillTransfers.put("CARTOGRAPHER", "CRAFTING");
+        skillTransfers.put("FLETCHER",     "CRAFTING");
+        skillTransfers.put("TANNER",       "CRAFTING");
 
         skillTransfers.put("BEEKEEPER",  "RANCHING");
-        skillTransfers.put("POULTRYMAN", "RANCHING");
         skillTransfers.put("COWHAND",    "RANCHING");
-        skillTransfers.put("SWINEHERD",  "RANCHING");
+        skillTransfers.put("POULTRYMAN", "RANCHING");
         skillTransfers.put("SHEPHERD",   "RANCHING");
         skillTransfers.put("STABLEHAND", "RANCHING");
+        skillTransfers.put("SWINEHERD",  "RANCHING");
 
-        skillTransfers.put("BAKER",    "TRADING");
-        skillTransfers.put("COOK",     "TRADING");
-        skillTransfers.put("ARCANIST", "TRADING");
-        skillTransfers.put("TANNER",   "TRADING");
-        skillTransfers.put("MERCHANT", "TRADING");
+        skillTransfers.put("BAKER",       "ARTISAN");
+        skillTransfers.put("COOK",        "ARTISAN");
+        skillTransfers.put("GREENGROCER", "ARTISAN");
+        skillTransfers.put("CARPENTER",   "ARTISAN");
+        skillTransfers.put("MASON",       "ARTISAN");
 
         return skillTransfers;
     }

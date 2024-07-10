@@ -60,7 +60,7 @@ public class TextureElement
         context.drawTexture(textureID, 0, 0, rectX, rectY, width, height, rectWidth, rectHeight);
         context.getMatrices().pop();
     }
-
+    
     public boolean isMouseOver(int mouseX, int mouseY) 
     {
         int scaledWidth = (int) (width * scale);

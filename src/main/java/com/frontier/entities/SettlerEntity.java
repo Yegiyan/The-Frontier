@@ -67,7 +67,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	
 	private SimpleInventory inventory;
 	
-	public enum Expertise { GOVERNING, HARVESTING, CRAFTING, RANCHING, TRADING, MILITARY }
+	public enum Expertise { GOVERNING, LABORING, CRAFTING, RANCHING, ARTISAN, MILITARY, NOVICE }
 	
 	public List<String> genders = Arrays.asList("Male", "Female");
 	
@@ -159,7 +159,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && hand.equals(Hand.MAIN_HAND) && !this.getSettlerProfession().equals("Nomad"))
 	    	MinecraftClient.getInstance().setScreen(new SettlerCardScreen(this));
 	    
-	    printEntityInfo(player, hand);
+	    //printEntityInfo(player, hand);
 	    return super.interactAt(player, hitPos, hand);
 	}
 	
@@ -461,28 +461,26 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    return settlers.isEmpty() ? null : settlers.get(0);
 	}
 
-	public static Expertise chooseRandomExpertise()
+	public static Expertise generateExpertise()
 	{
 		int pick = new Random().nextInt(Expertise.values().length);
 	    return Expertise.values()[pick];
 	}
 	
-	public static int chooseRandomValue(int min, int max, boolean weightTheRoll)
+	public static int generateValue(int min, int max)
 	{
-        if (min > max)
-            throw new IllegalArgumentException("generateValue() - Max must be greater than min!");
-        
-        Random random = new Random();
+	    if (min > max)
+	        throw new IllegalArgumentException("SettlerEntity() - generateValue() max must be greater than min!");
 
-        if (weightTheRoll)
-        {
-            double range = max - min + 1;
-            double scaled = Math.log(random.nextDouble() * (Math.E - 1) + 1) / Math.log(Math.E) * range;
-            return min + (int) scaled;
-        }
-        else
-            return min + random.nextInt((max - min) + 1);
-    }
+	    Random rand = new Random();
+	    int value = min + rand.nextInt((max - min) + 1);
+
+	    double chance = 0.05; // 5%
+	    if (rand.nextDouble() < chance)
+	        value *= 2;
+
+	    return value;
+	}
 	
 	@SuppressWarnings("unused")
 	private void printEntityInfo(PlayerEntity player, Hand hand)

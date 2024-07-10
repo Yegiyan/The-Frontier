@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.frontier.PlayerData;
+import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextureElement;
 import com.frontier.regions.RegionManager;
 import com.frontier.settlements.SettlementManager;
@@ -156,9 +157,9 @@ public class PlayerCardScreen extends Screen
 			drawText(context, nameText, backgroundPosX + 30, backgroundPosY + 15);
 			drawText(context, regionText, backgroundPosX + 30, backgroundPosY + 36);
 			drawText(context, territoryText, backgroundPosX + 30, backgroundPosY + 57);
-			drawTextR(context, professionText, backgroundPosX + 215, backgroundPosY + 15);
-			drawTextR(context, factionText, backgroundPosX + 215, backgroundPosY + 36);
-			drawTextR(context, renownText, backgroundPosX + 215, backgroundPosY + 57);
+			TextUtil.drawTextR(context, this.textRenderer, professionText, backgroundPosX + 215, backgroundPosY + 15, true);
+			TextUtil.drawTextR(context, this.textRenderer, factionText, backgroundPosX + 215, backgroundPosY + 36, true);
+			TextUtil.drawTextR(context, this.textRenderer, renownText, backgroundPosX + 215, backgroundPosY + 57, true);
 
 			context.drawTexture(SEPARATOR_TEXTURE, backgroundPosX + 12, backgroundPosY + 80, 0, 0, 225, 2, 32, 2);
 		}
@@ -235,13 +236,6 @@ public class PlayerCardScreen extends Screen
 	{
 		if (text != null)
 			context.drawTooltip(textRenderer, Text.literal(text), mouseX, mouseY);
-	}
-
-	private void drawTextR(DrawContext context, Text text, int rightEdgeX, int y)
-	{
-		int textWidth = textRenderer.getWidth(text);
-		int x = rightEdgeX - textWidth;
-		context.drawText(textRenderer, text, x, y, Color.WHITE.getRGB(), true);
 	}
 
 	@Override

@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.frontier.entities.SettlerEntity;
+import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextureElement;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -159,7 +159,7 @@ public class SettlerCardScreen extends Screen
             context.drawTexture(skinTexture, (backgroundPosX + 20), (backgroundPosY + 22), 8, 8, 8, 8, 64, 64);
 
             context.drawText(this.textRenderer, nameText, (backgroundPosX + 35), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);
-            drawTextR(context, this.textRenderer, professionText, (backgroundPosX + 207), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);
+            TextUtil.drawTextR(context, this.textRenderer, professionText, (backgroundPosX + 207), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);
 
             context.drawText(this.textRenderer, healthText, (backgroundPosX + 218), (backgroundPosY + 49), new Color(65, 65, 65).getRGB(), false);
             context.drawText(this.textRenderer, hungerText, (backgroundPosX + 218), (backgroundPosY + 59), new Color(65, 65, 65).getRGB(), false);
@@ -191,14 +191,6 @@ public class SettlerCardScreen extends Screen
             context.drawItem(stack, x, y);
             context.drawItemInSlot(textRenderer, stack, x, y);
         }
-    }
-
-    // align text from right side
-    private void drawTextR(DrawContext context, TextRenderer textRenderer, Text text, int rightEdgeX, int y, int color, boolean shadow) 
-    {
-        int textWidth = textRenderer.getWidth(text);
-        int x = rightEdgeX - textWidth;
-        context.drawText(textRenderer, text, x, y, color, shadow);
     }
 
     private void drawBar(DrawContext context, int x, int y, float value, int barIndex)

@@ -7,6 +7,7 @@ import java.util.List;
 import com.frontier.Frontier;
 import com.frontier.PlayerData;
 import com.frontier.entities.SettlerEntity;
+import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextWrapper;
 import com.frontier.gui.util.TextureElement;
 import com.frontier.network.FrontierPackets;
@@ -14,7 +15,6 @@ import com.frontier.network.FrontierPackets;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -45,26 +45,29 @@ public class HireSettlerScreen extends Screen
     private static final Identifier EMERALD_TEXTURE = new Identifier("minecraft", "textures/item/emerald.png");
     
     private static final Identifier ARCHITECT_TEXTURE = new Identifier("minecraft", "textures/item/clock_48.png");
-    private static final Identifier DELIVERER_TEXTURE = new Identifier("minecraft", "textures/item/written_book.png");
     private static final Identifier COURIER_TEXTURE = new Identifier("minecraft", "textures/item/chest_minecart.png");
-    private static final Identifier PRIEST_TEXTURE = new Identifier("minecraft", "textures/item/light.png");
+    private static final Identifier DELIVERER_TEXTURE = new Identifier("minecraft", "textures/item/written_book.png");
     private static final Identifier INNKEEPER_TEXTURE = new Identifier("minecraft", "textures/item/candle.png");
+    private static final Identifier MERCHANT_TEXTURE = new Identifier("minecraft", "textures/item/bundle_filled.png");
+    private static final Identifier PRIEST_TEXTURE = new Identifier("minecraft", "textures/item/light.png");
     
     private static final Identifier ARCHER_TEXTURE = new Identifier("minecraft", "textures/item/bow_pulling_2.png");
-    private static final Identifier KNIGHT_TEXTURE = new Identifier("minecraft", "textures/item/iron_sword.png");
     private static final Identifier CLERIC_TEXTURE = new Identifier("minecraft", "textures/mob_effect/health_boost.png");
+    private static final Identifier KNIGHT_TEXTURE = new Identifier("minecraft", "textures/item/iron_sword.png");
     
     private static final Identifier FARMER_TEXTURE = new Identifier("minecraft", "textures/item/iron_hoe.png");
-    private static final Identifier MINER_TEXTURE = new Identifier("minecraft", "textures/item/iron_pickaxe.png");
-    private static final Identifier LUMBERJACK_TEXTURE = new Identifier("minecraft", "textures/item/iron_axe.png");
     private static final Identifier FISHERMAN_TEXTURE = new Identifier("minecraft", "textures/item/fishing_rod.png");
+    private static final Identifier FORAGER_TEXTURE = new Identifier("minecraft", "textures/item/sweet_berries.png");
+    private static final Identifier HUNTER_TEXTURE = new Identifier("minecraft", "textures/item/rabbit_foot.png");
+    private static final Identifier LUMBERJACK_TEXTURE = new Identifier("minecraft", "textures/item/iron_axe.png");
+    private static final Identifier MINER_TEXTURE = new Identifier("minecraft", "textures/item/iron_pickaxe.png");
     
     private static final Identifier ALCHEMIST_TEXTURE = new Identifier("minecraft", "textures/item/brewing_stand.png");
+    private static final Identifier ARCANIST_TEXTURE = new Identifier("minecraft", "textures/item/amethyst_shard.png");
     private static final Identifier BLACKSMITH_TEXTURE = new Identifier("minecraft", "textures/item/netherite_scrap.png");
-    private static final Identifier FLETCHER_TEXTURE = new Identifier("minecraft", "textures/item/arrow.png");
-    private static final Identifier MASON_TEXTURE = new Identifier("minecraft", "textures/item/brick.png");
-    private static final Identifier CARPENTER_TEXTURE = new Identifier("minecraft", "textures/item/brush.png");
     private static final Identifier CARTOGRAPHER_TEXTURE = new Identifier("minecraft", "textures/item/filled_map.png");
+    private static final Identifier FLETCHER_TEXTURE = new Identifier("minecraft", "textures/item/arrow.png");
+    private static final Identifier TANNER_TEXTURE = new Identifier("minecraft", "textures/item/leather.png");
     
     private static final Identifier BEEKEEPER_TEXTURE = new Identifier("minecraft", "textures/item/honey_bottle.png");
     private static final Identifier POULTRYMAN_TEXTURE = new Identifier("minecraft", "textures/item/chicken.png");
@@ -75,33 +78,34 @@ public class HireSettlerScreen extends Screen
     
     private static final Identifier BAKER_TEXTURE = new Identifier("minecraft", "textures/item/cake.png");
     private static final Identifier COOK_TEXTURE = new Identifier("minecraft", "textures/item/beetroot_soup.png");
-    private static final Identifier ARCANIST_TEXTURE = new Identifier("minecraft", "textures/item/amethyst_shard.png");
-    private static final Identifier MERCHANT_TEXTURE = new Identifier("minecraft", "textures/item/bundle_filled.png");
-    private static final Identifier TANNER_TEXTURE = new Identifier("minecraft", "textures/item/leather.png");
+    private static final Identifier GREENGROCER_TEXTURE = new Identifier("minecraft", "textures/item/apple.png");
+    private static final Identifier CARPENTER_TEXTURE = new Identifier("minecraft", "textures/item/brush.png");
+    private static final Identifier MASON_TEXTURE = new Identifier("minecraft", "textures/item/brick.png");
+    
     
     private List<TextureElement> mainTextures = new ArrayList<>();
     private List<TextureElement> barTextures = new ArrayList<>();
     private List<TextureElement> governingTextures = new ArrayList<>();
     private List<TextureElement> militaryTextures = new ArrayList<>();
-    private List<TextureElement> harvestingTextures = new ArrayList<>();
+    private List<TextureElement> laboringTextures = new ArrayList<>();
     private List<TextureElement> craftingTextures = new ArrayList<>();
     private List<TextureElement> ranchingTextures = new ArrayList<>();
-    private List<TextureElement> tradingTextures = new ArrayList<>();
+    private List<TextureElement> artisanTextures = new ArrayList<>();
     
     private int backgroundPosX;
     private int backgroundPosY;
     
-    public enum Page { MAIN, GOVERNING, MILITARY, HARVESTING, CRAFTING, RANCHING, TRADING }
+    public enum Page { MAIN, GOVERNING, MILITARY, LABORING, CRAFTING, RANCHING, ARTISAN }
     private Page page;
     
     public enum Hire
     {
-        NONE(0), ARCHITECT(2), DELIVERER(3), COURIER(4), PRIEST(6), INNKEEPER(12),
-        ARCHER(4), KNIGHT(6), CLERIC(10),
-        FARMER(4), MINER(8), LUMBERJACK(4), FISHERMAN(5),
-        ALCHEMIST(12), BLACKSMITH(8), FLETCHER(6), MASON(10), CARPENTER(8), CARTOGRAPHER(10),
-        BEEKEEPER(8), POULTRYMAN(6), COWHAND(4), SWINEHERD(4), SHEPHERD(8), STABLEHAND(14), 
-        BAKER(6), COOK(8), ARCANIST(10), TANNER(8), MERCHANT(10);
+        NONE(0), ARCHITECT(2), COURIER(4), DELIVERER(3),  INNKEEPER(12), MERCHANT(10), PRIEST(6),
+        ARCHER(4), CLERIC(10), KNIGHT(6),
+        FARMER(4), FISHERMAN(5), FORAGER(3), HUNTER(3), LUMBERJACK(4),  MINER(8),
+        ALCHEMIST(12), ARCANIST(10), BLACKSMITH(8), CARTOGRAPHER(10), FLETCHER(6), TANNER(8),
+        BEEKEEPER(8), COWHAND(4), POULTRYMAN(6), SHEPHERD(8), STABLEHAND(14), SWINEHERD(4), 
+        BAKER(6), COOK(8), GREENGROCER(4), CARPENTER(8), MASON(10);
 
         private int value;
         Hire(int value) { this.value = value; }
@@ -115,49 +119,52 @@ public class HireSettlerScreen extends Screen
     
     private ButtonWidget governingButton;
     private ButtonWidget militiaButton;
-    private ButtonWidget harvestingButton;
+    private ButtonWidget laboringButton;
     private ButtonWidget craftingButton;
     private ButtonWidget ranchingButton;
-    private ButtonWidget tradingButton;
+    private ButtonWidget artisanButton;
     
     private ButtonWidget hireButton;
     private ButtonWidget hireArchitectButton;
     private ButtonWidget hireCourierButton;
     private ButtonWidget hireDelivererButton;
-    private ButtonWidget hirePriestButton;
     private ButtonWidget hireInnkeeperButton;
+    private ButtonWidget hireMerchantButton;
+    private ButtonWidget hirePriestButton;
     
     private ButtonWidget hireFarmerButton;
-    private ButtonWidget hireMinerButton;
-    private ButtonWidget hireLumberjackButton;
     private ButtonWidget hireFishermanButton;
+    private ButtonWidget hireForagerButton;
+    private ButtonWidget hireHunterButton;
+    private ButtonWidget hireLumberjackButton;
+    private ButtonWidget hireMinerButton;
     
     private ButtonWidget hireAlchemistButton;
+    private ButtonWidget hireArcanistButton;
     private ButtonWidget hireBlacksmithButton;
-    private ButtonWidget hireFletcherButton;
-    private ButtonWidget hireMasonButton;
-    private ButtonWidget hireCarpenterButton;
     private ButtonWidget hireCartographerButton;
+    private ButtonWidget hireFletcherButton;
+    private ButtonWidget hireTannerButton;
     
     private ButtonWidget hireBeekeeperButton;
-    private ButtonWidget hirePoultrymanButton;
     private ButtonWidget hireCowhandButton;
-    private ButtonWidget hireSwineherdButton;
+    private ButtonWidget hirePoultrymanButton;
     private ButtonWidget hireShepherdButton;
     private ButtonWidget hireStablehandButton;
+    private ButtonWidget hireSwineherdButton;
     
     private ButtonWidget hireBakerButton;
     private ButtonWidget hireCookButton;
-    private ButtonWidget hireArcanistButton;
-    private ButtonWidget hireMerchantButton;
-    private ButtonWidget hireTannerButton;
+    private ButtonWidget hireGreengrocerButton;
+    private ButtonWidget hireCarpenterButton;
+    private ButtonWidget hireMasonButton;
     
     private ButtonWidget hireArcherButton;
-    private ButtonWidget hireKnightButton;
     private ButtonWidget hireClericButton;
+    private ButtonWidget hireKnightButton;
     
+    private Text priceTitle;
     private Text priceText;
-    private Text hireTitle;
     private Text hireText1;
     private Text hireText2;
     
@@ -203,7 +210,7 @@ public class HireSettlerScreen extends Screen
 		moraleText = Text.literal(String.valueOf(settler.getSettlerMorale()));
 		skillText = Text.literal(String.valueOf(settler.getSettlerSkill()));
 
-		hireTitle = Text.literal("Hiring Cost");
+		priceTitle = Text.literal("Hiring Cost");
 		priceText = Text.literal("0");
 		
 		updateButtons();
@@ -228,8 +235,8 @@ public class HireSettlerScreen extends Screen
 			case MILITARY:
 				setupMilitaryPage();
 				break;
-			case HARVESTING:
-				setupHarvestingPage();
+			case LABORING:
+				setupLaboringPage();
 				break;
 			case CRAFTING:
 				setupCraftingPage();
@@ -237,8 +244,8 @@ public class HireSettlerScreen extends Screen
 			case RANCHING:
 				setupRanchingPage();
 				break;
-			case TRADING:
-				setupTradingPage();
+			case ARTISAN:
+				setupArtisanPage();
 				break;
 			default:
 				break;
@@ -269,7 +276,6 @@ public class HireSettlerScreen extends Screen
 		setupBarTextures();
 		setupPortrait();
 		initializeMainPageButtons();
-		addMainPageButtons();
 	}
 
 	private void setupTextures()
@@ -278,39 +284,42 @@ public class HireSettlerScreen extends Screen
 		mainTextures.add(new TextureElement(expertiseTexture, (backgroundPosX + 214), (backgroundPosY + 18), 12, 12, "Expertise", 1.2f));
 
 		governingTextures.add(new TextureElement(ARCHITECT_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Uses settlement supplies to construct buildings", 1.0f));
-		governingTextures.add(new TextureElement(DELIVERER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Disperses settlement supplies to other settlers", 1.0f));
-		governingTextures.add(new TextureElement(PRIEST_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Tends to the cemetery and provides decursing services", 1.0f));
-		governingTextures.add(new TextureElement(COURIER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Sends your requests or demands to other settlements", 1.0f));
-		governingTextures.add(new TextureElement(INNKEEPER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Provides shelter and rest for foreigners", 1.0f));
+		governingTextures.add(new TextureElement(COURIER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sends requests or demands to other settlements", 1.0f));
+		governingTextures.add(new TextureElement(DELIVERER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Disperses settlement supplies to other settlers", 1.0f));
+		governingTextures.add(new TextureElement(INNKEEPER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Provides shelter and rest for foreigners", 1.0f));
+		governingTextures.add(new TextureElement(MERCHANT_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Exports your settlement goods to foreigners", 1.0f));
+		governingTextures.add(new TextureElement(PRIEST_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Tends to the cemetery and provides decursing services", 1.0f));
 		
 		militaryTextures.add(new TextureElement(ARCHER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Ranged fighter that wears leather armor", 1.0f));
-		militaryTextures.add(new TextureElement(KNIGHT_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Melee fighter that wears leather or heavy armor", 1.0f));
-		militaryTextures.add(new TextureElement(CLERIC_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Armored medic that heals allies in and out of combat", 1.0f));
+		militaryTextures.add(new TextureElement(CLERIC_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Medic that heals allies in and out of combat", 1.0f));
+		militaryTextures.add(new TextureElement(KNIGHT_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Melee fighter that wears leather or heavy armor", 1.0f));
 		
-		harvestingTextures.add(new TextureElement(FARMER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Plants and harvests various types of crops", 1.0f));
-		harvestingTextures.add(new TextureElement(MINER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "DIGGY DIGGY HOLE, I'M DIGGING A HOLE", 1.0f));
-		harvestingTextures.add(new TextureElement(LUMBERJACK_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Finds and cuts down trees for lumber", 1.0f));
-		harvestingTextures.add(new TextureElement(FISHERMAN_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Catches fish and oddities found in the water", 1.0f));
+		laboringTextures.add(new TextureElement(FARMER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Plants and harvests various types of crops", 1.0f));
+		laboringTextures.add(new TextureElement(FISHERMAN_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Catches fish and oddities found in the water", 1.0f));
+		laboringTextures.add(new TextureElement(FORAGER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Searches for seeds, fruits, and vegetables", 1.0f));
+		laboringTextures.add(new TextureElement(HUNTER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Hunts for animals to kill or lead back", 1.0f));
+		laboringTextures.add(new TextureElement(LUMBERJACK_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Finds and cuts down trees for lumber", 1.0f));
+		laboringTextures.add(new TextureElement(MINER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "DIGGY DIGGY HOLE, I'M DIGGING A HOLE", 1.0f));
 		
 		craftingTextures.add(new TextureElement(ALCHEMIST_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Sells alchemy ingredients and potions", 1.0f));
-		craftingTextures.add(new TextureElement(BLACKSMITH_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sells tools, armor, and weapons", 1.0f));
-		craftingTextures.add(new TextureElement(FLETCHER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Sells bows, arrows, and fletching items", 1.0f));
-		craftingTextures.add(new TextureElement(MASON_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Sells a variety of stone blocks and brick", 1.0f));
-		craftingTextures.add(new TextureElement(CARPENTER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Sells a variety of wooden items and blocks", 1.0f));
-		craftingTextures.add(new TextureElement(CARTOGRAPHER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Creates empty and treasure maps", 1.0f));
+		craftingTextures.add(new TextureElement(ARCANIST_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sells enchanting items and gear", 1.0f));
+		craftingTextures.add(new TextureElement(BLACKSMITH_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Sells tools, armor, and weapons", 1.0f));
+		craftingTextures.add(new TextureElement(CARTOGRAPHER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Creates empty and treasure maps", 1.0f));
+		craftingTextures.add(new TextureElement(FLETCHER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Sells bows, arrows, and fletching items", 1.0f));
+		craftingTextures.add(new TextureElement(TANNER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Sells leather and stable items", 1.0f));	
 		
 		ranchingTextures.add(new TextureElement(BEEKEEPER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "OH GOD NO, NOT THE BEES", 1.0f));
-		ranchingTextures.add(new TextureElement(POULTRYMAN_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Raises chickens for their meat and eggs", 1.0f));
-		ranchingTextures.add(new TextureElement(COWHAND_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Raises cows for their meat and leather", 1.0f));
-		ranchingTextures.add(new TextureElement(SWINEHERD_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Raises pigs for their meat", 1.0f));
-		ranchingTextures.add(new TextureElement(SHEPHERD_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Raises sheep for their wool", 1.0f));
-		ranchingTextures.add(new TextureElement(STABLEHAND_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Raises donkeys, mules, horses, and wolves", 1.0f));
+		ranchingTextures.add(new TextureElement(COWHAND_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Raises cows for their meat and leather", 1.0f));
+		ranchingTextures.add(new TextureElement(POULTRYMAN_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Raises chickens for their meat and eggs", 1.0f));
+		ranchingTextures.add(new TextureElement(SHEPHERD_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Raises sheep for their wool", 1.0f));
+		ranchingTextures.add(new TextureElement(STABLEHAND_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Raises donkeys, mules, horses, and wolves", 1.0f));
+		ranchingTextures.add(new TextureElement(SWINEHERD_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Raises pigs for their meat", 1.0f));
 		
-		tradingTextures.add(new TextureElement(BAKER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Bakes bread, cookies, and cakes", 1.0f));
-		tradingTextures.add(new TextureElement(COOK_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Cooks a variety of meat and soups", 1.0f));
-		tradingTextures.add(new TextureElement(ARCANIST_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Sells enchanting items and gear", 1.0f));
-		tradingTextures.add(new TextureElement(MERCHANT_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Exports your settlement goods to foreigners", 1.0f));
-		tradingTextures.add(new TextureElement(TANNER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Sells leather and stable items", 1.0f));
+		artisanTextures.add(new TextureElement(BAKER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Bakes bread, cookies, and cakes", 1.0f));
+		artisanTextures.add(new TextureElement(COOK_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Cooks a variety of meat and soups", 1.0f));
+		artisanTextures.add(new TextureElement(GREENGROCER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Prepares fresh fruits and vegetables", 1.0f));
+		artisanTextures.add(new TextureElement(CARPENTER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Sells a variety of wooden items and blocks", 1.0f));
+		artisanTextures.add(new TextureElement(MASON_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Sells a variety of stone blocks and brick", 1.0f));
 	}
 
 	private void setupBarTextures()
@@ -348,9 +357,9 @@ public class HireSettlerScreen extends Screen
 			updateButtons();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
-		harvestingButton = ButtonWidget.builder(Text.literal("Harvesting"), button ->
+		laboringButton = ButtonWidget.builder(Text.literal("Laboring"), button ->
 		{
-			page = Page.HARVESTING;
+			page = Page.LABORING;
 			updateButtons();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
@@ -366,21 +375,18 @@ public class HireSettlerScreen extends Screen
 			updateButtons();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
-		tradingButton = ButtonWidget.builder(Text.literal("Trading"), button ->
+		artisanButton = ButtonWidget.builder(Text.literal("Artisan"), button ->
 		{
-			page = Page.TRADING;
+			page = Page.ARTISAN;
 			updateButtons();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 155, 65, 20).build();
-	}
-
-	private void addMainPageButtons()
-	{
+		
 		addDrawableChild(governingButton);
 		addDrawableChild(militiaButton);
-		addDrawableChild(harvestingButton);
+		addDrawableChild(laboringButton);
 		addDrawableChild(craftingButton);
 		addDrawableChild(ranchingButton);
-		addDrawableChild(tradingButton);
+		addDrawableChild(artisanButton);
 	}
 	
 	private void initializeHireButton()
@@ -419,35 +425,42 @@ public class HireSettlerScreen extends Screen
 			priceText = Hire.ARCHITECT.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
-		hireDelivererButton = ButtonWidget.builder(Text.literal("Deliverer"), button ->
-		{
-			hire = Hire.DELIVERER;
-			priceText = Hire.DELIVERER.getText();
-		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
-		
-		hirePriestButton = ButtonWidget.builder(Text.literal("Priest"), button ->
-		{
-			hire = Hire.PRIEST;
-			priceText = Hire.PRIEST.getText();
-		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
-		
 		hireCourierButton = ButtonWidget.builder(Text.literal("Courier"), button ->
 		{
 			hire = Hire.COURIER;
 			priceText = Hire.COURIER.getText();
-		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
+		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
+		
+		hireDelivererButton = ButtonWidget.builder(Text.literal("Deliverer"), button ->
+		{
+			hire = Hire.DELIVERER;
+			priceText = Hire.DELIVERER.getText();
+		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		hireInnkeeperButton = ButtonWidget.builder(Text.literal("Innkeeper"), button ->
 		{
 			hire = Hire.INNKEEPER;
 			priceText = Hire.INNKEEPER.getText();
+		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
+		
+		hireMerchantButton = ButtonWidget.builder(Text.literal("Merchant"), button ->
+		{
+			hire = Hire.MERCHANT;
+			priceText = Hire.MERCHANT.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
+		hirePriestButton = ButtonWidget.builder(Text.literal("Priest"), button ->
+		{
+			hire = Hire.PRIEST;
+			priceText = Hire.PRIEST.getText();
+		}).dimensions(backgroundPosX + 170, backgroundPosY + 155, 65, 20).build();
+		
 		addDrawableChild(hireArchitectButton);
-		addDrawableChild(hireDelivererButton);
 		addDrawableChild(hireCourierButton);
-		addDrawableChild(hirePriestButton);
+		addDrawableChild(hireDelivererButton);
 		addDrawableChild(hireInnkeeperButton);
+		addDrawableChild(hireMerchantButton);
+		addDrawableChild(hirePriestButton);
 	}
 
 	private void setupMilitaryPage()
@@ -461,27 +474,27 @@ public class HireSettlerScreen extends Screen
 			priceText = Hire.ARCHER.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
-		hireKnightButton = ButtonWidget.builder(Text.literal("Knight"), button ->
-		{
-			hire = Hire.KNIGHT;
-			priceText = Hire.KNIGHT.getText();
-		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
-		
 		hireClericButton = ButtonWidget.builder(Text.literal("Cleric"), button ->
 		{
 			hire = Hire.CLERIC;
 			priceText = Hire.CLERIC.getText();
+		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
+		
+		hireKnightButton = ButtonWidget.builder(Text.literal("Knight"), button ->
+		{
+			hire = Hire.KNIGHT;
+			priceText = Hire.KNIGHT.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 
 		addDrawableChild(hireArcherButton);
-		addDrawableChild(hireKnightButton);
 		addDrawableChild(hireClericButton);
+		addDrawableChild(hireKnightButton);
 	}
 	
-	private void setupHarvestingPage()
+	private void setupLaboringPage()
 	{
-		hireText1 = Text.literal("Harvesting workers are the backbone of your settlement.");
-		hireText2 = Text.literal("They produce your wood, ores, crops, and seafood.");
+		hireText1 = Text.literal("Labor workers are the backbone of your settlement and perform the most crucial tasks.");
+		hireText2 = Text.literal("They ensure a stable supply of resources such as building materials, crafting items, and food.");
 		
 		hireFarmerButton = ButtonWidget.builder(Text.literal("Farmer"), button ->
 		{
@@ -489,34 +502,48 @@ public class HireSettlerScreen extends Screen
 			priceText = Hire.FARMER.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
-		hireMinerButton = ButtonWidget.builder(Text.literal("Miner"), button ->
+		hireFishermanButton = ButtonWidget.builder(Text.literal("Fisherman"), button ->
 		{
-			hire = Hire.MINER;
-			priceText = Hire.MINER.getText();
+			hire = Hire.FISHERMAN;
+			priceText = Hire.FISHERMAN.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
+		
+		hireForagerButton = ButtonWidget.builder(Text.literal("Forager"), button ->
+		{
+			hire = Hire.FORAGER;
+			priceText = Hire.FORAGER.getText();
+		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
+		
+		hireHunterButton = ButtonWidget.builder(Text.literal("Hunter"), button ->
+		{
+			hire = Hire.HUNTER;
+			priceText = Hire.HUNTER.getText();
+		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		hireLumberjackButton = ButtonWidget.builder(Text.literal("Lumberjack"), button ->
 		{
 			hire = Hire.LUMBERJACK;
 			priceText = Hire.LUMBERJACK.getText();
-		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
+		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
-		hireFishermanButton = ButtonWidget.builder(Text.literal("Fisherman"), button ->
+		hireMinerButton = ButtonWidget.builder(Text.literal("Miner"), button ->
 		{
-			hire = Hire.FISHERMAN;
-			priceText = Hire.FISHERMAN.getText();
-		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
+			hire = Hire.MINER;
+			priceText = Hire.MINER.getText();
+		}).dimensions(backgroundPosX + 170, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(hireFarmerButton);
-		addDrawableChild(hireMinerButton);
-		addDrawableChild(hireLumberjackButton);
 		addDrawableChild(hireFishermanButton);
+		addDrawableChild(hireForagerButton);
+		addDrawableChild(hireHunterButton);
+		addDrawableChild(hireLumberjackButton);
+		addDrawableChild(hireMinerButton);
 	}
 	
 	private void setupCraftingPage()
 	{
 		hireText1 = Text.literal("Crafting settlers are responsible for creating your settlements gear and venture items.");
-		hireText2 = Text.literal("These can range from armor to potions to building materials and more.");
+		hireText2 = Text.literal("These can range from armor to potions to treasure maps and more.");
 		
 		hireAlchemistButton = ButtonWidget.builder(Text.literal("Alchemist"), button ->
 		{
@@ -524,42 +551,42 @@ public class HireSettlerScreen extends Screen
 			priceText = Hire.ALCHEMIST.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
+		hireArcanistButton = ButtonWidget.builder(Text.literal("Arcanist"), button ->
+		{
+			hire = Hire.ARCANIST;
+			priceText = Hire.ARCANIST.getText();
+		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
+		
 		hireBlacksmithButton = ButtonWidget.builder(Text.literal("Blacksmith"), button ->
 		{
 			hire = Hire.BLACKSMITH;
 			priceText = Hire.BLACKSMITH.getText();
-		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
-		
-		hireFletcherButton = ButtonWidget.builder(Text.literal("Fletcher"), button ->
-		{
-			hire = Hire.FLETCHER;
-			priceText = Hire.FLETCHER.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
-		
-		hireMasonButton = ButtonWidget.builder(Text.literal("Mason"), button ->
-		{
-			hire = Hire.MASON;
-			priceText = Hire.MASON.getText();
-		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
-		
-		hireCarpenterButton = ButtonWidget.builder(Text.literal("Carpenter"), button ->
-		{
-			hire = Hire.CARPENTER;
-			priceText = Hire.CARPENTER.getText();
-		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
 		hireCartographerButton = ButtonWidget.builder(Text.literal("Cartographer"), button ->
 		{
 			hire = Hire.CARTOGRAPHER;
 			priceText = Hire.CARTOGRAPHER.getText();
+		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
+		
+		hireFletcherButton = ButtonWidget.builder(Text.literal("Fletcher"), button ->
+		{
+			hire = Hire.FLETCHER;
+			priceText = Hire.FLETCHER.getText();
+		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
+
+		hireTannerButton = ButtonWidget.builder(Text.literal("Tanner"), button ->
+		{
+			hire = Hire.TANNER;
+			priceText = Hire.TANNER.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(hireAlchemistButton);
+		addDrawableChild(hireArcanistButton);
 		addDrawableChild(hireBlacksmithButton);
-		addDrawableChild(hireFletcherButton);
-		addDrawableChild(hireMasonButton);
-		addDrawableChild(hireCarpenterButton);
 		addDrawableChild(hireCartographerButton);
+		addDrawableChild(hireFletcherButton);
+		addDrawableChild(hireTannerButton);
 	}
 	
 	private void setupRanchingPage()
@@ -573,48 +600,48 @@ public class HireSettlerScreen extends Screen
 			priceText = Hire.BEEKEEPER.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
-		hirePoultrymanButton = ButtonWidget.builder(Text.literal("Poultryman"), button ->
-		{
-			hire = Hire.POULTRYMAN;
-			priceText = Hire.POULTRYMAN.getText();
-		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
-		
 		hireCowhandButton = ButtonWidget.builder(Text.literal("Cowhand"), button ->
 		{
 			hire = Hire.COWHAND;
 			priceText = Hire.COWHAND.getText();
-		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
+		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
-		hireSwineherdButton = ButtonWidget.builder(Text.literal("Swineherd"), button ->
+		hirePoultrymanButton = ButtonWidget.builder(Text.literal("Poultryman"), button ->
 		{
-			hire = Hire.SWINEHERD;
-			priceText = Hire.SWINEHERD.getText();
-		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
+			hire = Hire.POULTRYMAN;
+			priceText = Hire.POULTRYMAN.getText();
+		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		hireShepherdButton = ButtonWidget.builder(Text.literal("Shepherd"), button ->
 		{
 			hire = Hire.SHEPHERD;
 			priceText = Hire.SHEPHERD.getText();
-		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
+		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		hireStablehandButton = ButtonWidget.builder(Text.literal("Stablehand"), button ->
 		{
 			hire = Hire.STABLEHAND;
 			priceText = Hire.STABLEHAND.getText();
+		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
+		
+		hireSwineherdButton = ButtonWidget.builder(Text.literal("Swineherd"), button ->
+		{
+			hire = Hire.SWINEHERD;
+			priceText = Hire.SWINEHERD.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(hireBeekeeperButton);
-		addDrawableChild(hirePoultrymanButton);
 		addDrawableChild(hireCowhandButton);
-		addDrawableChild(hireSwineherdButton);
+		addDrawableChild(hirePoultrymanButton);
 		addDrawableChild(hireShepherdButton);
 		addDrawableChild(hireStablehandButton);
+		addDrawableChild(hireSwineherdButton);
 	}
 	
-	private  void setupTradingPage()
+	private  void setupArtisanPage()
 	{
-		hireText1 = Text.literal("Traders import and export the commerce of your settlement.");
-		hireText2 = Text.literal("Regulars will sell locally while your merchant will sell foreignly.");
+		hireText1 = Text.literal("Artisan settlers will create a variety of interesting wares for your settlement.");
+		hireText2 = Text.literal("These can range from exotic food items to elegant building materials.");
 		
 		hireBakerButton = ButtonWidget.builder(Text.literal("Baker"), button ->
 		{
@@ -628,29 +655,29 @@ public class HireSettlerScreen extends Screen
 			priceText = Hire.COOK.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
-		hireArcanistButton = ButtonWidget.builder(Text.literal("Arcanist"), button ->
+		hireGreengrocerButton = ButtonWidget.builder(Text.literal("Greengrocer"), button ->
 		{
-			hire = Hire.ARCANIST;
-			priceText = Hire.ARCANIST.getText();
+			hire = Hire.GREENGROCER;
+			priceText = Hire.GREENGROCER.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
-		hireMerchantButton = ButtonWidget.builder(Text.literal("Merchant"), button ->
+		hireCarpenterButton = ButtonWidget.builder(Text.literal("Carpenter"), button ->
 		{
-			hire = Hire.MERCHANT;
-			priceText = Hire.MERCHANT.getText();
+			hire = Hire.CARPENTER;
+			priceText = Hire.CARPENTER.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
-		hireTannerButton = ButtonWidget.builder(Text.literal("Tanner"), button ->
+		hireMasonButton = ButtonWidget.builder(Text.literal("Mason"), button ->
 		{
-			hire = Hire.TANNER;
-			priceText = Hire.TANNER.getText();
+			hire = Hire.MASON;
+			priceText = Hire.MASON.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(hireBakerButton);
 		addDrawableChild(hireCookButton);
-		addDrawableChild(hireArcanistButton);
-		addDrawableChild(hireMerchantButton);
-		addDrawableChild(hireTannerButton);
+		addDrawableChild(hireGreengrocerButton);
+		addDrawableChild(hireCarpenterButton);
+		addDrawableChild(hireMasonButton);
 	}
 	
 	@Override
@@ -672,9 +699,9 @@ public class HireSettlerScreen extends Screen
 		
 		if (page != Page.MAIN)
 		{
-			context.drawText(this.textRenderer, hireTitle, (backgroundPosX + 175), (backgroundPosY + 16), new Color(255, 255, 255).getRGB(), true);
-			TextWrapper.render(context, this.textRenderer, hireText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 135);
-			TextWrapper.render(context, this.textRenderer, hireText2, backgroundPosX + 14, backgroundPosY + 64, new Color(255, 255, 255).getRGB(), 140);
+			context.drawText(this.textRenderer, priceTitle, (backgroundPosX + 175), (backgroundPosY + 16), new Color(255, 255, 255).getRGB(), true);
+			TextWrapper.render(context, this.textRenderer, hireText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 140);
+			TextWrapper.render(context, this.textRenderer, hireText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 140);
 			context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 110), 0, 0, 225, 2, 32, 2);
 
 			context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 28), 0, 0, 54, 32, 54, 32);
@@ -692,8 +719,8 @@ public class HireSettlerScreen extends Screen
 			case MILITARY:
 				renderMilitaryPage(context, mouseX, mouseY);
 				break;
-			case HARVESTING:
-				renderHarvestingPage(context, mouseX, mouseY);
+			case LABORING:
+				renderLaboringPage(context, mouseX, mouseY);
 				break;
 			case CRAFTING:
 				renderCraftingPage(context, mouseX, mouseY);
@@ -701,8 +728,8 @@ public class HireSettlerScreen extends Screen
 			case RANCHING:
 				renderRanchingPage(context, mouseX, mouseY);
 				break;
-			case TRADING:
-				renderTradingPage(context, mouseX, mouseY);
+			case ARTISAN:
+				renderArtisanPage(context, mouseX, mouseY);
 				break;
 		}
 	}
@@ -728,7 +755,7 @@ public class HireSettlerScreen extends Screen
 		context.drawTexture(skinTexture, (backgroundPosX + 20), (backgroundPosY + 22), 8, 8, 8, 8, 64, 64);
 
 		context.drawText(this.textRenderer, nameText, (backgroundPosX + 35), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);
-		drawTextR(context, this.textRenderer, expertiseText, (backgroundPosX + 207), (backgroundPosY + 22), new Color(70, 150, 25).getRGB(), true);
+		TextUtil.drawTextR(context, this.textRenderer, expertiseText, (backgroundPosX + 207), (backgroundPosY + 22), new Color(70, 150, 25).getRGB(), true);
 
 		context.drawText(this.textRenderer, healthText, (backgroundPosX + 218), (backgroundPosY + 52), new Color(65, 65, 65).getRGB(), false);
 		context.drawText(this.textRenderer, hungerText, (backgroundPosX + 218), (backgroundPosY + 64), new Color(65, 65, 65).getRGB(), false);
@@ -744,21 +771,24 @@ public class HireSettlerScreen extends Screen
 	private void renderGoverningPage(DrawContext context, int mouseX, int mouseY)
 	{
 		hireArchitectButton.active = (hire != Hire.ARCHITECT);
-		hireDelivererButton.active = (hire != Hire.DELIVERER);
-		hirePriestButton.active = (hire != Hire.PRIEST);
 		hireCourierButton.active = (hire != Hire.COURIER);
+		hireDelivererButton.active = (hire != Hire.DELIVERER);
 		hireInnkeeperButton.active = (hire != Hire.INNKEEPER);
+		hireMerchantButton.active = (hire != Hire.MERCHANT);
+		hirePriestButton.active = (hire != Hire.PRIEST);
 
 		if (hireArchitectButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.ARCHITECT);
-		else if (hireDelivererButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.DELIVERER);
-		else if (hirePriestButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.PRIEST);
 		else if (hireCourierButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.COURIER);
+		else if (hireDelivererButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.DELIVERER);
 		else if (hireInnkeeperButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.INNKEEPER);
+		else if (hireMerchantButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.MERCHANT);
+		else if (hirePriestButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.PRIEST);
 		else
 		    priceText = hire.getText();
 
@@ -769,24 +799,21 @@ public class HireSettlerScreen extends Screen
 				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
 		}
 
-		if (this.playerEmeralds < hire.getValue())
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
-		else
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+		drawPriceText(context);
 	}
 
 	private void renderMilitaryPage(DrawContext context, int mouseX, int mouseY)
 	{
 		hireArcherButton.active = (hire != Hire.ARCHER);
-		hireKnightButton.active = (hire != Hire.KNIGHT);
 		hireClericButton.active = (hire != Hire.CLERIC);
+		hireKnightButton.active = (hire != Hire.KNIGHT);
 
 		if (hireArcherButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.ARCHER);
-		else if (hireKnightButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.KNIGHT);
 		else if (hireClericButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.CLERIC);
+		else if (hireKnightButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.KNIGHT);
 		else
 			priceText = hire.getText();
 
@@ -797,64 +824,64 @@ public class HireSettlerScreen extends Screen
 				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
 		}
 
-		if (this.playerEmeralds < hire.getValue())
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
-		else
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+		drawPriceText(context);
 	}
 
-    private void renderHarvestingPage(DrawContext context, int mouseX, int mouseY)
+    private void renderLaboringPage(DrawContext context, int mouseX, int mouseY)
     {
 		hireFarmerButton.active = (hire != Hire.FARMER);
-		hireMinerButton.active = (hire != Hire.MINER);
-		hireLumberjackButton.active = (hire != Hire.LUMBERJACK);
 		hireFishermanButton.active = (hire != Hire.FISHERMAN);
+		hireForagerButton.active = (hire != Hire.FORAGER);
+		hireHunterButton.active = (hire != Hire.HUNTER);
+		hireLumberjackButton.active = (hire != Hire.LUMBERJACK);
+		hireMinerButton.active = (hire != Hire.MINER);
 
 		if (hireFarmerButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.FARMER);
-		else if (hireMinerButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.MINER);
-		else if (hireLumberjackButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.LUMBERJACK);
 		else if (hireFishermanButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.FISHERMAN);
+		else if (hireForagerButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.FORAGER);
+		else if (hireHunterButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.HUNTER);
+		else if (hireLumberjackButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.LUMBERJACK);
+		else if (hireMinerButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.MINER);
 		else
 			priceText = hire.getText();
 
-		for (TextureElement element : harvestingTextures)
+		for (TextureElement element : laboringTextures)
 		{
 			element.draw(context);
 			if (element.isMouseOver(mouseX, mouseY))
 				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
 		}
 
-		if (this.playerEmeralds < hire.getValue())
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
-		else
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+		drawPriceText(context);
     }
 
     private void renderCraftingPage(DrawContext context, int mouseX, int mouseY)
     {
 		hireAlchemistButton.active = (hire != Hire.ALCHEMIST);
+		hireArcanistButton.active = (hire != Hire.ARCANIST);
 		hireBlacksmithButton.active = (hire != Hire.BLACKSMITH);
-		hireFletcherButton.active = (hire != Hire.FLETCHER);
-		hireMasonButton.active = (hire != Hire.MASON);
-		hireCarpenterButton.active = (hire != Hire.CARPENTER);
 		hireCartographerButton.active = (hire != Hire.CARTOGRAPHER);
+		hireFletcherButton.active = (hire != Hire.FLETCHER);
+		hireTannerButton.active = (hire != Hire.TANNER);
 
 		if (hireAlchemistButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.ALCHEMIST);
+		else if (hireArcanistButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.ARCANIST);
 		else if (hireBlacksmithButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.BLACKSMITH);
-		else if (hireFletcherButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.FLETCHER);
-		else if (hireMasonButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.MASON);
-		else if (hireCarpenterButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.CARPENTER);
 		else if (hireCartographerButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.CARTOGRAPHER);
+		else if (hireFletcherButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.FLETCHER);
+		else if (hireTannerButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.TANNER);
 		else
 			priceText = hire.getText();
 
@@ -865,33 +892,30 @@ public class HireSettlerScreen extends Screen
 				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
 		}
 
-		if (this.playerEmeralds < hire.getValue())
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
-		else
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+		drawPriceText(context);
     }
 
     private void renderRanchingPage(DrawContext context, int mouseX, int mouseY)
     {
 		hireBeekeeperButton.active = (hire != Hire.BEEKEEPER);
-		hirePoultrymanButton.active = (hire != Hire.POULTRYMAN);
 		hireCowhandButton.active = (hire != Hire.COWHAND);
-		hireSwineherdButton.active = (hire != Hire.SWINEHERD);
+		hirePoultrymanButton.active = (hire != Hire.POULTRYMAN);
 		hireShepherdButton.active = (hire != Hire.SHEPHERD);
 		hireStablehandButton.active = (hire != Hire.STABLEHAND);
-
+		hireSwineherdButton.active = (hire != Hire.SWINEHERD);
+		
 		if (hireBeekeeperButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.BEEKEEPER);
-		else if (hirePoultrymanButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.POULTRYMAN);
 		else if (hireCowhandButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.COWHAND);
-		else if (hireSwineherdButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.SWINEHERD);
+		else if (hirePoultrymanButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.POULTRYMAN);
 		else if (hireShepherdButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.SHEPHERD);
 		else if (hireStablehandButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.STABLEHAND);
+		else if (hireSwineherdButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.SWINEHERD);
 		else
 			priceText = hire.getText();
 
@@ -902,34 +926,31 @@ public class HireSettlerScreen extends Screen
 				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
 		}
 
-		if (this.playerEmeralds < hire.getValue())
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
-		else
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+		drawPriceText(context);
     }
 
-    private void renderTradingPage(DrawContext context, int mouseX, int mouseY)
+    private void renderArtisanPage(DrawContext context, int mouseX, int mouseY)
     {
 		hireBakerButton.active = (hire != Hire.BAKER);
 		hireCookButton.active = (hire != Hire.COOK);
-		hireArcanistButton.active = (hire != Hire.ARCANIST);
-		hireMerchantButton.active = (hire != Hire.MERCHANT);
-		hireTannerButton.active = (hire != Hire.TANNER);
+		hireGreengrocerButton.active = (hire != Hire.GREENGROCER);
+		hireCarpenterButton.active = (hire != Hire.CARPENTER);
+		hireMasonButton.active = (hire != Hire.MASON);
 
 		if (hireBakerButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.BAKER);
 		else if (hireCookButton.isMouseOver(mouseX, mouseY))
 		    priceText = getFormattedPriceText(Hire.COOK);
-		else if (hireArcanistButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.ARCANIST);
-		else if (hireMerchantButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.MERCHANT);
-		else if (hireTannerButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Hire.TANNER);
+		else if (hireGreengrocerButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.GREENGROCER);
+		else if (hireCarpenterButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.CARPENTER);
+		else if (hireMasonButton.isMouseOver(mouseX, mouseY))
+		    priceText = getFormattedPriceText(Hire.MASON);
 		else
 			priceText = hire.getText();
 
-		for (TextureElement element : tradingTextures)
+		for (TextureElement element : artisanTextures)
 		{
 			element.draw(context);
 			if (element.isMouseOver(mouseX, mouseY))
@@ -937,25 +958,25 @@ public class HireSettlerScreen extends Screen
 		}
 
 		if (this.playerEmeralds < hire.getValue())
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), 225);
+			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), true);
 		else
-			TextWrapper.render(context, this.textRenderer, priceText, backgroundPosX + 190, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), 225);
+			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), true);
     }
     
-    private void renderTooltip(DrawContext context, String text, int mouseX, int mouseY) 
+    private void renderTooltip(DrawContext context, String text, int mouseX, int mouseY)
     {
     	if (text != null)
     		context.drawTooltip(this.textRenderer, Text.literal(text), mouseX, mouseY);
     }
-    
-    // align text from right side
-    private void drawTextR(DrawContext context, TextRenderer textRenderer, Text text, int rightEdgeX, int y, int color, boolean shadow) 
-    {
-        int textWidth = textRenderer.getWidth(text);
-        int x = rightEdgeX - textWidth;
-        context.drawText(textRenderer, text, x, y, color, shadow);
-    }
 
+    private  void drawPriceText(DrawContext context)
+    {
+    	if (this.playerEmeralds < hire.getValue())
+			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), true);
+		else
+			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), true);
+    }
+    
     private void drawBar(DrawContext context, int x, int y, float value, int barIndex)
     {
         int barHeight = 5;
@@ -979,10 +1000,10 @@ public class HireSettlerScreen extends Screen
 			case "GOVERNING":
 				expertiseTexture = new Identifier("minecraft", "textures/item/writable_book.png");
 				break;
-			case "HARVESTING":
+			case "LABORING":
 				expertiseTexture = new Identifier("minecraft", "textures/item/bucket.png");
 				break;
-			case "TRADING":
+			case "ARTISAN":
 				expertiseTexture = new Identifier("minecraft", "textures/item/bundle_filled.png");
 				break;
 			case "CRAFTING":
@@ -993,6 +1014,9 @@ public class HireSettlerScreen extends Screen
 				break;
 			case "MILITARY":
 				expertiseTexture = new Identifier("minecraft", "textures/item/chainmail_chestplate.png");
+				break;
+			case "NOVICE":
+				expertiseTexture = new Identifier("minecraft", "textures/item/empty_armor_slot_helmet.png");
 				break;
 			default:
 				Frontier.LOGGER.error("HireSettlerScreen() - Invalid settler expertise!");

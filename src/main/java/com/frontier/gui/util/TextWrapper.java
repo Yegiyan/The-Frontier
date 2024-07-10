@@ -15,7 +15,7 @@ public class TextWrapper
 		List<MutableText> lines = wrapText(text, textRenderer, maxWidth);
 
 		// render each line
-		int lineHeight = textRenderer.fontHeight + 2; // line height with some padding
+		int lineHeight = textRenderer.fontHeight + 1; // line height with some padding
 		for (int i = 0; i < lines.size(); i++)
 			context.drawText(textRenderer, lines.get(i), x, y + (i * lineHeight), color, true);
 	}

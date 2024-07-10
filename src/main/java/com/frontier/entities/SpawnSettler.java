@@ -51,10 +51,14 @@ public class SpawnSettler
 
 	    nomad.setSettlerProfession(profession);
 	    nomad.setSettlerFaction(faction);
-	    nomad.setSettlerExpertise(SettlerEntity.chooseRandomExpertise().name());
+	    nomad.setSettlerExpertise(SettlerEntity.generateExpertise().name());
 	    nomad.setSettlerHunger(100);
-	    nomad.setSettlerMorale(SettlerEntity.chooseRandomValue(40, 60, false));
-	    nomad.setSettlerSkill(SettlerEntity.chooseRandomValue(1, 20, true));
+	    nomad.setSettlerMorale(SettlerEntity.generateValue(40, 60));
+	    
+	    if (nomad.getSettlerExpertise().equals("Novice"))
+	    	nomad.setSettlerSkill(0);
+	    else
+	    	nomad.setSettlerSkill(SettlerEntity.generateValue(1, 10));
 	    
 	    // choose random texture depending on gender
 	    int textureIdx;
