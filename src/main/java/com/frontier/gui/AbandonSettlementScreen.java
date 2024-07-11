@@ -41,9 +41,8 @@ public class AbandonSettlementScreen extends Screen
 
     public AbandonSettlementScreen() 
     {
-        super(Text.literal("Create a New Settlement Screen"));
+        super(Text.literal("Abandon Settlement Screen"));
     }
-    
     
 	@Override
     protected void init() 

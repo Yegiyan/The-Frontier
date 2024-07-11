@@ -42,7 +42,7 @@ public class CreateSettlementScreen extends Screen
 
     public CreateSettlementScreen() 
     {
-        super(Text.literal("Create a New Settlement Screen"));
+        super(Text.literal("Create Settlement Screen"));
     }
     
 	@Override

@@ -541,7 +541,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 		{
 			if (this.getServer() != null)
 			{
-				if (!isNomad())
+				if (!isNomad() && SettlementManager.settlementExists(getSettlerFaction()))
 				{
 					removeSettlerFromSettlementData(uuid, getSettlerFaction(), getEntityWorld());
 					SettlementManager.getSettlement(getSettlerFaction()).removeSettler(getUuid());

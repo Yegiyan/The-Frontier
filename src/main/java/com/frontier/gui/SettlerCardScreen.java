@@ -28,13 +28,11 @@ public class SettlerCardScreen extends Screen
     public static final int BACKGROUND_HEIGHT = 250;
 
     private static final Identifier NAMEPLATE_TEXTURE = new Identifier("minecraft", "textures/gui/social_interactions.png");
-    
     private static final Identifier SLOT_TEXTURE = new Identifier("minecraft", "textures/gui/container/generic_54.png");
     private static final Identifier PROFESSION_TEXTURE = new Identifier("minecraft", "textures/item/writable_book.png");
     private static final Identifier NOTIFICATION_TEXTURE = new Identifier("minecraft", "textures/gui/unseen_notification.png");
     
     private static final Identifier SEPARATOR_TEXTURE = new Identifier("minecraft", "textures/gui/header_separator.png");
-    
     private static final Identifier BARS_TEXTURE = new Identifier("minecraft", "textures/gui/bars.png");
     
     private static final Identifier HEALTH_TEXTURE = new Identifier("minecraft", "textures/gui/icons.png");

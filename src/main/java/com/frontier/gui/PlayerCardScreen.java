@@ -41,14 +41,16 @@ public class PlayerCardScreen extends Screen
 	private static final Identifier SEPARATOR_TEXTURE = new Identifier("minecraft", "textures/gui/header_separator.png");
 
 	private static final int ORANGE = 0xF74B03;
-	private static final Map<String, Identifier> PROFESSION_TEXTURES = Map.of(
+	private static final Map<String, Identifier> PROFESSION_TEXTURES = Map.of
+			(
 			"Adventurer", new Identifier("minecraft", "textures/mob_effect/speed.png"),
 			"Denizen", new Identifier("minecraft", "textures/item/totem_of_undying.png"), 
 			"Merchant", new Identifier("minecraft", "textures/item/bundle.png"), 
-			"Commander", new Identifier("minecraft", "textures/mob_effect/strength.png"), 
+			"Commander", new Identifier("minecraft", "textures/item/armor_stand.png"),
 			"Leader", new Identifier("minecraft", "textures/item/bell.png"), 
 			"Outlaw", new Identifier("minecraft", "textures/item/spyglass.png"), 
-			"Maverick", new Identifier("minecraft", "textures/mob_effect/bad_omen.png"));
+			"Maverick", new Identifier("minecraft", "textures/mob_effect/bad_omen.png")
+			);
 
 	private List<TextureElement> textures = new ArrayList<>();
 	private int backgroundPosX;

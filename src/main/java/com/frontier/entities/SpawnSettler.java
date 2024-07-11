@@ -55,7 +55,7 @@ public class SpawnSettler
 	    nomad.setSettlerHunger(100);
 	    nomad.setSettlerMorale(SettlerEntity.generateValue(40, 60));
 	    
-	    if (nomad.getSettlerExpertise().equals("Novice"))
+	    if (nomad.getSettlerExpertise().equals("NOVICE"))
 	    	nomad.setSettlerSkill(0);
 	    else
 	    	nomad.setSettlerSkill(SettlerEntity.generateValue(1, 10));

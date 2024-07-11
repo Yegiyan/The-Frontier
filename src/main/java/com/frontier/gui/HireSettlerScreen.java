@@ -186,7 +186,7 @@ public class HireSettlerScreen extends Screen
     
 	public HireSettlerScreen(SettlerEntity settler)
 	{
-		super(Text.literal("Hire a Settler Screen"));
+		super(Text.literal("Hire Settler Screen"));
 		this.settler = settler;
 		this.expertise = settler.getSettlerExpertise();
 		this.page = Page.MAIN;
