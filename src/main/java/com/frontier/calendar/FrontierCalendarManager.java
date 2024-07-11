@@ -41,20 +41,21 @@ public class FrontierCalendarManager
 		});
 
 		ServerTickEvents.START_WORLD_TICK.register(world ->
-		{
-			if (world.getRegistryKey() != World.OVERWORLD)
-				return;
+        {
+            if (world.getRegistryKey() != World.OVERWORLD)
+                return;
 
-			long dayTime = world.getTimeOfDay() % 24000;
+            long dayTime = world.getTimeOfDay() % 24000;
 
-			if (lastDayTime >= 13000 && lastDayTime < 23000 && dayTime >= 0 && dayTime < 13000)
-			{
-				calendar.nextDay();
-				//Frontier.LOGGER.info("Date: " + calendar.getCurrentDate());
-			}
+            // check if we've moved to a new day
+            if (dayTime < lastDayTime)
+            {
+                calendar.nextDay();
+                Frontier.LOGGER.info("Date: " + calendar.getCurrentDate());
+            }
 
-			lastDayTime = dayTime;
-		});
+            lastDayTime = dayTime;
+        });
 	}
 
 	public static void saveData(MinecraftServer server)
@@ -100,6 +101,10 @@ public class FrontierCalendarManager
 		catch (IOException e) { e.printStackTrace(); }
 	}
 
+	public static String getDate() {
+		return calendar.getCurrentDate();
+	}
+	
 	public static FrontierCalendar getCalendar() {
 		return calendar;
 	}

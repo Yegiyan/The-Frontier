@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class FrontierCalendar
 {
-	private static final String[] MONTHS = { "Dawnstar", "Diminute", "Morrow", "Burgeon", "Harvest", "Lunaris", "Sunfire", "Aether", "Hearth", "Gloomfall", "Novara", "Duskrest" };
+	private static final String[] MONTHS = { "Dawnstar", "Parvus", "Morrow", "Aether", "Verdure", "Solstice", "Solara", "Calidum", "Harvest", "Lunaris", "Novara", "Duskfall" };
 	private static final int[] DAYS_IN_MONTH = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 	private int day, month, year;
 
@@ -68,7 +68,11 @@ public class FrontierCalendar
 	}
 
 	public String getCurrentDate() {
-		return getDayWithSuffix(day) + " of " + MONTHS[month] + ", Year " + year;
+		return day + " " + MONTHS[month] + " " + year;
+	}
+	
+	public String getCurrentDateSuffix() {
+		return getDayWithSuffix(day) + " " + MONTHS[month] + " " + year;
 	}
 
 	public int getDay() {
