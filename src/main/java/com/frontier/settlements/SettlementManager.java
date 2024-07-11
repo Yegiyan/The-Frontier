@@ -298,7 +298,6 @@ public class SettlementManager
 	        {
 	            NbtCompound settlerNbt = new NbtCompound();
 	            settler.writeCustomDataToNbt(settlerNbt);
-	            System.out.println("Save settler with UUID: " + settler.getUuidAsString() + " to faction: " + factionName);
 	            settlersNbt.add(settlerNbt);
 	        }
 	        
@@ -447,7 +446,6 @@ public class SettlementManager
 	                    
 	                    settler.readCustomDataFromNbt(settlerNbt);
 	                    settlement.addSettler(settler);
-	                    System.out.println("Loaded settler with UUID: " + settler.getUuidAsString() + " to faction: " + factionName);
 	                }
 
 	                

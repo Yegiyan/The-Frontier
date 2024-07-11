@@ -7,12 +7,12 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 public class FrontierUpdate
 {
-		// intervals in seconds
-		private static final int playerRepInterval = 5;
-		private static final int borderDrawInterval = 1;
-		private static int repTickCounter = 0;
-		private static int borderTickCounter = 0;
-		
+	// intervals in seconds
+	private static final int playerRepInterval = 5;
+	private static final int borderDrawInterval = 1;
+	private static int repTickCounter = 0;
+	private static int borderTickCounter = 0;
+	
 	public static void worldEvents()
 	{
 		StructureManager structureManager = new StructureManager();
