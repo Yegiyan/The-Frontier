@@ -20,8 +20,6 @@ public class Frontier implements ModInitializer
 {
 	public static String MOD_ID = "frontier";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-
-	// figure out player & settler birth dates
 	
 	// develop architect settler & create building ui
 	// show dimensions of structure to player when they try to manually place

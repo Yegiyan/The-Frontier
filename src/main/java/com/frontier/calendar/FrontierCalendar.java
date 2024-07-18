@@ -9,7 +9,7 @@ public class FrontierCalendar
 	private static final int[] LEAP_DAYS_IN_MONTH = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 	private int day, month, year;
 
-	public FrontierCalendar(long seed)
+	public FrontierCalendar(long seed) // in data dawnstar = '0' & duskfall = '11'
 	{
 		this.day = generateDate(1, 20, seed);
 		this.month = generateDate(0, 11, seed);
@@ -67,30 +67,6 @@ public class FrontierCalendar
 				return day + "th";
 		}
 	}
-
-	public String getCurrentDate() {
-		return day + " " + MONTHS[month] + " " + year;
-	}
-	
-	public String getCurrentDateWithZero() {
-        return String.format("%02d %s %d", day, MONTHS[month], year);
-    }
-	
-	public String getCurrentDateAsSentence() {
-		return getDayWithSuffix(day) + " of " + MONTHS[month] + ", Year " + year;
-	}
-
-	public int getDay() {
-		return day;
-	}
-	
-	public int getMonth() {
-		return month;
-	}
-
-	public int getYear() {
-		return year;
-	}
 	
 	private static boolean isLeapYear(int year)
 	{
@@ -107,5 +83,37 @@ public class FrontierCalendar
 			return LEAP_DAYS_IN_MONTH[month];
 		else
 			return NORMAL_DAYS_IN_MONTH[month];
+	}
+	
+	public String getRandomDate(int year)
+	{
+		Random rand = new Random();
+		int month = rand.nextInt(MONTHS.length);
+		int day = rand.nextInt(getDaysInMonth(month, year)) + 1;
+		return String.format("%02d %s %d", day, MONTHS[month], year);
+	}
+	
+	public String getCurrentDate() {
+		return day + " " + MONTHS[month] + " " + year;
+	}
+	
+	public String getCurrentDateWithZero() {
+        return String.format("%02d %s %d", day, MONTHS[month], year);
+    }
+	
+	public String getCurrentDateAsSentence() {
+		return getDayWithSuffix(day) + " of " + MONTHS[month] + ", Year " + year;
+	}
+	
+	public int getDay() {
+		return day;
+	}
+	
+	public int getMonth() {
+		return month;
+	}
+
+	public int getYear() {
+		return year;
 	}
 }

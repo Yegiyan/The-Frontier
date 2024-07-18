@@ -51,7 +51,7 @@ public class FrontierCalendarManager
             if (dayTime < lastDayTime)
             {
                 calendar.nextDay();
-                Frontier.LOGGER.info("Date: " + calendar.getCurrentDateWithZero());
+                Frontier.LOGGER.info("It is the " + calendar.getCurrentDateAsSentence());
             }
 
             lastDayTime = dayTime;
@@ -71,7 +71,7 @@ public class FrontierCalendarManager
 				file.createNewFile();
 			}
 
-			String data = calendar.getDay() + "," + calendar.getMonth() + "," + calendar.getYear();
+			String data = calendar.getDay() + "/" + calendar.getMonth() + "/" + calendar.getYear();
 			Files.write(file.toPath(), data.getBytes());
 			Frontier.LOGGER.info("Saving calendar data");
 		}
@@ -89,7 +89,7 @@ public class FrontierCalendarManager
 		try
 		{
 			String data = new String(Files.readAllBytes(file.toPath()));
-			String[] parts = data.split(",");
+			String[] parts = data.split("/");
 			int day = Integer.parseInt(parts[0]);
 			int month = Integer.parseInt(parts[1]);
 			int year = Integer.parseInt(parts[2]);

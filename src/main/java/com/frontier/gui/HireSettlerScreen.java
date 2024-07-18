@@ -345,7 +345,7 @@ public class HireSettlerScreen extends Screen
 	private void initializeMainPageButtons()
 	{
 		infoButton.active = false;
-		governingButton = ButtonWidget.builder(Text.literal("Government"), button ->
+		governingButton = ButtonWidget.builder(Text.literal("Governing"), button ->
 		{
 			page = Page.GOVERNING;
 			updateButtons();

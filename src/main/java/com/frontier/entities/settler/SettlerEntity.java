@@ -492,7 +492,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    super.onDeath(source);
 	    this.dropInventory();
 	    if (!this.getWorld().isClient)
-	    	SettlementManager.getSettlement(getSettlerFaction()).addGrave(new Grave(getSettlerName(), getSettlerExpertise(), "BIRTH DATE", FrontierCalendarManager.getDateWithZero()));
+	    	SettlementManager.getSettlement(getSettlerFaction()).addGrave(new Grave(getSettlerName(), getSettlerExpertise(), "0/0/0", FrontierCalendarManager.getDateWithZero()));
 	}
 	
 	@Override
