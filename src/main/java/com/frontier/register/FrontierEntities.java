@@ -1,9 +1,9 @@
 package com.frontier.register;
 
 import com.frontier.Frontier;
-import com.frontier.entities.ArchitectEntity;
-import com.frontier.entities.NomadEntity;
-import com.frontier.entities.SettlerEntity;
+import com.frontier.entities.settler.ArchitectEntity;
+import com.frontier.entities.settler.NomadEntity;
+import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.renderers.SettlerEntityRenderer;
 
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;

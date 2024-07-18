@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.frontier.entities.SettlerEntity;
+import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextureElement;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
@@ -98,7 +98,7 @@ public class SettlerCardScreen extends Screen
         else
             skinTexture = DefaultSkinHelper.getTexture(settler.getUuid());
 
-        nameText = Text.literal(settler.getSettlerName());
+        nameText = Text.literal(settler.getSettlerFirstName() + " " + settler.getSettlerLastName());
         professionText = Text.literal(settler.getSettlerProfession());
 
         healthText = Text.literal(String.format("%.0f", (settler.getHealth() / 20.0f) * 100));

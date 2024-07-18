@@ -2,7 +2,7 @@ package com.frontier;
 
 import java.util.UUID;
 
-import com.frontier.entities.SettlerEntity;
+import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.PlayerCardScreen;
 import com.frontier.regions.RegionManager;
 import com.frontier.register.FrontierKeyBindings;

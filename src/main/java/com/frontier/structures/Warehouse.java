@@ -9,7 +9,7 @@ public class Warehouse extends Structure
 {
     public Warehouse(String name, String faction, BlockPos position, Direction facing)
     {
-        super(name, faction, StructureType.CORE, position, facing);
+        super(name, faction, StructureType.GOVERNING, position, facing);
         //setMaxTier(2);
     }
     

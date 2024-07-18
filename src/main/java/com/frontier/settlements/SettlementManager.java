@@ -17,7 +17,7 @@ import java.util.UUID;
 
 import com.frontier.Frontier;
 import com.frontier.PlayerData;
-import com.frontier.entities.SettlerEntity;
+import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.AbandonSettlementScreen;
 import com.frontier.gui.CreateSettlementScreen;
 import com.frontier.register.FrontierEntities;
@@ -326,6 +326,20 @@ public class SettlementManager
 	        for (String enemy : settlement.getEnemyFactions())
 	            enemyFactionsNbt.add(NbtString.of(enemy));
 
+	        // save graves
+	        NbtList gravesNbt = new NbtList();
+	        for (Grave grave : settlement.getGraves())
+	        {
+	            NbtCompound graveNbt = new NbtCompound();
+	            graveNbt.putString("Name", grave.getName());
+	            graveNbt.putString("Expertise", grave.getExperise());
+	            graveNbt.putString("Birth", grave.getBirth());
+	            graveNbt.putString("Death", grave.getDeath());
+	            graveNbt.putString("Eulogy", grave.getEulogy());
+	            
+	            gravesNbt.add(graveNbt);
+	        }
+	        
 	        // save structures
 	        NbtList structuresNbt = new NbtList();
 	        for (Structure structure : settlement.getStructures())
@@ -369,6 +383,7 @@ public class SettlementManager
 	        settlementNbt.put("Enemies", enemiesNbt);
 	        settlementNbt.put("AlliedFactions", alliedFactionsNbt);
 	        settlementNbt.put("EnemyFactions", enemyFactionsNbt);
+	        settlementNbt.put("Graves", gravesNbt);
 	        settlementNbt.put("Structures", structuresNbt);
 
 	        settlementsNbt.put(factionName, settlementNbt);
@@ -483,6 +498,23 @@ public class SettlementManager
 	                for (int i = 0; i < enemyFactionsNbt.size(); i++)
 	                    settlement.addEnemyFaction(enemyFactionsNbt.getString(i));
 
+	                // load graves
+	                NbtList gravesNbt = settlementNbt.getList("Graves", 10);
+	                for (int i = 0; i < gravesNbt.size(); i++)
+	                {
+	                    NbtCompound graveNbt = gravesNbt.getCompound(i);
+	                    String name = graveNbt.getString("Name");
+	                    String expertise = graveNbt.getString("Expertise");
+	                    String birth = graveNbt.getString("Birth");
+	                    String death = graveNbt.getString("Death");
+	                    String eulogy = graveNbt.getString("Eulogy");
+
+	                    Grave grave = new Grave(name, expertise, birth, death);
+	                    grave.setEulogy(eulogy);
+	                    
+	                    settlement.getGraves().add(grave);
+	                }
+	                
 	                // load structures
 	                NbtList structuresNbt = settlementNbt.getList("Structures", 10);
 	                for (int i = 0; i < structuresNbt.size(); i++)

@@ -1,6 +1,6 @@
 package com.frontier.renderers;
 
-import com.frontier.entities.SettlerEntity;
+import com.frontier.entities.settler.SettlerEntity;
 
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRendererFactory;

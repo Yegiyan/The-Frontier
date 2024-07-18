@@ -11,7 +11,7 @@ public class TownHall extends Structure
 {
     public TownHall(String name, String faction, BlockPos position, Direction facing)
     {
-        super(name, faction, StructureType.CORE, position, facing);
+        super(name, faction, StructureType.GOVERNING, position, facing);
         setMaxTier(2);
     }
     

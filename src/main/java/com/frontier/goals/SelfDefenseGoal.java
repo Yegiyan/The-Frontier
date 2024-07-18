@@ -2,7 +2,7 @@ package com.frontier.goals;
 
 import java.util.EnumSet;
 
-import com.frontier.entities.SettlerEntity;
+import com.frontier.entities.settler.SettlerEntity;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;

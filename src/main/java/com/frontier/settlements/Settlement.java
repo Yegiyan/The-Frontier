@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.frontier.PlayerData;
-import com.frontier.entities.SettlerEntity;
+import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.structures.Structure;
 import com.frontier.structures.TownHall;
 import com.frontier.structures.Warehouse;
@@ -33,6 +33,7 @@ public class Settlement
     
     private Map<UUID, Integer> reputations;
     private List<Structure> structures;
+    private List<Grave> graves;
     
     private List<SettlerEntity> settlers;
     
@@ -43,7 +44,7 @@ public class Settlement
     private List<String> alliedFactions;
     private List<String> enemyFactions;
     
-    private final int TERRITORY_CHUNK_RADIUS = 4; // 4 = 128x128 radius (4 chunks in each direction)
+    private final int TERRITORY_CHUNK_RADIUS = 4; // 4 = 128x128 radius (4 chunks in each direction) - prob make this a 6 tbh
     
     public boolean abortSettlementCreation = false;
 
@@ -55,6 +56,7 @@ public class Settlement
         this.territory = new HashSet<>();
         this.reputations = new HashMap<>();
         this.structures = new ArrayList<>();
+        this.graves = new ArrayList<>();
         this.settlers = new ArrayList<>();
         this.players = new ArrayList<>();
         this.allies = new ArrayList<>();
@@ -219,6 +221,18 @@ public class Settlement
 		return structures;
 	}
 
+	public List<Grave> getGraves() {
+		return graves;
+	}
+	
+	public void addGrave(Grave grave) {
+		this.graves.add(grave);
+	}
+	
+	public void removeGrave(String name) {
+	    graves.removeIf(grave -> grave.getName().equals(name));
+	}
+	
 	public List<SettlerEntity> getSettlers() {
 		return settlers;
 	}

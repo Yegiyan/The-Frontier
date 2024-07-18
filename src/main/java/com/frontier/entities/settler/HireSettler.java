@@ -1,4 +1,4 @@
-package com.frontier.entities;
+package com.frontier.entities.settler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -100,7 +100,7 @@ public class HireSettler
 		}
 	}
 
-	public static void architect(ArchitectEntity architect, String name, String faction, String profession, String expertise, int hunger, int morale, int skill, UUID uuid, String gender, World world)
+	public static void architect(ArchitectEntity architect, String firstName, String lastName, String name, String faction, String profession, String expertise, int hunger, int morale, int skill, UUID uuid, String gender, World world)
 	{
 		LocalDifficulty difficulty = world.getLocalDifficulty(architect.getBlockPos());
 	    SpawnReason spawnReason = SpawnReason.NATURAL;
@@ -109,6 +109,8 @@ public class HireSettler
 	    
 	    Random rand = new Random();
 
+	    architect.setSettlerFirstName(firstName);
+	    architect.setSettlerLastName(lastName);
 	    architect.setSettlerName(name);
 	    architect.setSettlerGender(gender);
 	    architect.setSettlerProfession(profession);

@@ -51,7 +51,7 @@ public class FrontierCalendarManager
             if (dayTime < lastDayTime)
             {
                 calendar.nextDay();
-                Frontier.LOGGER.info("Date: " + calendar.getCurrentDate());
+                Frontier.LOGGER.info("Date: " + calendar.getCurrentDateWithZero());
             }
 
             lastDayTime = dayTime;
@@ -103,6 +103,14 @@ public class FrontierCalendarManager
 
 	public static String getDate() {
 		return calendar.getCurrentDate();
+	}
+	
+	public static String getDateWithZero() {
+		return calendar.getCurrentDateWithZero();
+	}
+	
+	public static String getDateAsSentence() {
+		return calendar.getCurrentDateAsSentence();
 	}
 	
 	public static FrontierCalendar getCalendar() {

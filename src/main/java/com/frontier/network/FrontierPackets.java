@@ -3,10 +3,10 @@ package com.frontier.network;
 import java.util.UUID;
 
 import com.frontier.Frontier;
-import com.frontier.entities.ArchitectEntity;
-import com.frontier.entities.HireSettler;
-import com.frontier.entities.NomadEntity;
-import com.frontier.entities.SettlerEntity;
+import com.frontier.entities.settler.ArchitectEntity;
+import com.frontier.entities.settler.HireSettler;
+import com.frontier.entities.settler.NomadEntity;
+import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.register.FrontierEntities;
 import com.frontier.settlements.SettlementManager;
 
@@ -66,6 +66,8 @@ public class FrontierPackets
 		{
 		    String settlerProfession = buf.readString(32767);
 		    String settlerFaction = buf.readString(32767);
+		    String settlerFirstName = buf.readString(32767);
+		    String settlerLastName = buf.readString(32767);
 		    String settlerName = buf.readString(32767);
 		    String settlerGender = buf.readString(32767);
 		    String settlerExpertise = buf.readString(32767);
@@ -90,7 +92,7 @@ public class FrontierPackets
 		                        nomad.remove(RemovalReason.DISCARDED);
 		                        ArchitectEntity architect = FrontierEntities.ARCHITECT_ENTITY.create(world);
 		                        architect.refreshPositionAndAngles(settlerPos, 0, 0);
-		                        HireSettler.architect(architect, settlerName, settlerFaction, "Architect", settlerExpertise, settlerHunger, settlerMorale, settlerSkill, settlerUUID, settlerGender, world);
+		                        HireSettler.architect(architect, settlerFirstName, settlerLastName, settlerName, settlerFaction, "Architect", settlerExpertise, settlerHunger, settlerMorale, settlerSkill, settlerUUID, settlerGender, world);
 		                        break;
 		                    default:
 		                    	Frontier.LOGGER.error("FrontierPackets() - No settler profession found!");

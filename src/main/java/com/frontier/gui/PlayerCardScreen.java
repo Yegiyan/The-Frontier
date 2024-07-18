@@ -45,7 +45,7 @@ public class PlayerCardScreen extends Screen
 			(
 			"Adventurer", new Identifier("minecraft", "textures/mob_effect/speed.png"),
 			"Denizen", new Identifier("minecraft", "textures/item/totem_of_undying.png"), 
-			"Merchant", new Identifier("minecraft", "textures/item/bundle.png"), 
+			"Merchant", new Identifier("minecraft", "textures/item/bundle_filled.png"), 
 			"Commander", new Identifier("minecraft", "textures/item/armor_stand.png"),
 			"Leader", new Identifier("minecraft", "textures/item/bell.png"), 
 			"Outlaw", new Identifier("minecraft", "textures/item/spyglass.png"), 

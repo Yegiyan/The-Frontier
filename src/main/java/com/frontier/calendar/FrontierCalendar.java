@@ -5,7 +5,8 @@ import java.util.Random;
 public class FrontierCalendar
 {
 	private static final String[] MONTHS = { "Dawnstar", "Parvus", "Morrow", "Aether", "Verdure", "Solstice", "Solara", "Calidum", "Harvest", "Lunaris", "Novara", "Duskfall" };
-	private static final int[] DAYS_IN_MONTH = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	private static final int[] NORMAL_DAYS_IN_MONTH = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	private static final int[] LEAP_DAYS_IN_MONTH = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 	private int day, month, year;
 
 	public FrontierCalendar(long seed)
@@ -18,7 +19,7 @@ public class FrontierCalendar
 	public void nextDay()
 	{
 		day++;
-		if (day > DAYS_IN_MONTH[month])
+		if (day > getDaysInMonth(month, year))
 		{
 			day = 1;
 			month++;
@@ -41,7 +42,7 @@ public class FrontierCalendar
 		if (month < 0 || month >= MONTHS.length)
 			throw new IllegalArgumentException("Invalid month: " + month);
 
-		if (day < 1 || day > DAYS_IN_MONTH[month])
+		if (day < 1 || day > getDaysInMonth(month, year))
 			throw new IllegalArgumentException("Invalid day: " + day);
 
 		this.day = day;
@@ -71,8 +72,12 @@ public class FrontierCalendar
 		return day + " " + MONTHS[month] + " " + year;
 	}
 	
-	public String getCurrentDateSuffix() {
-		return getDayWithSuffix(day) + " " + MONTHS[month] + " " + year;
+	public String getCurrentDateWithZero() {
+        return String.format("%02d %s %d", day, MONTHS[month], year);
+    }
+	
+	public String getCurrentDateAsSentence() {
+		return getDayWithSuffix(day) + " of " + MONTHS[month] + ", Year " + year;
 	}
 
 	public int getDay() {
@@ -85,5 +90,22 @@ public class FrontierCalendar
 
 	public int getYear() {
 		return year;
+	}
+	
+	private static boolean isLeapYear(int year)
+	{
+		if (year % 4 != 0)
+			return false;
+		if (year % 100 == 0 && year % 400 != 0)
+			return false;
+		return true;
+	}
+
+	private int getDaysInMonth(int month, int year)
+	{
+		if (isLeapYear(year))
+			return LEAP_DAYS_IN_MONTH[month];
+		else
+			return NORMAL_DAYS_IN_MONTH[month];
 	}
 }

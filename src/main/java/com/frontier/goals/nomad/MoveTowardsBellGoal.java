@@ -1,8 +1,8 @@
 package com.frontier.goals.nomad;
 
 import com.frontier.Frontier;
-import com.frontier.entities.NomadEntity;
-import com.frontier.entities.SettlerEntity;
+import com.frontier.entities.settler.NomadEntity;
+import com.frontier.entities.settler.SettlerEntity;
 
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.server.world.ServerWorld;

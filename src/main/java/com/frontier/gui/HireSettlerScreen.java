@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.frontier.Frontier;
 import com.frontier.PlayerData;
-import com.frontier.entities.SettlerEntity;
+import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextWrapper;
 import com.frontier.gui.util.TextureElement;
@@ -45,8 +45,8 @@ public class HireSettlerScreen extends Screen
     private static final Identifier EMERALD_TEXTURE = new Identifier("minecraft", "textures/item/emerald.png");
     
     private static final Identifier ARCHITECT_TEXTURE = new Identifier("minecraft", "textures/item/clock_48.png");
-    private static final Identifier COURIER_TEXTURE = new Identifier("minecraft", "textures/item/chest_minecart.png");
-    private static final Identifier DELIVERER_TEXTURE = new Identifier("minecraft", "textures/item/written_book.png");
+    private static final Identifier COURIER_TEXTURE = new Identifier("minecraft", "textures/item/written_book.png");
+    private static final Identifier DELIVERER_TEXTURE = new Identifier("minecraft", "textures/item/chest_minecart.png");
     private static final Identifier INNKEEPER_TEXTURE = new Identifier("minecraft", "textures/item/candle.png");
     private static final Identifier MERCHANT_TEXTURE = new Identifier("minecraft", "textures/item/bundle_filled.png");
     private static final Identifier PRIEST_TEXTURE = new Identifier("minecraft", "textures/item/light.png");
@@ -203,7 +203,7 @@ public class HireSettlerScreen extends Screen
 		backgroundPosY = ((this.height - BACKGROUND_HEIGHT) / 2) + UI_OFFSET_Y;
 		
 		nameText = Text.literal(settler.getSettlerName());
-		expertiseText = Text.literal(capitalize(expertise));
+		expertiseText = Text.literal(formatExpertiseText(expertise));
 
 		healthText = Text.literal(String.format("%.0f", (settler.getHealth() / 20.0f) * 100));
 		hungerText = Text.literal(String.valueOf(settler.getSettlerHunger()));
@@ -345,7 +345,7 @@ public class HireSettlerScreen extends Screen
 	private void initializeMainPageButtons()
 	{
 		infoButton.active = false;
-		governingButton = ButtonWidget.builder(Text.literal("Governing"), button ->
+		governingButton = ButtonWidget.builder(Text.literal("Government"), button ->
 		{
 			page = Page.GOVERNING;
 			updateButtons();
@@ -399,6 +399,8 @@ public class HireSettlerScreen extends Screen
                 PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
                 passedData.writeString(hire.toString());
                 passedData.writeString(playerData.getFaction());
+                passedData.writeString(settler.getSettlerFirstName());
+                passedData.writeString(settler.getSettlerLastName());
                 passedData.writeString(settler.getSettlerName());
                 passedData.writeString(settler.getSettlerGender());
                 passedData.writeString(settler.getSettlerExpertise());
@@ -986,7 +988,7 @@ public class HireSettlerScreen extends Screen
         context.drawTexture(BARS_TEXTURE, x, y, 0, 5 * (barIndex + 1), barWidth, barHeight);
     }
     
-    private String capitalize(String str)
+    private String formatExpertiseText(String str)
 	{
 		if (str == null || str.isEmpty())
 			return str;
@@ -1001,10 +1003,10 @@ public class HireSettlerScreen extends Screen
 				expertiseTexture = new Identifier("minecraft", "textures/item/writable_book.png");
 				break;
 			case "LABORING":
-				expertiseTexture = new Identifier("minecraft", "textures/item/bucket.png");
+				expertiseTexture = new Identifier("minecraft", "textures/item/wheat.png");
 				break;
 			case "ARTISAN":
-				expertiseTexture = new Identifier("minecraft", "textures/item/bundle_filled.png");
+				expertiseTexture = new Identifier("minecraft", "textures/item/clay_ball.png");
 				break;
 			case "CRAFTING":
 				expertiseTexture = new Identifier("minecraft", "textures/item/flint.png");
@@ -1016,7 +1018,7 @@ public class HireSettlerScreen extends Screen
 				expertiseTexture = new Identifier("minecraft", "textures/item/chainmail_chestplate.png");
 				break;
 			case "NOVICE":
-				expertiseTexture = new Identifier("minecraft", "textures/item/empty_armor_slot_helmet.png");
+				expertiseTexture = new Identifier("minecraft", "textures/item/glass_bottle.png");
 				break;
 			default:
 				Frontier.LOGGER.error("HireSettlerScreen() - Invalid settler expertise!");

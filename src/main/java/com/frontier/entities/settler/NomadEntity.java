@@ -1,4 +1,4 @@
-package com.frontier.entities;
+package com.frontier.entities.settler;
 
 import com.frontier.PlayerData;
 import com.frontier.goals.SelfDefenseGoal;

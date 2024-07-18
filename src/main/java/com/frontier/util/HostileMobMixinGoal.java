@@ -1,6 +1,6 @@
 package com.frontier.util;
 
-import com.frontier.entities.SettlerEntity;
+import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.mixin.MobEntityAccessor;
 
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;

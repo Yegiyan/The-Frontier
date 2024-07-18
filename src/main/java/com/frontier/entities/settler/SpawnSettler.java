@@ -1,11 +1,9 @@
-package com.frontier.entities;
+package com.frontier.entities.settler;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import com.frontier.Frontier;
+import com.frontier.entities.util.SettlerName;
 
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.SpawnReason;
@@ -30,22 +28,19 @@ public class SpawnSettler
 	    nomad.setSettlerGender(gender);
 
 	    // choose random name
-	    String name = "";
-	    List<String> availableNames = gender.equals("Male") ? new ArrayList<>(nomad.maleSettlerNames) : new ArrayList<>(nomad.femaleSettlerNames);
-
 	    Set<String> occupiedNames = NomadEntity.loadEntityData(world);
-	    availableNames.removeAll(occupiedNames);
+	    String name, firstName, lastName;
 
-	    // check if there are any available names left
-	    if (!availableNames.isEmpty())
-	        name = availableNames.get(rand.nextInt(availableNames.size()));
-	    
-	    else
+	    do
 	    {
-	    	Frontier.LOGGER.error("We've run out of names to use!");
-	        name = "Nomad " + (occupiedNames.size() + 1);
+	    	firstName = SettlerName.generateFirstName(gender);
+	    	lastName = SettlerName.generateLastName();
+	        name = firstName + " " + lastName;
 	    }
+	    while (occupiedNames.contains(name));
 
+	    nomad.setSettlerFirstName(firstName);
+	    nomad.setSettlerLastName(lastName);
 	    nomad.setSettlerName(name);
 	    occupiedNames.add(name);
 
