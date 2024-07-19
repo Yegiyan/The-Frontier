@@ -165,8 +165,8 @@ public class HireSettlerScreen extends Screen
     
     private Text priceTitle;
     private Text priceText;
-    private Text hireText1;
-    private Text hireText2;
+    private Text titleText1;
+    private Text titleText2;
     
     private Text nameText;
     private Text expertiseText;
@@ -312,7 +312,7 @@ public class HireSettlerScreen extends Screen
 		ranchingTextures.add(new TextureElement(COWHAND_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Raises cows for their meat and leather", 1.0f));
 		ranchingTextures.add(new TextureElement(POULTRYMAN_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Raises chickens for their meat and eggs", 1.0f));
 		ranchingTextures.add(new TextureElement(SHEPHERD_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Raises sheep for their wool", 1.0f));
-		ranchingTextures.add(new TextureElement(STABLEHAND_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Raises donkeys, mules, horses, and wolves", 1.0f));
+		ranchingTextures.add(new TextureElement(STABLEHAND_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Raises donkeys, mules, camels, horses, and wolves", 1.0f));
 		ranchingTextures.add(new TextureElement(SWINEHERD_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Raises pigs for their meat", 1.0f));
 		
 		artisanTextures.add(new TextureElement(BAKER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Bakes bread, cookies, and cakes", 1.0f));
@@ -418,8 +418,8 @@ public class HireSettlerScreen extends Screen
 
 	private void setupGoverningPage()
 	{
-		hireText1 = Text.literal("Governing personnel will help you build and manage your settlement.");
-		hireText2 = Text.literal("As the leader you can optionally fulfill the role of architects and deliverers.");
+		titleText1 = Text.literal("Governing personnel will help you build and manage your settlement.");
+		titleText2 = Text.literal("As the leader you can optionally fulfill the role of architects and deliverers.");
 		
 		hireArchitectButton = ButtonWidget.builder(Text.literal("Architect"), button ->
 		{
@@ -467,8 +467,8 @@ public class HireSettlerScreen extends Screen
 
 	private void setupMilitaryPage()
 	{
-		hireText1 = Text.literal("Military units will guard, patrol, and defend your settlement and merchants.");
-		hireText2 = Text.literal("They will also follow their leader and enact raids on your enemies. Make sure they are armed!");
+		titleText1 = Text.literal("Military units will guard, patrol, and defend your settlement and merchants.");
+		titleText2 = Text.literal("They will also follow their leader and enact raids on your enemies. Make sure they are armed!");
 
 		hireArcherButton = ButtonWidget.builder(Text.literal("Archer"), button ->
 		{
@@ -495,8 +495,8 @@ public class HireSettlerScreen extends Screen
 	
 	private void setupLaboringPage()
 	{
-		hireText1 = Text.literal("Labor workers are the backbone of your settlement and perform the most crucial tasks.");
-		hireText2 = Text.literal("They ensure a stable supply of resources such as building materials, crafting items, and food.");
+		titleText1 = Text.literal("Labor workers are the backbone of your settlement and perform the most crucial tasks.");
+		titleText2 = Text.literal("They ensure a stable supply of resources such as building materials, crafting items, and food.");
 		
 		hireFarmerButton = ButtonWidget.builder(Text.literal("Farmer"), button ->
 		{
@@ -544,8 +544,8 @@ public class HireSettlerScreen extends Screen
 	
 	private void setupCraftingPage()
 	{
-		hireText1 = Text.literal("Crafting settlers are responsible for creating your settlements gear and venture items.");
-		hireText2 = Text.literal("These can range from armor to potions to treasure maps and more.");
+		titleText1 = Text.literal("Crafting settlers are responsible for creating your settlements gear and venture items.");
+		titleText2 = Text.literal("These can range from armor to potions to treasure maps and more.");
 		
 		hireAlchemistButton = ButtonWidget.builder(Text.literal("Alchemist"), button ->
 		{
@@ -593,8 +593,8 @@ public class HireSettlerScreen extends Screen
 	
 	private void setupRanchingPage()
 	{
-		hireText1 = Text.literal("Ranchers are responsible for the bees and animals in your settlement.");
-		hireText2 = Text.literal("They'll produce your honey, meat, wool, and leather pelts.");
+		titleText1 = Text.literal("Ranchers are responsible for the bees and animals in your settlement.");
+		titleText2 = Text.literal("They'll produce your honey, meat, wool, and leather pelts.");
 		
 		hireBeekeeperButton = ButtonWidget.builder(Text.literal("Beekeeper"), button ->
 		{
@@ -642,8 +642,8 @@ public class HireSettlerScreen extends Screen
 	
 	private  void setupArtisanPage()
 	{
-		hireText1 = Text.literal("Artisan settlers will create a variety of interesting wares for your settlement.");
-		hireText2 = Text.literal("These can range from exotic food items to elegant building materials.");
+		titleText1 = Text.literal("Artisan settlers will create a variety of interesting wares for your settlement.");
+		titleText2 = Text.literal("These can range from exotic food items to elegant building materials.");
 		
 		hireBakerButton = ButtonWidget.builder(Text.literal("Baker"), button ->
 		{
@@ -702,8 +702,8 @@ public class HireSettlerScreen extends Screen
 		if (page != Page.MAIN)
 		{
 			context.drawText(this.textRenderer, priceTitle, (backgroundPosX + 175), (backgroundPosY + 16), new Color(255, 255, 255).getRGB(), true);
-			TextWrapper.render(context, this.textRenderer, hireText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 140);
-			TextWrapper.render(context, this.textRenderer, hireText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 140);
+			TextWrapper.render(context, this.textRenderer, titleText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 140);
+			TextWrapper.render(context, this.textRenderer, titleText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 140);
 			context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 110), 0, 0, 225, 2, 32, 2);
 
 			context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 28), 0, 0, 54, 32, 54, 32);
@@ -744,14 +744,14 @@ public class HireSettlerScreen extends Screen
 		{
 			element.drawRect(context);
 			if (element.isMouseOver(mouseX, mouseY))
-				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
 		for (TextureElement element : mainTextures)
 		{
 			element.draw(context);
 			if (element.isMouseOver(mouseX, mouseY))
-				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
 		context.drawTexture(skinTexture, (backgroundPosX + 20), (backgroundPosY + 22), 8, 8, 8, 8, 64, 64);
@@ -798,7 +798,7 @@ public class HireSettlerScreen extends Screen
 		{
 			element.draw(context);
 			if (element.isMouseOver(mouseX, mouseY))
-				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
 		drawPriceText(context);
@@ -823,7 +823,7 @@ public class HireSettlerScreen extends Screen
 		{
 			element.draw(context);
 			if (element.isMouseOver(mouseX, mouseY))
-				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
 		drawPriceText(context);
@@ -857,7 +857,7 @@ public class HireSettlerScreen extends Screen
 		{
 			element.draw(context);
 			if (element.isMouseOver(mouseX, mouseY))
-				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
 		drawPriceText(context);
@@ -891,7 +891,7 @@ public class HireSettlerScreen extends Screen
 		{
 			element.draw(context);
 			if (element.isMouseOver(mouseX, mouseY))
-				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
 		drawPriceText(context);
@@ -925,7 +925,7 @@ public class HireSettlerScreen extends Screen
 		{
 			element.draw(context);
 			if (element.isMouseOver(mouseX, mouseY))
-				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
 		drawPriceText(context);
@@ -956,19 +956,13 @@ public class HireSettlerScreen extends Screen
 		{
 			element.draw(context);
 			if (element.isMouseOver(mouseX, mouseY))
-				renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
 		if (this.playerEmeralds < hire.getValue())
 			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), true);
 		else
 			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), true);
-    }
-    
-    private void renderTooltip(DrawContext context, String text, int mouseX, int mouseY)
-    {
-    	if (text != null)
-    		context.drawTooltip(this.textRenderer, Text.literal(text), mouseX, mouseY);
     }
 
     private  void drawPriceText(DrawContext context)

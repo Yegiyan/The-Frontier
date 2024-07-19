@@ -144,14 +144,14 @@ public class SettlerCardScreen extends Screen
             {
                 element.drawRect(context);
                 if (element.isMouseOver(mouseX, mouseY))
-                    renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+                	TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
             }
             
             for (TextureElement element : textures)
             {
                 element.draw(context);
                 if (element.isMouseOver(mouseX, mouseY))
-                    renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+                	TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
             }
             
             context.drawTexture(skinTexture, (backgroundPosX + 20), (backgroundPosY + 22), 8, 8, 8, 8, 64, 64);
@@ -173,12 +173,6 @@ public class SettlerCardScreen extends Screen
         }
 
         super.render(context, mouseX, mouseY, delta);
-    }
-
-    private void renderTooltip(DrawContext context, String text, int mouseX, int mouseY) 
-    {
-        if (text != null)
-            context.drawTooltip(textRenderer, Text.literal(text), mouseX, mouseY);
     }
 
     private void drawSlot(ItemStack stack, int x, int y, DrawContext context)

@@ -1,6 +1,5 @@
 package com.frontier.gui;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -114,12 +113,12 @@ public class PlayerCardScreen extends Screen
 
 	private void initButtons()
 	{
-		this.cardButton = ButtonWidget.builder(Text.literal("PLAYER CARD"), button ->
+		this.cardButton = ButtonWidget.builder(Text.literal("Player Info"), button ->
 		{
 			toggleMenu = false;
 		}).dimensions(backgroundPosX + 0, backgroundPosY - 25, 80, 20).build();
 
-		this.bountyButton = ButtonWidget.builder(Text.literal("BOUNTIES"), button ->
+		this.bountyButton = ButtonWidget.builder(Text.literal("Bounties"), button ->
 		{
 			toggleMenu = true;
 		}).dimensions(backgroundPosX + 168, backgroundPosY - 25, 80, 20).build();
@@ -153,12 +152,12 @@ public class PlayerCardScreen extends Screen
 			{
 				element.draw(context);
 				if (element.isMouseOver(mouseX, mouseY))
-					renderTooltip(context, element.getToolTip(), mouseX, mouseY);
+					TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 			});
 
-			drawText(context, nameText, backgroundPosX + 30, backgroundPosY + 15);
-			drawText(context, regionText, backgroundPosX + 30, backgroundPosY + 36);
-			drawText(context, territoryText, backgroundPosX + 30, backgroundPosY + 57);
+			TextUtil.drawText(context, this.textRenderer, nameText, backgroundPosX + 30, backgroundPosY + 15);
+			TextUtil.drawText(context, this.textRenderer, regionText, backgroundPosX + 30, backgroundPosY + 36);
+			TextUtil.drawText(context, this.textRenderer, territoryText, backgroundPosX + 30, backgroundPosY + 57);
 			TextUtil.drawTextR(context, this.textRenderer, professionText, backgroundPosX + 215, backgroundPosY + 15, true);
 			TextUtil.drawTextR(context, this.textRenderer, factionText, backgroundPosX + 215, backgroundPosY + 36, true);
 			TextUtil.drawTextR(context, this.textRenderer, renownText, backgroundPosX + 215, backgroundPosY + 57, true);
@@ -227,17 +226,6 @@ public class PlayerCardScreen extends Screen
 			return Text.literal(territory).formatted(Formatting.RED);
 		else
 			return Text.literal(territory).formatted(Formatting.WHITE);
-	}
-	
-	private void drawText(DrawContext context, Text text, int x, int y)
-	{
-		context.drawText(this.textRenderer, text, x, y, Color.WHITE.getRGB(), true);
-	}
-
-	private void renderTooltip(DrawContext context, String text, int mouseX, int mouseY)
-	{
-		if (text != null)
-			context.drawTooltip(textRenderer, Text.literal(text), mouseX, mouseY);
 	}
 
 	@Override

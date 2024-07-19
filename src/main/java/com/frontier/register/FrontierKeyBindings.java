@@ -7,19 +7,27 @@ import net.minecraft.client.util.InputUtil;
 
 public class FrontierKeyBindings 
 {
-	public static KeyBinding playerCardKey;
-	public static KeyBinding toggleRegionsKey;
+	public static KeyBinding keyCharacterSheet;
+	public static KeyBinding keyToggleRegions;
+	public static KeyBinding keyToggleConstructionGUI;
 
     public static void register() 
     {
-        playerCardKey = new KeyBinding(
-                "Toggle Player Card",  // key description
-                InputUtil.Type.KEYSYM, // KEYSYM = keyboard | MOUSE = mouse
-                GLFW.GLFW_KEY_G,       // default key
-                "The Frontier"         // category name
+        keyCharacterSheet = new KeyBinding(
+                "Toggle Character Sheet", // key description
+                InputUtil.Type.KEYSYM,    // KEYSYM = keyboard | MOUSE = mouse
+                GLFW.GLFW_KEY_G,          // default key
+                "The Frontier"            // category name
         );
         
-        toggleRegionsKey = new KeyBinding(
+        keyToggleConstructionGUI = new KeyBinding(
+                "Toggle Construction GUI",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_B,
+                "The Frontier"
+        );
+        
+        keyToggleRegions = new KeyBinding(
                 "Toggle Regions (On Maps)",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_V,

@@ -26,6 +26,7 @@ public class FrontierPackets
 	
 	public static final Identifier SYNC_SETTLER_INVENTORY_ID = new Identifier(Frontier.MOD_ID, "sync_settler_inventory");
 	
+	public static final Identifier BUILD_STRUCTURE_ID = new Identifier(Frontier.MOD_ID, "build_structure");
 	public static final Identifier HIRE_SETTLER_ID = new Identifier(Frontier.MOD_ID, "hire_settler");
 	
 	public static void apply()
@@ -61,6 +62,17 @@ public class FrontierPackets
 	                ((SettlerEntity) entity).setClientInventory(inventory);
 	        });
 	    });
+		
+		ServerPlayNetworking.registerGlobalReceiver(HIRE_SETTLER_ID, (server, player, handler, buf, responseSender) ->
+		{
+		    int emeraldCost = buf.readInt();
+		    World world = player.getServerWorld();
+		    
+		    server.execute(() ->
+		    {
+		    	// do building shit here
+		    });
+		});
 		
 		ServerPlayNetworking.registerGlobalReceiver(HIRE_SETTLER_ID, (server, player, handler, buf, responseSender) ->
 		{

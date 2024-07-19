@@ -225,24 +225,22 @@ public abstract class Structure
 			else if (INVALID_BLOCKS.contains(block))
 			{
 				this.canConstruct = false;
-				return originalPosition; // Return original position if an invalid block is found
+				return originalPosition; // return original position if an invalid block is found
 			}
 			groundY--;
 		}
 
-		// check if more than 2/3rds of the blocks one level below the ground level are air
+		// check if more than 2/3rds of the blocks one level below ground level are air
 		int airBlockCount = 0;
 		int totalBlockCount = 0;
 		for (int dx = -getLength() / 2; dx <= getLength() / 2; dx++)
 		{
 			for (int dz = -getWidth() / 2; dz <= getWidth() / 2; dz++)
 			{
-				BlockPos checkPos = groundPos.add(dx, -1, dz); // Check one level below the ground position
+				BlockPos checkPos = groundPos.add(dx, -1, dz); // check one level below ground position
 				totalBlockCount++;
 				if (world.getBlockState(checkPos).isAir())
-				{
 					airBlockCount++;
-				}
 			}
 		}
 
@@ -445,11 +443,7 @@ public abstract class Structure
             	Frontier.LOGGER.error("NBT file not found: " + path);
             }
         }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
+        catch (IOException e) { e.printStackTrace(); }
         return structureMap;
     }
     
@@ -478,7 +472,7 @@ public abstract class Structure
 	        // ignore direction of bells
 	        if (expectedState.getBlock() instanceof BellBlock && currentState.getBlock() instanceof BellBlock)
 	        {
-	            // check all properties except facing for bells
+	            // check all properties except 'facing' for bells
 	            for (Property<?> property : expectedState.getProperties())
 	            {
 	                if (!property.getName().equals("facing") && !currentState.get(property).equals(expectedState.get(property)))
@@ -568,7 +562,7 @@ public abstract class Structure
 		Map<BlockPos, BlockState> missingBlocks = detectMissingBlocks(world);
 
 		if (missingBlocks.isEmpty())
-			return true; // no missing blocks
+			return true;
 
 		// step 2: check chests and furnaces for required blocks
 		Settlement settlement = SettlementManager.getSettlement(faction);
@@ -604,10 +598,10 @@ public abstract class Structure
 		for (Map.Entry<BlockPos, BlockState> entry : missingBlocks.entrySet())
 		{
 			String blockName = entry.getValue().getBlock().getTranslationKey();
-			int requiredCount = 1; // Each missing block counts as 1
+			int requiredCount = 1; // each missing block counts as 1
 
 			if (!availableResources.containsKey(blockName) || availableResources.get(blockName) < requiredCount)
-				return false; // Not enough resources
+				return false; // not enough resources
 
 			// deduct resources
 			availableResources.put(blockName, availableResources.get(blockName) - requiredCount);
@@ -620,7 +614,7 @@ public abstract class Structure
 	{
 		if (!canRepair(world))
 		{
-			Frontier.LOGGER.info("Cannot repair: Not enough resources!");
+			Frontier.LOGGER.info("Cannot repair " + this.getName() + ": Not enough resources!");
 			return;
 		}
 
@@ -645,7 +639,7 @@ public abstract class Structure
 
 					if (requiredCount > 0)
 					{
-						Frontier.LOGGER.info("Cannot repair: Not enough resources in chests!");
+						Frontier.LOGGER.info("Cannot repair " + this.getName() + ": Not enough resources in chests!");
 						return;
 					}
 				}
@@ -782,7 +776,7 @@ public abstract class Structure
             if (blockEntity instanceof FurnaceBlockEntity)
             {
                 Inventory inventory = (Inventory) blockEntity;
-                ItemStack outputStack = inventory.getStack(2); // output for furnace should be slot 2
+                ItemStack outputStack = inventory.getStack(2); // output for furnace (slot 2)
                 if (!outputStack.isEmpty())
                     furnaceOutputs.put(furnacePos, outputStack);
             }
@@ -816,16 +810,16 @@ public abstract class Structure
 	{
 		switch (facing)
 		{
-		case NORTH:
-			return originalPos;
-		case SOUTH:
-			return new BlockPos(-originalPos.getX(), originalPos.getY(), -originalPos.getZ());
-		case WEST:
-			return new BlockPos(originalPos.getZ(), originalPos.getY(), -originalPos.getX());
-		case EAST:
-			return new BlockPos(-originalPos.getZ(), originalPos.getY(), originalPos.getX());
-		default:
-			throw new IllegalArgumentException("Invalid facing direction: " + this.facing);
+			case NORTH:
+				return originalPos;
+			case SOUTH:
+				return new BlockPos(-originalPos.getX(), originalPos.getY(), -originalPos.getZ());
+			case WEST:
+				return new BlockPos(originalPos.getZ(), originalPos.getY(), -originalPos.getX());
+			case EAST:
+				return new BlockPos(-originalPos.getZ(), originalPos.getY(), originalPos.getX());
+			default:
+				throw new IllegalArgumentException("Invalid facing direction: " + this.facing);
 		}
 	}
 
@@ -854,16 +848,16 @@ public abstract class Structure
 	{
 		switch (facing)
 		{
-		case NORTH:
-			return original;
-		case SOUTH:
-			return original.getOpposite();
-		case WEST:
-			return original.rotateYCounterclockwise();
-		case EAST:
-			return original.rotateYClockwise();
-		default:
-			return original;
+			case NORTH:
+				return original;
+			case SOUTH:
+				return original.getOpposite();
+			case WEST:
+				return original.rotateYCounterclockwise();
+			case EAST:
+				return original.rotateYClockwise();
+			default:
+				return original;
 		}
 	}
 
@@ -871,16 +865,16 @@ public abstract class Structure
 	{
 		switch (this.facing)
 		{
-		case NORTH:
-			return original;
-		case SOUTH:
-			return (original + 2) % 4;
-		case WEST:
-			return (original + 3) % 4;
-		case EAST:
-			return (original + 1) % 4;
-		default:
-			return original;
+			case NORTH:
+				return original;
+			case SOUTH:
+				return (original + 2) % 4;
+			case WEST:
+				return (original + 3) % 4;
+			case EAST:
+				return (original + 1) % 4;
+			default:
+				return original;
 		}
 	}
 	
@@ -913,7 +907,7 @@ public abstract class Structure
 				size[2] = sizeList.getInt(2); // height
 			}
 			else
-				Frontier.LOGGER.error("NBT file not found: " + path);
+				Frontier.LOGGER.error("Structure - NBT file not found: " + path);
 		}
 		catch (IOException e) { e.printStackTrace(); }
 		return size;
@@ -958,6 +952,12 @@ public abstract class Structure
 	public void setType(StructureType type) {
 		this.type = type;
 	}
+	
+	public void setType(String type)
+	{
+        try { this.type = StructureType.valueOf(type.toUpperCase()); }
+        catch (IllegalArgumentException e) { Frontier.LOGGER.error("Invalid structure type: " + type + "!"); }
+    }
 
 	public BlockPos getPosition() {
 		return position;

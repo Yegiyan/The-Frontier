@@ -3,6 +3,7 @@ package com.frontier;
 import java.util.UUID;
 
 import com.frontier.entities.settler.SettlerEntity;
+import com.frontier.gui.StructureScreen;
 import com.frontier.gui.PlayerCardScreen;
 import com.frontier.regions.RegionManager;
 import com.frontier.register.FrontierKeyBindings;
@@ -95,15 +96,19 @@ public class FrontierManager
 	public static void keyBindings()
 	{
 		FrontierKeyBindings.register();
-        KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.playerCardKey);
-        KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.toggleRegionsKey);
+        KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.keyCharacterSheet);
+        KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.keyToggleRegions);
+        KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.keyToggleConstructionGUI);
         
         ClientTickEvents.END_CLIENT_TICK.register(client -> 
         {
-            while (FrontierKeyBindings.playerCardKey.wasPressed())
+            while (FrontierKeyBindings.keyCharacterSheet.wasPressed())
                 client.setScreen(new PlayerCardScreen());
             
-            while (FrontierKeyBindings.toggleRegionsKey.wasPressed())
+            while (FrontierKeyBindings.keyToggleConstructionGUI.wasPressed())
+                client.setScreen(new StructureScreen());
+            
+            while (FrontierKeyBindings.keyToggleRegions.wasPressed())
                 RegionMapRenderer.isRenderingEnabled = !RegionMapRenderer.isRenderingEnabled;
         });
 	}

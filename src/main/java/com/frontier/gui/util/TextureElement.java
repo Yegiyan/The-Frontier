@@ -42,6 +42,16 @@ public class TextureElement
         this.tooltip = tooltip;
         this.scale = scale;
     }
+    
+    public TextureElement(Identifier textureID, int x, int y, int width, int height, float scale) 
+    {
+        this.textureID = textureID;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.scale = scale;
+    }
 
     public void draw(DrawContext context) 
     {

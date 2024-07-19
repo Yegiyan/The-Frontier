@@ -24,14 +24,14 @@ public class TownHall extends Structure
     @Override
     protected void onConstruction()
     {
-    	Frontier.LOGGER.info("Constructed Town Hall at " + position);
+    	Frontier.LOGGER.info("Constructed TownHall at " + position);
     	setActive(true);
     }
 
     @Override
     protected void onUpgrade()
     {
-    	Frontier.LOGGER.info("Upgraded Town Hall to tier " + tier + " at " + position);
+    	Frontier.LOGGER.info("Upgraded TownHall to tier " + tier + " at " + position);
     }
     
     @Override

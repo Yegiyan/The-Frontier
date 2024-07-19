@@ -347,6 +347,7 @@ public class SettlementManager
 	            NbtCompound structureNbt = new NbtCompound();
 	            structureNbt.putString("Name", structure.getName());
 	            structureNbt.putString("Faction", structure.getFaction());
+	            structureNbt.putString("Type", structure.getType().toString());
 	            structureNbt.putLong("Position", structure.getPosition().asLong());
 	            structureNbt.putString("Facing", structure.getFacing().getName());
 	            structureNbt.putInt("Tier", structure.getTier());
@@ -522,6 +523,7 @@ public class SettlementManager
 	                    NbtCompound structureNbt = structuresNbt.getCompound(i);
 	                    String structureName = structureNbt.getString("Name");
 	                    String faction = structureNbt.getString("Faction");
+	                    String type = structureNbt.getString("Type");
 	                    BlockPos structurePos = BlockPos.fromLong(structureNbt.getLong("Position"));
 	                    Direction facing = Direction.byName(structureNbt.getString("Facing"));
 	                    int tier = structureNbt.getInt("Tier");
@@ -540,6 +542,7 @@ public class SettlementManager
 	                            throw new IllegalArgumentException("Unknown structure type: " + structureName);
 	                    }
 	                    
+	                    structure.setType(type);
 	                    structure.setTier(tier);
 	                    structure.setUUID(uuid);
 	                    structure.setActive(structureNbt.getBoolean("IsActive"));

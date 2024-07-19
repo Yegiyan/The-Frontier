@@ -21,4 +21,15 @@ public class TextUtil
 		int x = rightEdgeX - textWidth;
 		context.drawText(textRenderer, text, x, y, Color.WHITE.getRGB(), shadow);
 	}
+	
+	public static void drawText(DrawContext context, TextRenderer textRenderer, Text text, int x, int y)
+	{
+		context.drawText(textRenderer, text, x, y, Color.WHITE.getRGB(), true);
+	}
+	
+	public static void renderTooltip(DrawContext context, TextRenderer textRenderer, String text, int mouseX, int mouseY)
+	{
+		if (text != null)
+			context.drawTooltip(textRenderer, Text.literal(text), mouseX, mouseY);
+	}
 }
