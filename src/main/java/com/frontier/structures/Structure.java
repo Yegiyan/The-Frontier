@@ -42,7 +42,7 @@ import net.minecraft.world.Heightmap;
 
 public abstract class Structure
 {
-	public enum StructureType { GOVERNING, GATHERING, LABORING, CRAFTING, RANCHING, MILITARY, VISTING, MISC }
+	public enum StructureType { CORE, GATHERING, LABORING, CRAFTING, RANCHING, MILITARY, VISTING, MISC }
 	
 	protected String name;
 	protected String faction;
