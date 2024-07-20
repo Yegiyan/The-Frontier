@@ -3,6 +3,7 @@ package com.frontier.entities.settler;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -15,6 +16,7 @@ import com.frontier.calendar.FrontierCalendarManager;
 import com.frontier.gui.SettlerCardScreen;
 import com.frontier.network.FrontierPackets;
 import com.frontier.settlements.Grave;
+import com.frontier.settlements.Settlement;
 import com.frontier.settlements.SettlementManager;
 
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -492,7 +494,10 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    super.onDeath(source);
 	    this.dropInventory();
 	    if (!this.getWorld().isClient)
-	    	SettlementManager.getSettlement(getSettlerFaction()).addGrave(new Grave(getSettlerName(), getSettlerExpertise(), "0/0/0", FrontierCalendarManager.getDateWithZero()));
+	    {
+	    	getSettlement().updateStatistic("Deaths", 1);
+	    	getSettlement().addGrave(new Grave(getSettlerName(), getSettlerExpertise(), "0/0/0", FrontierCalendarManager.getDateWithZero()));
+	    }
 	}
 	
 	@Override
@@ -703,5 +708,13 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 
 	public void setSettlerTexture(int texture) {
 	    this.dataTracker.set(SETTLER_TEXTURE, texture);
+	}
+	
+	public Settlement getSettlement() {
+		return SettlementManager.getSettlement(getSettlerFaction());
+	}
+	
+	public HashMap<String, Integer> getStatistic() {
+		return SettlementManager.getSettlement(getSettlerFaction()).getStatistics();
 	}
 }

@@ -85,4 +85,8 @@ public class TextureElement
     public String getToolTip() {
     	return this.tooltip;
     }
+
+	public Identifier getTexture() {
+		return textureID;
+	}
 }

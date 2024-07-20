@@ -24,9 +24,10 @@ public class FrontierPackets
 	public static final Identifier CREATE_SETTLEMENT_ID = new Identifier(Frontier.MOD_ID, "create_settlement");
 	public static final Identifier ABANDON_SETTLEMENT_ID = new Identifier(Frontier.MOD_ID, "abandon_settlement");
 	
-	public static final Identifier SYNC_SETTLER_INVENTORY_ID = new Identifier(Frontier.MOD_ID, "sync_settler_inventory");
-	
 	public static final Identifier BUILD_STRUCTURE_ID = new Identifier(Frontier.MOD_ID, "build_structure");
+	public static final Identifier UPGRADE_STRUCTURE_ID = new Identifier(Frontier.MOD_ID, "upgrade_structure");
+	
+	public static final Identifier SYNC_SETTLER_INVENTORY_ID = new Identifier(Frontier.MOD_ID, "sync_settler_inventory");
 	public static final Identifier HIRE_SETTLER_ID = new Identifier(Frontier.MOD_ID, "hire_settler");
 	
 	public static void apply()
@@ -37,6 +38,7 @@ public class FrontierPackets
 	        server.execute(() ->
 	        {
 	            SettlementManager.create(player.getUuid(), factionName, server);
+	            SettlementManager.getSettlement(factionName).updateStatistic("Players", 1);
 	        });
 	    });
 		
@@ -48,6 +50,28 @@ public class FrontierPackets
 	        	SettlementManager.abandon(player.getUuid(), factionName, server);
 	        });
 	    });
+		
+		ServerPlayNetworking.registerGlobalReceiver(BUILD_STRUCTURE_ID, (server, player, handler, buf, responseSender) ->
+		{
+		    //int emeraldCost = buf.readInt();
+		    //World world = player.getServerWorld();
+		    
+		    server.execute(() ->
+		    {
+		    	// do building shit here
+		    });
+		});
+		
+		ServerPlayNetworking.registerGlobalReceiver(UPGRADE_STRUCTURE_ID, (server, player, handler, buf, responseSender) ->
+		{
+		    //int emeraldCost = buf.readInt();
+		    //World world = player.getServerWorld();
+		    
+		    server.execute(() ->
+		    {
+		    	// do building shit here
+		    });
+		});
 		
 		ServerPlayNetworking.registerGlobalReceiver(SYNC_SETTLER_INVENTORY_ID, (server, player, handler, buf, responseSender) ->
 		{
@@ -62,17 +86,6 @@ public class FrontierPackets
 	                ((SettlerEntity) entity).setClientInventory(inventory);
 	        });
 	    });
-		
-		ServerPlayNetworking.registerGlobalReceiver(HIRE_SETTLER_ID, (server, player, handler, buf, responseSender) ->
-		{
-		    int emeraldCost = buf.readInt();
-		    World world = player.getServerWorld();
-		    
-		    server.execute(() ->
-		    {
-		    	// do building shit here
-		    });
-		});
 		
 		ServerPlayNetworking.registerGlobalReceiver(HIRE_SETTLER_ID, (server, player, handler, buf, responseSender) ->
 		{

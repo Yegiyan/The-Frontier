@@ -36,11 +36,11 @@ public class StructureScreen extends Screen
 	
     private static final Identifier SEPARATOR_TEXTURE = new Identifier("minecraft", "textures/gui/header_separator.png");
     private static final Identifier HANGINGSIGN_TEXTURE = new Identifier("minecraft", "textures/gui/hanging_signs/spruce.png");
-    private static final Identifier EMERALD_TEXTURE = new Identifier("minecraft", "textures/item/emerald.png");
-    
-    private static final Identifier CONSTRUCTION_TEXTURE = new Identifier("minecraft", "textures/painting/sea.png");
-    private static final Identifier RESOURCES_TEXTURE = new Identifier("minecraft", "textures/painting/creebet.png");
-    private static final Identifier UPGRADE_TEXTURE = new Identifier("minecraft", "textures/painting/courbet.png");
+    private static final Identifier EMERALD_TEXTURE = new Identifier("minecraft", "textures/item/emerald.png");    
+    private static final Identifier INFO_TEXTURE = new Identifier("minecraft", "textures/gui/widgets.png");
+
+    private static final Identifier CONSTRUCTION_TEXTURE = new Identifier("minecraft", "textures/painting/earth.png");
+    private static final Identifier UPGRADE_TEXTURE = new Identifier("minecraft", "textures/painting/wind.png");
     
     private static final Identifier TOWNHALL_TEXTURE = new Identifier("minecraft", "textures/item/bell.png");
     private static final Identifier WAREHOUSE_TEXTURE = new Identifier("minecraft", "textures/block/barrel_side.png");
@@ -55,13 +55,13 @@ public class StructureScreen extends Screen
     
     private static final Identifier FARM_TEXTURE = new Identifier("minecraft", "textures/block/wheat_stage6.png");
     private static final Identifier FISHERY_TEXTURE = new Identifier("minecraft", "textures/block/tube_coral.png");
-    private static final Identifier FORAGINGLODGE_TEXTURE = new Identifier("minecraft", "textures/block/cave_vines_plant.png");
+    private static final Identifier LODGE_TEXTURE = new Identifier("minecraft", "textures/block/cave_vines_plant.png");
     private static final Identifier GROVE_TEXTURE = new Identifier("minecraft", "textures/block/oak_log_top.png");
     private static final Identifier MINE_TEXTURE = new Identifier("minecraft", "textures/block/gold_ore.png");
     
     private static final Identifier ALCHEMYLAB_TEXTURE = new Identifier("minecraft", "textures/block/brewing_stand_base.png");
     private static final Identifier ARCANUM_TEXTURE = new Identifier("minecraft", "textures/block/amethyst_block.png");
-    private static final Identifier FORGESMITH_TEXTURE = new Identifier("minecraft", "textures/block/blast_furnace_front.png");
+    private static final Identifier BLACKSMITH_TEXTURE = new Identifier("minecraft", "textures/block/blast_furnace_front.png");
     private static final Identifier CARTOGRAPHY_TEXTURE = new Identifier("minecraft", "textures/block/cartography_table_top.png");
     private static final Identifier FLETCHERY_TEXTURE = new Identifier("minecraft", "textures/block/fletching_table_top.png");
     private static final Identifier TANNERY_TEXTURE = new Identifier("minecraft", "textures/block/loom_front.png");
@@ -92,6 +92,9 @@ public class StructureScreen extends Screen
     private List<TextureElement> resourcesTextures = new ArrayList<>();
     private List<TextureElement> upgradeTextures = new ArrayList<>();
     
+    private List<TextureElement> rect1Textures = new ArrayList<>();
+    private List<TextureElement> rect2Textures = new ArrayList<>();
+    
     private List<TextureElement> coreTextures = new ArrayList<>();
     private List<TextureElement> militaryTextures = new ArrayList<>();
     private List<TextureElement> laboringTextures = new ArrayList<>();
@@ -111,8 +114,8 @@ public class StructureScreen extends Screen
     {
         NONE(0), TOWNHALL(2), WAREHOUSE(4), HOUSE(3),  ROAD(12), BRIDGE(10), WALL(6),
         BARRACKS(4), APOTHECARY(12), BOUNTYHALL(6), WATCHTOWER(10),
-        FARM(4), FISHERY(5), FORAGINGLODGE(3), GROVE(4), MINE(8),
-        ALCHEMYLAB(12), ARCANUM(10), SMITHFORGE(8), CARTOGRAPHY(10), FLETCHERY(6), TANNERY(8),
+        FARM(4), FISHERY(5), LODGE(3), GROVE(4), MINE(8),
+        ALCHEMYLAB(12), ARCANUM(10), BLACKSMITH(8), CARTOGRAPHY(10), FLETCHERY(6), TANNERY(8),
         APIARY(8), COWBARN(4), CHICKENCOOP(6), SHEEPPASTURE(8), STABLE(14), PIGPEN(4), 
         BAKERY(6), ABATTOIR(8), GREENGROCERY(4), WOODSHOP(8), MASONRY(10),
         MARKETPLACE(12), TAVERN(8),
@@ -126,69 +129,20 @@ public class StructureScreen extends Screen
     }
     private Build build;
     
-    private ButtonWidget buildButton;
+    private ButtonWidget buildButton, upgradeButton;
+    private ButtonWidget constructPageButton, resourcesPageButton, upgradePageButton;
+    private ButtonWidget coreButton, militiaButton, laboringButton, craftingButton, ranchingButton, artisanButton, customsButton, miscButton;
+    private ButtonWidget barracksButton, watchTowerButton, bountyHallButton;
+    private ButtonWidget townhallButton, warehouseButton, houseButton, roadButton, bridgeButton, wallButton;
+    private ButtonWidget farmButton, fisheryButton, lodgeButton, groveButton, mineButton;
+    private ButtonWidget alchemyLabButton, arcanumButton, blacksmithButton, cartographyButton, fletcheryButton, tanneryButton;
+    private ButtonWidget apiaryButton, cowBarnButton, chickenCoopButton, sheepPastureButton, stableButton, pigPenButton;
+    private ButtonWidget bakeryButton, abattoirButton, greengroceryButton, woodshopButton, masonryButton;
+    private ButtonWidget marketplaceButton, tavernButton;
+    private ButtonWidget churchButton, libraryButton, cemeteryButton, wellButton, fountainButton;
     
-    private ButtonWidget constructButton;
-    private ButtonWidget resourcesButton;
-    private ButtonWidget upgradeButton;
-    
-    private ButtonWidget coreButton;
-    private ButtonWidget militiaButton;
-    private ButtonWidget laboringButton;
-    private ButtonWidget craftingButton;
-    private ButtonWidget ranchingButton;
-    private ButtonWidget artisanButton;
-    private ButtonWidget customsButton;
-    private ButtonWidget miscButton;
-    
-    private ButtonWidget barracksButton;
-    private ButtonWidget watchTowerButton;
-    private ButtonWidget bountyHallButton;
-    
-    private ButtonWidget townhallButton;
-    private ButtonWidget warehouseButton;
-    private ButtonWidget houseButton;
-    private ButtonWidget roadButton;
-    private ButtonWidget bridgeButton;
-    private ButtonWidget wallButton;
-    
-    private ButtonWidget farmButton;
-    private ButtonWidget fisheryButton;
-    private ButtonWidget foragingLodgeButton;
-    private ButtonWidget groveButton;
-    private ButtonWidget mineButton;
-    
-    private ButtonWidget alchemyLabButton;
-    private ButtonWidget arcanumButton;
-    private ButtonWidget smithForgeButton;
-    private ButtonWidget cartographyButton;
-    private ButtonWidget fletcheryButton;
-    private ButtonWidget tanneryButton;
-    
-    private ButtonWidget apiaryButton;
-    private ButtonWidget cowBarnButton;
-    private ButtonWidget chickenCoopButton;
-    private ButtonWidget sheepPastureButton;
-    private ButtonWidget stableButton;
-    private ButtonWidget pigPenButton;
-    
-    private ButtonWidget bakeryButton;
-    private ButtonWidget abattoirButton;
-    private ButtonWidget greengroceryButton;
-    private ButtonWidget woodshopButton;
-    private ButtonWidget masonryButton;
-    
-    private ButtonWidget marketplaceButton;
-    private ButtonWidget tavernButton;
-    
-    private ButtonWidget churchButton;
-    private ButtonWidget libraryButton;
-    private ButtonWidget cemeteryButton;
-    private ButtonWidget wellButton;
-    private ButtonWidget fountainButton;
-    
-    private Text priceTitle;
-    private Text priceText;
+    @SuppressWarnings("unused") private Text buildPriceTitle;
+    private Text buildPriceText;
     
     private Text titleText1;
     private Text titleText2;
@@ -219,8 +173,8 @@ public class StructureScreen extends Screen
 		backgroundPosX = ((this.width - BACKGROUND_WIDTH) / 2) + UI_OFFSET_X;
 		backgroundPosY = ((this.height - BACKGROUND_HEIGHT) / 2) + UI_OFFSET_Y;
 
-		priceTitle = Text.literal("Building Cost");
-		priceText = Text.literal("0");
+		buildPriceTitle = Text.literal("Building Cost");
+		buildPriceText = Text.literal("0");
 		
 		updateButtons();
 	}
@@ -273,125 +227,87 @@ public class StructureScreen extends Screen
 		}
 
 		if (build == Build.NONE)
-			priceText = Text.literal("0");
+			buildPriceText = Text.literal("0");
 
 		initializeBuildButton();
+		initializeUpgradeButton();
+		
         addDrawableChild(buildButton);
-		addDrawableChild(constructButton);
-		addDrawableChild(resourcesButton);
-		addDrawableChild(upgradeButton);
+        addDrawableChild(upgradeButton);
+		addDrawableChild(constructPageButton);
+		addDrawableChild(resourcesPageButton);
+		addDrawableChild(upgradePageButton);
 	}
 
 	private void initializeMainButtons()
 	{
-		constructButton = ButtonWidget.builder(Text.literal("Construct"), button ->
+		constructPageButton = ButtonWidget.builder(Text.literal("Construct"), button ->
 		{
 			page = Page.CONSTRUCTION;
 			updateButtons();
 		}).dimensions(backgroundPosX + 0, backgroundPosY - 25, 70, 20).build();
-		constructButton.active = true;
+		constructPageButton.active = true;
 		
-		resourcesButton = ButtonWidget.builder(Text.literal("Resources"), button ->
+		resourcesPageButton = ButtonWidget.builder(Text.literal("Resources"), button ->
 		{
 			page = Page.RESOURCES;
 			updateButtons();
 		}).dimensions(backgroundPosX + 89, backgroundPosY - 25, 70, 20).build();
-		resourcesButton.active = true;
+		resourcesPageButton.active = true;
 		
-		upgradeButton = ButtonWidget.builder(Text.literal("Upgrade"), button ->
+		upgradePageButton = ButtonWidget.builder(Text.literal("Upgrade"), button ->
 		{
 			page = Page.UPGRADE;
 			updateButtons();
 		}).dimensions(backgroundPosX + 178, backgroundPosY - 25, 70, 20).build();
-		upgradeButton.active = true;
+		upgradePageButton.active = true;
 	}
 
-	private void setupConstructionPage()
+	private void initializeResorucesPageButtons()
 	{
-		constructText1 = Text.literal("This is the construction page.");
-		constructText2 = Text.literal("TALLY HO.");
-		
-		build = Build.NONE;
-		setupTextures();
-		initializeMainPageButtons();
+		resourcesPageButton.active = false;
 	}
 	
-	private void setupResourcesPage()
+	private void initializeUpgradePageButtons()
 	{
-		resourcesText1 = Text.literal("This is the resources page.");
-		resourcesText2 = Text.literal("TALLY HO.");
-		
-		build = Build.NONE;
-		setupTextures();
-		initializeResorucesPageButtons();
+		upgradePageButton.active = false;
 	}
 	
-	private void setupUpgradePage()
+	private void initializeBuildButton()
 	{
-		upgradeText1 = Text.literal("This is the upgrade page.");
-		upgradeText2 = Text.literal("TALLY HO.");
-		
-		build = Build.NONE;
-		setupTextures();
-		initializeUpgradePageButtons();
-	}
-
-	private void setupTextures()
+        buildButton = ButtonWidget.builder(Text.literal("Build"), button ->
+        {
+            PlayerData playerData = PlayerData.players.get(this.player.getUuid());
+            if (this.player != null && playerData != null)
+            {
+                PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+                // TODO: Pass building info
+                passedData.writeInt(build.getValue());
+                ClientPlayNetworking.send(FrontierPackets.BUILD_STRUCTURE_ID, passedData);
+                MinecraftClient.getInstance().setScreen(null);
+            }
+        }).dimensions(backgroundPosX + 192, backgroundPosY + 63, 45, 20).build();
+    }
+	
+	private void initializeUpgradeButton()
 	{
-		constructionTextures.add(new TextureElement(CONSTRUCTION_TEXTURE, (backgroundPosX + 177), (backgroundPosY + 10), 32, 16, 2.0f));
-		//resourcesTextures.add(new TextureElement(RESOURCES_TEXTURE, (backgroundPosX + 90), (backgroundPosY + 95), 32, 16, 2.0f));
-		//upgradeTextures.add(new TextureElement(UPGRADE_TEXTURE, (backgroundPosX + 90), (backgroundPosY + 95), 32, 16, 2.0f));
-		
-		coreTextures.add(new TextureElement(TOWNHALL_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 118), 16, 16, "Uses settlement supplies to construct buildings", 1.0f));
-		coreTextures.add(new TextureElement(WAREHOUSE_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sends requests or demands to other settlements", 0.75f));
-		coreTextures.add(new TextureElement(HOUSE_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Disperses settlement supplies to other settlers", 0.75f));
-		coreTextures.add(new TextureElement(ROAD_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Provides shelter and rest for foreigners", 0.75f));
-		coreTextures.add(new TextureElement(BRIDGE_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Exports your settlement goods to foreigners", 0.75f));
-		
-		militaryTextures.add(new TextureElement(BARRACKS_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Ranged fighter that wears leather armor", 0.75f));
-		militaryTextures.add(new TextureElement(WATCHTOWER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Medic that heals allies in and out of combat", 0.75f));
-		militaryTextures.add(new TextureElement(BOUNTYHALL_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Melee fighter that wears leather or heavy armor", 0.75f));
-		militaryTextures.add(new TextureElement(WALL_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Provides shelter and rest for foreigners", 0.75f));
-		
-		laboringTextures.add(new TextureElement(FARM_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Plants and harvests various types of crops", 0.75f));
-		laboringTextures.add(new TextureElement(GROVE_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Finds and cuts down trees for lumber", 0.75f));
-		laboringTextures.add(new TextureElement(MINE_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "DIGGY DIGGY HOLE, I'M DIGGING A HOLE", 0.75f));
-		laboringTextures.add(new TextureElement(FISHERY_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Catches fish and oddities found in the water", 0.75f));
-		laboringTextures.add(new TextureElement(FORAGINGLODGE_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Searches for seeds, fruits, and vegetables", 0.75f));
-		
-		craftingTextures.add(new TextureElement(ALCHEMYLAB_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Sells alchemy ingredients and potions", 0.75f));
-		craftingTextures.add(new TextureElement(ARCANUM_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sells enchanting items and gear", 0.75f));
-		craftingTextures.add(new TextureElement(FORGESMITH_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Sells tools, armor, and weapons", 0.75f));
-		craftingTextures.add(new TextureElement(CARTOGRAPHY_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Creates empty and treasure maps", 0.75f));
-		craftingTextures.add(new TextureElement(FLETCHERY_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Sells bows, arrows, and fletching items", 0.75f));
-		craftingTextures.add(new TextureElement(TANNERY_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Sells leather and stable items", 0.75f));	
-		
-		ranchingTextures.add(new TextureElement(APIARY_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "OH GOD NO, NOT THE BEES", 0.75f));
-		ranchingTextures.add(new TextureElement(COWBARN_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Raises cows for their meat and leather", 0.75f));
-		ranchingTextures.add(new TextureElement(CHICKENCOOP_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Raises chickens for their meat and eggs", 0.75f));
-		ranchingTextures.add(new TextureElement(SHEEPPASTURE_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Raises sheep for their wool", 0.75f));
-		ranchingTextures.add(new TextureElement(STABLE_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Raises donkeys, mules, horses, and wolves", 0.75f));
-		ranchingTextures.add(new TextureElement(PIGPEN_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Raises pigs for their meat", 0.75f));
-		
-		artisanTextures.add(new TextureElement(BAKERY_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 108), 16, 24, "Bakes bread, cookies, and cakes", 1.0f));
-		artisanTextures.add(new TextureElement(ABATTOIR_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Cooks a variety of meat and soups", 0.75f));
-		artisanTextures.add(new TextureElement(GREENGROCERY_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Prepares fresh fruits and vegetables", 0.75f));
-		artisanTextures.add(new TextureElement(WOODSHOP_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Sells a variety of wooden items and blocks", 0.75f));
-		artisanTextures.add(new TextureElement(MASONRY_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Sells a variety of stone blocks and brick", 0.75f));
-		
-		customsTextures.add(new TextureElement(MARKETPLACE_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Bakes bread, cookies, and cakes", 0.75f));
-		customsTextures.add(new TextureElement(TAVERN_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Cooks a variety of meat and soups", 0.75f));
-		
-		miscTextures.add(new TextureElement(CHURCH_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Bakes bread, cookies, and cakes", 0.75f));
-		miscTextures.add(new TextureElement(CEMETERY_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Prepares fresh fruits and vegetables", 0.75f));
-		miscTextures.add(new TextureElement(LIBRARY_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Cooks a variety of meat and soups", 0.75f));
-		miscTextures.add(new TextureElement(WELL_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 32, 16, "Sells a variety of wooden items and blocks", 0.75f));
-		miscTextures.add(new TextureElement(FOUNTAIN_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Sells a variety of stone blocks and brick", 0.75f));
-	}
-
-	private void initializeMainPageButtons()
+        upgradeButton = ButtonWidget.builder(Text.literal("Upgrade"), button ->
+        {
+            PlayerData playerData = PlayerData.players.get(this.player.getUuid());
+            if (this.player != null && playerData != null)
+            {
+                PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+                // TODO: Pass building info
+                //passedData.writeInt();
+                ClientPlayNetworking.send(FrontierPackets.UPGRADE_STRUCTURE_ID, passedData);
+                MinecraftClient.getInstance().setScreen(null);
+            }
+        }).dimensions(backgroundPosX + 120, backgroundPosY + 44, 52, 20).build();
+    }
+	
+	private void initializeJobCategoryButtons()
 	{
-		constructButton.active = false;
+		constructPageButton.active = false;
 		coreButton = ButtonWidget.builder(Text.literal("Core"), button ->
 		{
 			page = Page.CORE;
@@ -450,31 +366,43 @@ public class StructureScreen extends Screen
 		addDrawableChild(miscButton);
 	}
 	
-	private void initializeResorucesPageButtons()
+	private void setupConstructionPage()
 	{
-		resourcesButton.active = false;
+		constructText1 = Text.literal("CONSTRUCT BUILDING").formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
+		constructText2 = Text.literal("As the leader you can order the architect to construct a variety of buildings. "
+				+ "Each building has 5 upgradeable tiers (0-4). Upgrades cannot surpass the tier of the town hall by more than 1. "
+				+ "You can also create your own custom buildings by...");
+		
+		build = Build.NONE;
+		setupTextures();
+		initializeJobCategoryButtons();
 	}
 	
-	private void initializeUpgradePageButtons()
+	private void setupResourcesPage()
 	{
-		upgradeButton.active = false;
+		resourcesText1 = Text.literal("AVAILABLE RESOURCES").formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
+		resourcesText2 = Text.literal("(Town Hall & Warehouse)");
+		
+		build = Build.NONE;
+		setupTextures();
+		initializeResorucesPageButtons();
 	}
 	
-	private void initializeBuildButton()
+	private void setupUpgradePage()
 	{
-        buildButton = ButtonWidget.builder(Text.literal("Build"), button ->
-        {
-            PlayerData playerData = PlayerData.players.get(this.player.getUuid());
-            if (this.player != null && playerData != null)
-            {
-                PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
-                // TODO: Pass building info
-                passedData.writeInt(build.getValue());
-                ClientPlayNetworking.send(FrontierPackets.BUILD_STRUCTURE_ID, passedData);
-                MinecraftClient.getInstance().setScreen(null);
-            }
-        }).dimensions(backgroundPosX + 180, backgroundPosY + 70, 45, 20).build();
-    }
+		upgradeText1 = Text.literal("UPGRADE BUILDING").formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
+		upgradeText2 = Text.literal("");
+		
+		build = Build.NONE;
+		setupTextures();
+		initializeUpgradePageButtons();
+	}
+
+	private void setupTextures()
+	{
+		constructionTextures.add(new TextureElement(CONSTRUCTION_TEXTURE, (backgroundPosX + 177), (backgroundPosY + 9), 32, 16, 2.0f));
+		upgradeTextures.add(new TextureElement(UPGRADE_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 9), 32, 16, 2.0f));
+	}
 
 	private void setupCorePage()
 	{
@@ -484,31 +412,31 @@ public class StructureScreen extends Screen
 		townhallButton = ButtonWidget.builder(Text.literal("Town Hall"), button ->
 		{
 			build = Build.TOWNHALL;
-			priceText = Build.TOWNHALL.getText();
+			buildPriceText = Build.TOWNHALL.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		warehouseButton = ButtonWidget.builder(Text.literal("Warehouse"), button ->
 		{
 			build = Build.WAREHOUSE;
-			priceText = Build.WAREHOUSE.getText();
+			buildPriceText = Build.WAREHOUSE.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		houseButton = ButtonWidget.builder(Text.literal("House"), button ->
 		{
 			build = Build.HOUSE;
-			priceText = Build.HOUSE.getText();
+			buildPriceText = Build.HOUSE.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		roadButton = ButtonWidget.builder(Text.literal("Road"), button ->
 		{
 			build = Build.ROAD;
-			priceText = Build.ROAD.getText();
+			buildPriceText = Build.ROAD.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		bridgeButton = ButtonWidget.builder(Text.literal("Bridge"), button ->
 		{
 			build = Build.BRIDGE;
-			priceText = Build.BRIDGE.getText();
+			buildPriceText = Build.BRIDGE.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(townhallButton);
@@ -526,25 +454,25 @@ public class StructureScreen extends Screen
 		barracksButton = ButtonWidget.builder(Text.literal("Barracks"), button ->
 		{
 			build = Build.BARRACKS;
-			priceText = Build.BARRACKS.getText();
+			buildPriceText = Build.BARRACKS.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		watchTowerButton = ButtonWidget.builder(Text.literal("Watch Tower"), button ->
 		{
 			build = Build.WATCHTOWER;
-			priceText = Build.WATCHTOWER.getText();
+			buildPriceText = Build.WATCHTOWER.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		bountyHallButton = ButtonWidget.builder(Text.literal("Bounty Hall"), button ->
 		{
 			build = Build.BOUNTYHALL;
-			priceText = Build.BOUNTYHALL.getText();
+			buildPriceText = Build.BOUNTYHALL.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		wallButton = ButtonWidget.builder(Text.literal("Wall"), button ->
 		{
 			build = Build.WALL;
-			priceText = Build.WALL.getText();
+			buildPriceText = Build.WALL.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 
 		addDrawableChild(barracksButton);
@@ -561,36 +489,36 @@ public class StructureScreen extends Screen
 		farmButton = ButtonWidget.builder(Text.literal("Farm"), button ->
 		{
 			build = Build.FARM;
-			priceText = Build.FARM.getText();
+			buildPriceText = Build.FARM.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		groveButton = ButtonWidget.builder(Text.literal("Grove"), button ->
 		{
 			build = Build.GROVE;
-			priceText = Build.GROVE.getText();
+			buildPriceText = Build.GROVE.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		mineButton = ButtonWidget.builder(Text.literal("Mine"), button ->
 		{
 			build = Build.MINE;
-			priceText = Build.MINE.getText();
+			buildPriceText = Build.MINE.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		fisheryButton = ButtonWidget.builder(Text.literal("Fishery"), button ->
 		{
 			build = Build.FISHERY;
-			priceText = Build.FISHERY.getText();
+			buildPriceText = Build.FISHERY.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
-		foragingLodgeButton = ButtonWidget.builder(Text.literal("Foraging Lodge"), button ->
+		lodgeButton = ButtonWidget.builder(Text.literal("Lodge"), button ->
 		{
-			build = Build.FORAGINGLODGE;
-			priceText = Build.FORAGINGLODGE.getText();
+			build = Build.LODGE;
+			buildPriceText = Build.LODGE.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(farmButton);
 		addDrawableChild(fisheryButton);
-		addDrawableChild(foragingLodgeButton);
+		addDrawableChild(lodgeButton);
 		addDrawableChild(groveButton);
 		addDrawableChild(mineButton);
 	}
@@ -603,42 +531,42 @@ public class StructureScreen extends Screen
 		alchemyLabButton = ButtonWidget.builder(Text.literal("Alchemy Lab"), button ->
 		{
 			build = Build.ALCHEMYLAB;
-			priceText = Build.ALCHEMYLAB.getText();
+			buildPriceText = Build.ALCHEMYLAB.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		arcanumButton = ButtonWidget.builder(Text.literal("Arcanum"), button ->
 		{
 			build = Build.ARCANUM;
-			priceText = Build.ARCANUM.getText();
+			buildPriceText = Build.ARCANUM.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
-		smithForgeButton = ButtonWidget.builder(Text.literal("Forge & Smith"), button ->
+		blacksmithButton = ButtonWidget.builder(Text.literal("Blacksmith"), button ->
 		{
-			build = Build.SMITHFORGE;
-			priceText = Build.SMITHFORGE.getText();
+			build = Build.BLACKSMITH;
+			buildPriceText = Build.BLACKSMITH.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		cartographyButton = ButtonWidget.builder(Text.literal("Cartography"), button ->
 		{
 			build = Build.CARTOGRAPHY;
-			priceText = Build.CARTOGRAPHY.getText();
+			buildPriceText = Build.CARTOGRAPHY.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		fletcheryButton = ButtonWidget.builder(Text.literal("Fletchery"), button ->
 		{
 			build = Build.FLETCHERY;
-			priceText = Build.FLETCHERY.getText();
+			buildPriceText = Build.FLETCHERY.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 
 		tanneryButton = ButtonWidget.builder(Text.literal("Tannery"), button ->
 		{
 			build = Build.TANNERY;
-			priceText = Build.TANNERY.getText();
+			buildPriceText = Build.TANNERY.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(alchemyLabButton);
 		addDrawableChild(arcanumButton);
-		addDrawableChild(smithForgeButton);
+		addDrawableChild(blacksmithButton);
 		addDrawableChild(cartographyButton);
 		addDrawableChild(fletcheryButton);
 		addDrawableChild(tanneryButton);
@@ -652,37 +580,37 @@ public class StructureScreen extends Screen
 		apiaryButton = ButtonWidget.builder(Text.literal("Apiary"), button ->
 		{
 			build = Build.APIARY;
-			priceText = Build.APIARY.getText();
+			buildPriceText = Build.APIARY.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		cowBarnButton = ButtonWidget.builder(Text.literal("Cow Barn"), button ->
 		{
 			build = Build.COWBARN;
-			priceText = Build.COWBARN.getText();
+			buildPriceText = Build.COWBARN.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		chickenCoopButton = ButtonWidget.builder(Text.literal("Chicken Coop"), button ->
 		{
 			build = Build.CHICKENCOOP;
-			priceText = Build.CHICKENCOOP.getText();
+			buildPriceText = Build.CHICKENCOOP.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		sheepPastureButton = ButtonWidget.builder(Text.literal("Sheep Pasture"), button ->
 		{
 			build = Build.SHEEPPASTURE;
-			priceText = Build.SHEEPPASTURE.getText();
+			buildPriceText = Build.SHEEPPASTURE.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		stableButton = ButtonWidget.builder(Text.literal("Stable"), button ->
 		{
 			build = Build.STABLE;
-			priceText = Build.STABLE.getText();
+			buildPriceText = Build.STABLE.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
 		pigPenButton = ButtonWidget.builder(Text.literal("Pig Pen"), button ->
 		{
 			build = Build.PIGPEN;
-			priceText = Build.PIGPEN.getText();
+			buildPriceText = Build.PIGPEN.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(apiaryButton);
@@ -695,37 +623,37 @@ public class StructureScreen extends Screen
 	
 	private  void setupArtisanPage()
 	{
-		titleText1 = Text.literal("Artisanal structures will provide fresh produce, food, and lavish building materials.");
-		titleText2 = Text.literal("Every human in your settlement needs to eat, why not fine dine within extravagant halls?");
+		titleText1 = Text.literal("Artisanal shops will provide fresh produce, food, and lavish building materials.");
+		titleText2 = Text.literal("Everyone in your settlement needs to eat, why not fine dine within extravagant halls?");
 		
 		bakeryButton = ButtonWidget.builder(Text.literal("Bakery"), button ->
 		{
 			build = Build.BAKERY;
-			priceText = Build.BAKERY.getText();
+			buildPriceText = Build.BAKERY.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		abattoirButton = ButtonWidget.builder(Text.literal("Abattoir"), button ->
 		{
 			build = Build.ABATTOIR;
-			priceText = Build.ABATTOIR.getText();
+			buildPriceText = Build.ABATTOIR.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		greengroceryButton = ButtonWidget.builder(Text.literal("Greengrocery"), button ->
 		{
 			build = Build.GREENGROCERY;
-			priceText = Build.GREENGROCERY.getText();
+			buildPriceText = Build.GREENGROCERY.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		woodshopButton = ButtonWidget.builder(Text.literal("Woodshop"), button ->
 		{
 			build = Build.WOODSHOP;
-			priceText = Build.WOODSHOP.getText();
+			buildPriceText = Build.WOODSHOP.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		masonryButton = ButtonWidget.builder(Text.literal("Masonry"), button ->
 		{
 			build = Build.MASONRY;
-			priceText = Build.MASONRY.getText();
+			buildPriceText = Build.MASONRY.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(bakeryButton);
@@ -743,13 +671,13 @@ public class StructureScreen extends Screen
 		marketplaceButton = ButtonWidget.builder(Text.literal("Marketplace"), button ->
 		{
 			build = Build.MARKETPLACE;
-			priceText = Build.MARKETPLACE.getText();
+			buildPriceText = Build.MARKETPLACE.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		tavernButton = ButtonWidget.builder(Text.literal("Tavern"), button ->
 		{
 			build = Build.TAVERN;
-			priceText = Build.TAVERN.getText();
+			buildPriceText = Build.TAVERN.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		addDrawableChild(marketplaceButton);
@@ -764,31 +692,31 @@ public class StructureScreen extends Screen
 		churchButton = ButtonWidget.builder(Text.literal("Church"), button ->
 		{
 			build = Build.CHURCH;
-			priceText = Build.CHURCH.getText();
+			buildPriceText = Build.CHURCH.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		cemeteryButton = ButtonWidget.builder(Text.literal("Cemetery"), button ->
 		{
 			build = Build.CEMETERY;
-			priceText = Build.CEMETERY.getText();
+			buildPriceText = Build.CEMETERY.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		libraryButton = ButtonWidget.builder(Text.literal("Library"), button ->
 		{
 			build = Build.LIBRARY;
-			priceText = Build.LIBRARY.getText();
+			buildPriceText = Build.LIBRARY.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		wellButton = ButtonWidget.builder(Text.literal("Well"), button ->
 		{
 			build = Build.WELL;
-			priceText = Build.WELL.getText();
+			buildPriceText = Build.WELL.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		fountainButton = ButtonWidget.builder(Text.literal("Fountain"), button ->
 		{
 			build = Build.FOUNTAIN;
-			priceText = Build.FOUNTAIN.getText();
+			buildPriceText = Build.FOUNTAIN.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(churchButton);
@@ -801,88 +729,87 @@ public class StructureScreen extends Screen
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
 	{
-		this.renderBackground(context);
-		context.drawTexture(BACKGROUND_TEXTURE, backgroundPosX, backgroundPosY, 0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
-		super.render(context, mouseX, mouseY, delta);
-
 		if (page == Page.CONSTRUCTION || page == Page.RESOURCES || page == Page.UPGRADE)
 			buildButton.visible = false;
 		else
 			buildButton.visible = true;
-		
+
+		if (page == Page.UPGRADE)
+			upgradeButton.visible = true;
+		else
+			upgradeButton.visible = false;
+
 		if (build != Build.NONE && this.playerEmeralds >= build.getValue())
 			buildButton.active = true;
 		else
 			buildButton.active = false;
-		
-		if (page != Page.CONSTRUCTION && page != Page.RESOURCES && page != Page.UPGRADE)
-		{
-			TextWrapper.render(context, this.textRenderer, titleText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
-			TextWrapper.render(context, this.textRenderer, titleText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 145);
-			context.drawText(this.textRenderer, priceTitle, (backgroundPosX + 170), (backgroundPosY + 16), new Color(255, 255, 255).getRGB(), true);
-			context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 110), 0, 0, 225, 2, 32, 2);
-			context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 28), 0, 0, 54, 32, 54, 32);
-			context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 43), 0, 0, 14, 14, 14, 14);
-		}
-		
-		if (page == Page.CONSTRUCTION)
-		{
-			TextWrapper.render(context, this.textRenderer, constructText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
-			TextWrapper.render(context, this.textRenderer, constructText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 145);
-		}
-		
-		if (page == Page.RESOURCES)
-		{
-			TextWrapper.render(context, this.textRenderer, resourcesText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
-			TextWrapper.render(context, this.textRenderer, resourcesText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 145);
-		}
-		
-		if (page == Page.UPGRADE)
-		{
-			TextWrapper.render(context, this.textRenderer, upgradeText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
-			TextWrapper.render(context, this.textRenderer, upgradeText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 145);
-		}
-		
-		switch (page)
-		{
-			case CONSTRUCTION:
-				renderConstructionPage(context, mouseX, mouseY);
-				break;
-			case RESOURCES:
-				renderResourcesPage(context, mouseX, mouseY);
-				break;
-			case UPGRADE:
-				renderUpgradePage(context, mouseX, mouseY);
-				break;
-			case CORE:
-				renderCorePage(context, mouseX, mouseY);
-				break;
-			case MILITARY:
-				renderMilitaryPage(context, mouseX, mouseY);
-				break;
-			case LABOR:
-				renderLaboringPage(context, mouseX, mouseY);
-				break;
-			case CRAFT:
-				renderCraftingPage(context, mouseX, mouseY);
-				break;
-			case RANCH:
-				renderRanchingPage(context, mouseX, mouseY);
-				break;
-			case ARTISAN:
-				renderArtisanPage(context, mouseX, mouseY);
-				break;
-			case CUSTOMS:
-				renderCustomsPage(context, mouseX, mouseY);
-				break;
-			case MISC:
-				renderMiscPage(context, mouseX, mouseY);
-				break;
-		}
+
+	    this.renderBackground(context);
+	    context.drawTexture(BACKGROUND_TEXTURE, backgroundPosX, backgroundPosY, 0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
+	    super.render(context, mouseX, mouseY, delta);
+
+	    if (page != Page.CONSTRUCTION && page != Page.RESOURCES && page != Page.UPGRADE)
+	    {
+	        TextWrapper.render(context, this.textRenderer, titleText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
+	        TextWrapper.render(context, this.textRenderer, titleText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 145);
+	        context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 110), 0, 0, 225, 2, 32, 2);
+	        context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 16), 0, 0, 55, 32, 54, 32);
+	        context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 30), 0, 0, 16, 16, 16, 16);
+	        
+	        rect1Textures.add(new TextureElement(INFO_TEXTURE, (backgroundPosX + 166), (backgroundPosY + 62), 22, 22, 1, 23, 256, 256, null, 1.0f));
+	        for (TextureElement element : rect1Textures)
+			{
+				element.drawRect(context);
+				if (element.isMouseOver(mouseX, mouseY))
+					TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
+			}
+	        
+	        drawTextureForBuild(context, mouseX, mouseY, build);
+	    }
+
+	    switch (page)
+	    {
+	        case CONSTRUCTION:
+	            renderConstructionPage(context, mouseX, mouseY);
+	            break;
+	        case RESOURCES:
+	            renderResourcesPage(context, mouseX, mouseY);
+	            break;
+	        case UPGRADE:
+	            renderUpgradePage(context, mouseX, mouseY);
+	            break;
+	        case CORE:
+	            renderCorePage(context, mouseX, mouseY);
+	            break;
+	        case MILITARY:
+	            renderMilitaryPage(context, mouseX, mouseY);
+	            break;
+	        case LABOR:
+	            renderLaboringPage(context, mouseX, mouseY);
+	            break;
+	        case CRAFT:
+	            renderCraftingPage(context, mouseX, mouseY);
+	            break;
+	        case RANCH:
+	            renderRanchingPage(context, mouseX, mouseY);
+	            break;
+	        case ARTISAN:
+	            renderArtisanPage(context, mouseX, mouseY);
+	            break;
+	        case CUSTOMS:
+	            renderCustomsPage(context, mouseX, mouseY);
+	            break;
+	        case MISC:
+	            renderMiscPage(context, mouseX, mouseY);
+	            break;
+	    }
 	}
 
 	private void renderConstructionPage(DrawContext context, int mouseX, int mouseY)
 	{
+		TextWrapper.render(context, this.textRenderer, constructText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
+		TextWrapper.render(context, this.textRenderer, constructText2, backgroundPosX + 14, backgroundPosY + 50, new Color(255, 255, 255).getRGB(), 220);
+		
 		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 140), 0, 0, 225, 2, 32, 2);
 
 		for (TextureElement element : constructionTextures)
@@ -895,6 +822,9 @@ public class StructureScreen extends Screen
 	
 	private void renderResourcesPage(DrawContext context, int mouseX, int mouseY)
 	{
+		TextWrapper.render(context, this.textRenderer, resourcesText1, backgroundPosX + 60, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
+		TextWrapper.render(context, this.textRenderer, resourcesText2, backgroundPosX + 64, backgroundPosY + 28, new Color(255, 255, 255).getRGB(), 145);
+		
 		for (TextureElement element : resourcesTextures)
 		{
 			element.draw(context);
@@ -905,6 +835,21 @@ public class StructureScreen extends Screen
 	
 	private void renderUpgradePage(DrawContext context, int mouseX, int mouseY)
 	{
+		TextWrapper.render(context, this.textRenderer, upgradeText1, backgroundPosX + 120, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
+		TextWrapper.render(context, this.textRenderer, upgradeText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 220);
+		
+		context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 32), 0, 0, 55, 32, 54, 32);
+		context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 46), 0, 0, 16, 16, 16, 16);
+		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 70), 0, 0, 225, 2, 32, 2);
+
+		rect2Textures.add(new TextureElement(INFO_TEXTURE, (backgroundPosX + 141), (backgroundPosY + 30), 22, 22, 1, 23, 256, 256, null, 0.5f));
+        for (TextureElement element : rect2Textures)
+		{
+			element.drawRect(context);
+			if (element.isMouseOver(mouseX, mouseY))
+				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
+		}
+		
 		for (TextureElement element : upgradeTextures)
 		{
 			element.draw(context);
@@ -920,19 +865,19 @@ public class StructureScreen extends Screen
 		houseButton.active = (build != Build.HOUSE);
 		roadButton.active = (build != Build.ROAD);
 		bridgeButton.active = (build != Build.BRIDGE);
-
+		
 		if (townhallButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.TOWNHALL);
+		    buildPriceText = getFormattedPriceText(Build.TOWNHALL);
 		else if (warehouseButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.WAREHOUSE);
+		    buildPriceText = getFormattedPriceText(Build.WAREHOUSE);
 		else if (houseButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.HOUSE);
+		    buildPriceText = getFormattedPriceText(Build.HOUSE);
 		else if (roadButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.ROAD);
+		    buildPriceText = getFormattedPriceText(Build.ROAD);
 		else if (bridgeButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.BRIDGE);
+		    buildPriceText = getFormattedPriceText(Build.BRIDGE);
 		else
-		    priceText = build.getText();
+		    buildPriceText = build.getText();
 
 		for (TextureElement element : coreTextures)
 		{
@@ -952,15 +897,15 @@ public class StructureScreen extends Screen
 		wallButton.active = (build != Build.WALL);
 
 		if (barracksButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.BARRACKS);
+		    buildPriceText = getFormattedPriceText(Build.BARRACKS);
 		else if (watchTowerButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.WATCHTOWER);
+		    buildPriceText = getFormattedPriceText(Build.WATCHTOWER);
 		else if (bountyHallButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.BOUNTYHALL);
+		    buildPriceText = getFormattedPriceText(Build.BOUNTYHALL);
 		else if (wallButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.WALL);
+		    buildPriceText = getFormattedPriceText(Build.WALL);
 		else
-			priceText = build.getText();
+			buildPriceText = build.getText();
 
 		for (TextureElement element : militaryTextures)
 		{
@@ -976,22 +921,22 @@ public class StructureScreen extends Screen
     {
 		farmButton.active = (build != Build.FARM);
 		fisheryButton.active = (build != Build.FISHERY);
-		foragingLodgeButton.active = (build != Build.FORAGINGLODGE);
+		lodgeButton.active = (build != Build.LODGE);
 		groveButton.active = (build != Build.GROVE);
 		mineButton.active = (build != Build.MINE);
 
 		if (farmButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.FARM);
+		    buildPriceText = getFormattedPriceText(Build.FARM);
 		else if (fisheryButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.FISHERY);
-		else if (foragingLodgeButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.FORAGINGLODGE);
+		    buildPriceText = getFormattedPriceText(Build.FISHERY);
+		else if (lodgeButton.isMouseOver(mouseX, mouseY))
+		    buildPriceText = getFormattedPriceText(Build.LODGE);
 		else if (groveButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.GROVE);
+		    buildPriceText = getFormattedPriceText(Build.GROVE);
 		else if (mineButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.MINE);
+		    buildPriceText = getFormattedPriceText(Build.MINE);
 		else
-			priceText = build.getText();
+			buildPriceText = build.getText();
 
 		for (TextureElement element : laboringTextures)
 		{
@@ -1007,25 +952,25 @@ public class StructureScreen extends Screen
     {
 		alchemyLabButton.active = (build != Build.ALCHEMYLAB);
 		arcanumButton.active = (build != Build.ARCANUM);
-		smithForgeButton.active = (build != Build.SMITHFORGE);
+		blacksmithButton.active = (build != Build.BLACKSMITH);
 		cartographyButton.active = (build != Build.CARTOGRAPHY);
 		fletcheryButton.active = (build != Build.FLETCHERY);
 		tanneryButton.active = (build != Build.TANNERY);
 
 		if (alchemyLabButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.ALCHEMYLAB);
+		    buildPriceText = getFormattedPriceText(Build.ALCHEMYLAB);
 		else if (arcanumButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.ARCANUM);
-		else if (smithForgeButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.SMITHFORGE);
+		    buildPriceText = getFormattedPriceText(Build.ARCANUM);
+		else if (blacksmithButton.isMouseOver(mouseX, mouseY))
+		    buildPriceText = getFormattedPriceText(Build.BLACKSMITH);
 		else if (cartographyButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.CARTOGRAPHY);
+		    buildPriceText = getFormattedPriceText(Build.CARTOGRAPHY);
 		else if (fletcheryButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.FLETCHERY);
+		    buildPriceText = getFormattedPriceText(Build.FLETCHERY);
 		else if (tanneryButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.TANNERY);
+		    buildPriceText = getFormattedPriceText(Build.TANNERY);
 		else
-			priceText = build.getText();
+			buildPriceText = build.getText();
 
 		for (TextureElement element : craftingTextures)
 		{
@@ -1047,19 +992,19 @@ public class StructureScreen extends Screen
 		pigPenButton.active = (build != Build.PIGPEN);
 		
 		if (apiaryButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.APIARY);
+		    buildPriceText = getFormattedPriceText(Build.APIARY);
 		else if (cowBarnButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.COWBARN);
+		    buildPriceText = getFormattedPriceText(Build.COWBARN);
 		else if (chickenCoopButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.CHICKENCOOP);
+		    buildPriceText = getFormattedPriceText(Build.CHICKENCOOP);
 		else if (sheepPastureButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.SHEEPPASTURE);
+		    buildPriceText = getFormattedPriceText(Build.SHEEPPASTURE);
 		else if (stableButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.STABLE);
+		    buildPriceText = getFormattedPriceText(Build.STABLE);
 		else if (pigPenButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.PIGPEN);
+		    buildPriceText = getFormattedPriceText(Build.PIGPEN);
 		else
-			priceText = build.getText();
+			buildPriceText = build.getText();
 
 		for (TextureElement element : ranchingTextures)
 		{
@@ -1080,17 +1025,17 @@ public class StructureScreen extends Screen
 		masonryButton.active = (build != Build.MASONRY);
 
 		if (bakeryButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.BAKERY);
+		    buildPriceText = getFormattedPriceText(Build.BAKERY);
 		else if (abattoirButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.ABATTOIR);
+		    buildPriceText = getFormattedPriceText(Build.ABATTOIR);
 		else if (greengroceryButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.GREENGROCERY);
+		    buildPriceText = getFormattedPriceText(Build.GREENGROCERY);
 		else if (woodshopButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.WOODSHOP);
+		    buildPriceText = getFormattedPriceText(Build.WOODSHOP);
 		else if (masonryButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.MASONRY);
+		    buildPriceText = getFormattedPriceText(Build.MASONRY);
 		else
-			priceText = build.getText();
+			buildPriceText = build.getText();
 
 		for (TextureElement element : artisanTextures)
 		{
@@ -1099,10 +1044,7 @@ public class StructureScreen extends Screen
 				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
-		if (this.playerEmeralds < build.getValue())
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), true);
-		else
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), true);
+		drawPriceText(context);
     }
     
     private void renderCustomsPage(DrawContext context, int mouseX, int mouseY)
@@ -1111,11 +1053,11 @@ public class StructureScreen extends Screen
 		tavernButton.active = (build != Build.TAVERN);
 
 		if (marketplaceButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.MARKETPLACE);
+		    buildPriceText = getFormattedPriceText(Build.MARKETPLACE);
 		else if (tavernButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.TAVERN);
+		    buildPriceText = getFormattedPriceText(Build.TAVERN);
 		else
-			priceText = build.getText();
+			buildPriceText = build.getText();
 
 		for (TextureElement element : customsTextures)
 		{
@@ -1124,10 +1066,7 @@ public class StructureScreen extends Screen
 				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
-		if (this.playerEmeralds < build.getValue())
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), true);
-		else
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), true);
+		drawPriceText(context);
     }
     
     private void renderMiscPage(DrawContext context, int mouseX, int mouseY)
@@ -1139,17 +1078,17 @@ public class StructureScreen extends Screen
 		fountainButton.active = (build != Build.FOUNTAIN);
 
 		if (churchButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.CHURCH);
+		    buildPriceText = getFormattedPriceText(Build.CHURCH);
 		else if (libraryButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.LIBRARY);
+		    buildPriceText = getFormattedPriceText(Build.LIBRARY);
 		else if (cemeteryButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.CEMETERY);
+		    buildPriceText = getFormattedPriceText(Build.CEMETERY);
 		else if (wellButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.WELL);
+		    buildPriceText = getFormattedPriceText(Build.WELL);
 		else if (fountainButton.isMouseOver(mouseX, mouseY))
-		    priceText = getFormattedPriceText(Build.FOUNTAIN);
+		    buildPriceText = getFormattedPriceText(Build.FOUNTAIN);
 		else
-			priceText = build.getText();
+			buildPriceText = build.getText();
 
 		for (TextureElement element : miscTextures)
 		{
@@ -1158,18 +1097,149 @@ public class StructureScreen extends Screen
 				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
-		if (this.playerEmeralds < build.getValue())
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), true);
-		else
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), true);
+		drawPriceText(context);
     }
 
     private  void drawPriceText(DrawContext context)
     {
     	if (this.playerEmeralds < build.getValue())
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), true);
+			TextUtil.drawTextR(context, this.textRenderer, buildPriceText, backgroundPosX + 201, backgroundPosY + 34, new Color(235, 50, 30).getRGB(), true);
 		else
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), true);
+			TextUtil.drawTextR(context, this.textRenderer, buildPriceText, backgroundPosX + 201, backgroundPosY + 34, new Color(255, 255, 255).getRGB(), true);
+    }
+    
+    private void drawTextureForBuild(DrawContext context, int mouseX, int mouseY, Build build)
+    {
+        TextureElement textureElement = null;
+        int posX = 171;
+        int posY = 67;
+        
+        switch (build)
+        {
+            case TOWNHALL:
+                textureElement = new TextureElement(TOWNHALL_TEXTURE, (backgroundPosX + 169), (backgroundPosY + 66), 16, 16, "Uses settlement supplies to construct buildings", 1.0f);
+                break;
+            case WAREHOUSE:
+                textureElement = new TextureElement(WAREHOUSE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Stores all resources for your settlement to utilize", 0.75f);
+                break;
+            case HOUSE:
+                textureElement = new TextureElement(HOUSE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "The required living space for your settlers", 0.75f);
+                break;
+            case ROAD:
+                textureElement = new TextureElement(ROAD_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Connects you to other settlements and creates traffic", 0.75f);
+                break;
+            case BRIDGE:
+                textureElement = new TextureElement(BRIDGE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Connects roads that are divided by empty space", 0.75f);
+                break;
+            case BARRACKS:
+                textureElement = new TextureElement(BARRACKS_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Houses your military units and gives them benefits", 0.75f);
+                break;
+            case WATCHTOWER:
+                textureElement = new TextureElement(WATCHTOWER_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Increases faction territory and security", 0.75f);
+                break;
+            case BOUNTYHALL:
+                textureElement = new TextureElement(BOUNTYHALL_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Gives bounties that anyone can attempt to fulfill", 0.75f);
+                break;
+            case WALL:
+                textureElement = new TextureElement(WALL_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Provides security for your settlement", 0.75f);
+                break;
+            case FARM:
+                textureElement = new TextureElement(FARM_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated area for farmers to work", 0.75f);
+                break;
+            case GROVE:
+                textureElement = new TextureElement(GROVE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated area for lumberjacks to work", 0.75f);
+                break;
+            case MINE:
+                textureElement = new TextureElement(MINE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated mine for miners to work", 0.75f);
+                break;
+            case FISHERY:
+                textureElement = new TextureElement(FISHERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated water for a fisher to work", 0.75f);
+                break;
+            case LODGE:
+                textureElement = new TextureElement(LODGE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Lodge for foragers to bring their findings", 0.75f);
+                break;
+            case ALCHEMYLAB:
+                textureElement = new TextureElement(ALCHEMYLAB_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells alchemic potions and items", 0.75f);
+                break;
+            case ARCANUM:
+                textureElement = new TextureElement(ARCANUM_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells enchanting gear and services", 0.75f);
+                break;
+            case BLACKSMITH:
+                textureElement = new TextureElement(BLACKSMITH_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Smith for tools, weapons, and gear", 0.75f);
+                break;
+            case CARTOGRAPHY:
+                textureElement = new TextureElement(CARTOGRAPHY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells empty and treasure maps", 0.75f);
+                break;
+            case FLETCHERY:
+                textureElement = new TextureElement(FLETCHERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling bows, arrows, and fletching items", 0.75f);
+                break;
+            case TANNERY:
+                textureElement = new TextureElement(TANNERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling leather and stable items", 0.75f);
+                break;
+            case APIARY:
+                textureElement = new TextureElement(APIARY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Station for maintaining beehives", 0.75f);
+                break;
+            case COWBARN:
+                textureElement = new TextureElement(COWBARN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Barn for holding cows", 0.75f);
+                break;
+            case CHICKENCOOP:
+                textureElement = new TextureElement(CHICKENCOOP_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Building for holding chickens", 0.75f);
+                break;
+            case SHEEPPASTURE:
+                textureElement = new TextureElement(SHEEPPASTURE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Pasture area for holding sheep", 0.75f);
+                break;
+            case STABLE:
+                textureElement = new TextureElement(STABLE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "A stable for holding various four-legged friends", 0.75f);
+                break;
+            case PIGPEN:
+                textureElement = new TextureElement(PIGPEN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "An area for holding pigs", 0.75f);
+                break;
+            case BAKERY:
+                textureElement = new TextureElement(BAKERY_TEXTURE, (backgroundPosX + 194), (backgroundPosY + 79), 16, 24, "Shop that sells various baked goods", 1.0f);
+                break;
+            case ABATTOIR:
+                textureElement = new TextureElement(ABATTOIR_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells a large variety of cooked food", 0.75f);
+                break;
+            case GREENGROCERY:
+                textureElement = new TextureElement(GREENGROCERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling fresh produce and crops", 0.75f);
+                break;
+            case WOODSHOP:
+                textureElement = new TextureElement(WOODSHOP_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling carpentry blocks and items", 0.75f);
+                break;
+            case MASONRY:
+                textureElement = new TextureElement(MASONRY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling various stones and bricks", 0.75f);
+                break;
+            case MARKETPLACE:
+                textureElement = new TextureElement(MARKETPLACE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated area for merchant stalls", 0.75f);
+                break;
+            case TAVERN:
+                textureElement = new TextureElement(TAVERN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "An inn for visitors of your settlement", 0.75f);
+                break;
+            case CHURCH:
+                textureElement = new TextureElement(CHURCH_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Houses the priest and helps with settler morale", 0.75f);
+                break;
+            case CEMETERY:
+                textureElement = new TextureElement(CEMETERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Provides graves for your unfortunate casualties", 0.75f);
+                break;
+            case LIBRARY:
+                textureElement = new TextureElement(LIBRARY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "A building for helping increase settler skills", 0.75f);
+                break;
+            case WELL:
+                textureElement = new TextureElement(WELL_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 42, 16, "A well that adds flavor to your settlement", 0.75f);
+                break;
+            case FOUNTAIN:
+                textureElement = new TextureElement(FOUNTAIN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "A fountain that adds flavor to your settlement", 0.75f);
+                break;
+            default:
+                break;
+        }
+        
+        if (textureElement != null)
+        {
+            textureElement.draw(context);
+            if (textureElement.isMouseOver(mouseX, mouseY))
+                TextUtil.renderTooltip(context, this.textRenderer, textureElement.getToolTip(), mouseX, mouseY);
+        }
     }
     
     private int countEmeralds(PlayerEntity player)

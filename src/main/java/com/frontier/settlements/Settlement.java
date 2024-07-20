@@ -30,7 +30,7 @@ public class Settlement
 	private UUID leader;
 	private BlockPos position;
 	private Set<ChunkPos> territory;
-    
+	
     private Map<UUID, Integer> reputations;
     private List<Structure> structures;
     private List<Grave> graves;
@@ -43,6 +43,8 @@ public class Settlement
     
     private List<String> alliedFactions;
     private List<String> enemyFactions;
+    
+    private HashMap<String, Integer> statistics;
     
     private final int TERRITORY_CHUNK_RADIUS = 4; // 4 = 128x128 radius (4 chunks in each direction) - prob make this a 6 tbh
     
@@ -63,6 +65,9 @@ public class Settlement
         this.enemies = new ArrayList<>();
         this.alliedFactions = new ArrayList<>();
         this.enemyFactions = new ArrayList<>();
+        this.statistics = new HashMap<>();
+        
+        initSettlementStats();
         generateTerritory();
     }
     
@@ -74,6 +79,33 @@ public class Settlement
             for (int dz = -TERRITORY_CHUNK_RADIUS; dz <= TERRITORY_CHUNK_RADIUS; dz++)
                 this.territory.add(new ChunkPos(centerX + dx, centerZ + dz));
         // TODO: add territory expansion from watchtowers here
+    }
+    
+    private void initSettlementStats()
+    {
+    	// population
+    	statistics.put("Players", 0);
+        statistics.put("Settlers", 0);
+        statistics.put("Visitors", 0);
+        statistics.put("Merchants", 0);
+        
+        // resources
+        statistics.put("Food", 0);
+        statistics.put("Materials", 0);
+        statistics.put("Beds", 0);
+        statistics.put("Structures", 0);
+        
+        // economy
+        statistics.put("Trades", 0);
+        statistics.put("Patrons", 0);
+        statistics.put("Festivals", 0);
+        statistics.put("Influence", 0);
+        
+        // security
+        statistics.put("Militia", 0);
+        statistics.put("Bounties", 0);
+        statistics.put("Bandits", 0);
+        statistics.put("Deaths", 0);
     }
     
     protected void constructStructure(String structureName, BlockPos position, ServerWorld world, Direction facing)
@@ -194,7 +226,7 @@ public class Settlement
 	public Set<ChunkPos> getTerritory() {
 	    return this.territory;
 	}
-	
+
 	public Map<UUID, Integer> getReputations() {
 		return this.reputations;
 	}
@@ -293,6 +325,17 @@ public class Settlement
 	public void addEnemyFaction(String faction) {
 		this.enemyFactions.add(faction);
 	}
+	
+	public HashMap<String, Integer> getStatistics() {
+		return statistics;
+	}
+
+	public void updateStatistic(String key, int amount) // always non-negative
+	{
+        int currentValue = statistics.getOrDefault(key, 0);
+        int newValue = currentValue + amount;
+        if (newValue >= 0) statistics.put(key, newValue);
+    }
 	
 	int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));

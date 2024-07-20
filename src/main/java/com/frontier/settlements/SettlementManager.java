@@ -33,7 +33,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtLong;
@@ -374,6 +376,11 @@ public class SettlementManager
 	            structuresNbt.add(structureNbt);
 	        }
 
+	        // save statistics
+	        NbtCompound statisticsNbt = new NbtCompound();
+	        for (Map.Entry<String, Integer> statEntry : settlement.getStatistics().entrySet())
+	        	statisticsNbt.put(statEntry.getKey(), NbtInt.of(statEntry.getValue()));
+	        
 	        settlementNbt.putUuid("Leader", settlement.getLeader());
 	        settlementNbt.putLong("Position", settlement.getPosition().asLong());
 	        settlementNbt.put("Territory", territoryNbt);
@@ -386,6 +393,7 @@ public class SettlementManager
 	        settlementNbt.put("EnemyFactions", enemyFactionsNbt);
 	        settlementNbt.put("Graves", gravesNbt);
 	        settlementNbt.put("Structures", structuresNbt);
+	        settlementNbt.put("Statistics", statisticsNbt);
 
 	        settlementsNbt.put(factionName, settlementNbt);
 	    }
@@ -565,6 +573,15 @@ public class SettlementManager
 	                    structure.setUpgradeMap(deserializeMap(structureNbt.getList("UpgradeMap", 10)));
 	                    
 	                    settlement.getStructures().add(structure);
+	                }
+	                
+	                // load statistics
+	                NbtCompound statisticsNbt = settlementNbt.getCompound("Statistics");
+	                for (String stringKey : statisticsNbt.getKeys())
+	                {
+	                    NbtElement element = statisticsNbt.get(stringKey);
+	                    if (element instanceof NbtInt)
+	                    	settlement.getStatistics().put(stringKey, ((NbtInt) element).intValue());
 	                }
 
 	                settlements.put(factionName, settlement);

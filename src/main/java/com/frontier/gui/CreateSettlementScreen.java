@@ -51,11 +51,11 @@ public class CreateSettlementScreen extends Screen
 		backgroundPosX = ((this.width - BACKGROUND_WIDTH) / 2) + UI_OFFSET_X;
         backgroundPosY = ((this.height - BACKGROUND_HEIGHT) / 2) + UI_OFFSET_Y;
         
-        titleText = ((MutableText) Text.literal("Create a New Settlement")).formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
+        titleText = Text.literal("Create a New Settlement").formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
         factionNameText = Text.literal("Faction Name: ").formatted(Formatting.WHITE);
-        tip1Text = ((MutableText) Text.literal("* Spawns a Townhall"));
-        tip2Text = ((MutableText) Text.literal("* Faction Radius: 128x128"));
-        tip3Text = ((MutableText) Text.literal("* Watchtowers Expand Radius"));
+        tip1Text = Text.literal("* Spawns a Townhall");
+        tip2Text = Text.literal("* Faction Radius: 128x128");
+        tip3Text = Text.literal("* Watchtowers Expand Radius");
         
         nameField = new TextFieldWidget(this.textRenderer, backgroundPosX + 90, backgroundPosY + 36, 140, 16, Text.literal("Faction Name"));
         nameField.setMaxLength(MAX_NAME_LENGTH);

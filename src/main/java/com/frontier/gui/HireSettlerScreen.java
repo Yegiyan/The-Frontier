@@ -295,11 +295,11 @@ public class HireSettlerScreen extends Screen
 		militaryTextures.add(new TextureElement(KNIGHT_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Melee fighter that wears leather or heavy armor", 1.0f));
 		
 		laboringTextures.add(new TextureElement(FARMER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Plants and harvests various types of crops", 1.0f));
-		laboringTextures.add(new TextureElement(FISHERMAN_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Catches fish and oddities found in the water", 1.0f));
-		laboringTextures.add(new TextureElement(FORAGER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Searches for seeds, fruits, and vegetables", 1.0f));
-		laboringTextures.add(new TextureElement(HUNTER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Hunts for animals to kill or lead back", 1.0f));
-		laboringTextures.add(new TextureElement(LUMBERJACK_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Finds and cuts down trees for lumber", 1.0f));
-		laboringTextures.add(new TextureElement(MINER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "DIGGY DIGGY HOLE, I'M DIGGING A HOLE", 1.0f));
+		laboringTextures.add(new TextureElement(LUMBERJACK_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Finds and cuts down trees for lumber", 1.0f));
+		laboringTextures.add(new TextureElement(MINER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "DIGGY DIGGY HOLE, I'M DIGGING A HOLE", 1.0f));
+		laboringTextures.add(new TextureElement(FISHERMAN_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Catches fish and oddities found in the water", 1.0f));
+		laboringTextures.add(new TextureElement(HUNTER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Hunts for animals to kill or lead back", 1.0f));
+		laboringTextures.add(new TextureElement(FORAGER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Searches for seeds, fruits, and vegetables", 1.0f));
 		
 		craftingTextures.add(new TextureElement(ALCHEMIST_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Sells alchemy ingredients and potions", 1.0f));
 		craftingTextures.add(new TextureElement(ARCANIST_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sells enchanting items and gear", 1.0f));
@@ -504,34 +504,34 @@ public class HireSettlerScreen extends Screen
 			priceText = Hire.FARMER.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
-		hireFishermanButton = ButtonWidget.builder(Text.literal("Fisherman"), button ->
-		{
-			hire = Hire.FISHERMAN;
-			priceText = Hire.FISHERMAN.getText();
-		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
-		
-		hireForagerButton = ButtonWidget.builder(Text.literal("Forager"), button ->
-		{
-			hire = Hire.FORAGER;
-			priceText = Hire.FORAGER.getText();
-		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
-		
-		hireHunterButton = ButtonWidget.builder(Text.literal("Hunter"), button ->
-		{
-			hire = Hire.HUNTER;
-			priceText = Hire.HUNTER.getText();
-		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
-		
 		hireLumberjackButton = ButtonWidget.builder(Text.literal("Lumberjack"), button ->
 		{
 			hire = Hire.LUMBERJACK;
 			priceText = Hire.LUMBERJACK.getText();
-		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
+		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		hireMinerButton = ButtonWidget.builder(Text.literal("Miner"), button ->
 		{
 			hire = Hire.MINER;
 			priceText = Hire.MINER.getText();
+		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
+		
+		hireFishermanButton = ButtonWidget.builder(Text.literal("Fisherman"), button ->
+		{
+			hire = Hire.FISHERMAN;
+			priceText = Hire.FISHERMAN.getText();
+		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
+		
+		hireHunterButton = ButtonWidget.builder(Text.literal("Hunter"), button ->
+		{
+			hire = Hire.HUNTER;
+			priceText = Hire.HUNTER.getText();
+		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
+		
+		hireForagerButton = ButtonWidget.builder(Text.literal("Forager"), button ->
+		{
+			hire = Hire.FORAGER;
+			priceText = Hire.FORAGER.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(hireFarmerButton);
@@ -706,8 +706,8 @@ public class HireSettlerScreen extends Screen
 			TextWrapper.render(context, this.textRenderer, titleText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 140);
 			context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 110), 0, 0, 225, 2, 32, 2);
 
-			context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 28), 0, 0, 54, 32, 54, 32);
-			context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 43), 0, 0, 14, 14, 14, 14);
+			context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 28), 0, 0, 55, 32, 54, 32);
+			context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 42), 0, 0, 16, 16, 16, 16);
 		}
 		
 		switch (page)

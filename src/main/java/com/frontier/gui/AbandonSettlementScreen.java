@@ -50,10 +50,10 @@ public class AbandonSettlementScreen extends Screen
 		backgroundPosX = ((this.width - BACKGROUND_WIDTH) / 2) + UI_OFFSET_X;
         backgroundPosY = ((this.height - BACKGROUND_HEIGHT) / 2) + UI_OFFSET_Y;
         
-        titleText = ((MutableText) Text.literal("Abandon Settlement")).formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
-        tip1Text = ((MutableText) Text.literal("* Settlers will elect someone if you don't"));
-        tip2Text = ((MutableText) Text.literal("* You will lose your leader privileges"));
-        tip3Text = ((MutableText) Text.literal("* This CANNOT be undone"));
+        titleText = Text.literal("Abandon Settlement").formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
+        tip1Text = Text.literal("* Settlers will elect someone if you don't");
+        tip2Text = Text.literal("* You will lose your leader privileges");
+        tip3Text = Text.literal("* This CANNOT be undone");
 
         this.createButton = ButtonWidget.builder(Text.literal("Abandon"), button -> 
         {        	
