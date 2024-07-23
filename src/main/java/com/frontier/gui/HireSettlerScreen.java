@@ -10,7 +10,7 @@ import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextureElement;
 import com.frontier.gui.util.TextUtil.TextAlign;
-import com.frontier.network.FrontierPackets;
+import com.frontier.network.FrontierPacketsServer;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -409,7 +409,7 @@ public class HireSettlerScreen extends Screen
                 passedData.writeUuid(settler.getUuid());
                 passedData.writeBlockPos(settler.getBlockPos());
                 passedData.writeInt(hire.getValue());
-                ClientPlayNetworking.send(FrontierPackets.HIRE_SETTLER_ID, passedData);
+                ClientPlayNetworking.send(FrontierPacketsServer.HIRE_SETTLER_ID, passedData);
                 MinecraftClient.getInstance().setScreen(null);
             }
         }).dimensions(backgroundPosX + 180, backgroundPosY + 55, 45, 20).build();

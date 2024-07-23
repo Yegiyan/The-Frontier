@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.StructureScreen;
-import com.frontier.network.FrontierPackets;
+import com.frontier.network.FrontierPacketsServer;
 import com.frontier.gui.PlayerCardScreen;
 import com.frontier.regions.RegionManager;
 import com.frontier.register.FrontierKeyBindings;
@@ -113,7 +113,7 @@ public class FrontierManager
                 client.setScreen(new PlayerCardScreen());
             
             while (FrontierKeyBindings.keyToggleConstructionGUI.wasPressed())
-            	ClientPlayNetworking.send(FrontierPackets.SETTLEMENT_RESOURCES_REQUEST_ID, new PacketByteBuf(Unpooled.buffer()));
+            	ClientPlayNetworking.send(FrontierPacketsServer.SETTLEMENT_RESOURCES_REQUEST_ID, new PacketByteBuf(Unpooled.buffer()));
             
             while (FrontierKeyBindings.keyToggleRegions.wasPressed())
                 RegionMapRenderer.isRenderingEnabled = !RegionMapRenderer.isRenderingEnabled;

@@ -23,7 +23,7 @@ import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class FrontierPackets
+public class FrontierPacketsServer
 {
 	public static final Identifier CREATE_SETTLEMENT_ID = new Identifier(Frontier.MOD_ID, "create_settlement");
 	public static final Identifier ABANDON_SETTLEMENT_ID = new Identifier(Frontier.MOD_ID, "abandon_settlement");
@@ -35,7 +35,7 @@ public class FrontierPackets
 	public static final Identifier SYNC_SETTLER_INVENTORY_ID = new Identifier(Frontier.MOD_ID, "sync_settler_inventory");
 	public static final Identifier HIRE_SETTLER_ID = new Identifier(Frontier.MOD_ID, "hire_settler");
 	
-	public static void apply()
+	public static void registerServerPacketHandlers()
 	{
 		ServerPlayNetworking.registerGlobalReceiver(CREATE_SETTLEMENT_ID, (server, player, handler, buf, responseSender) ->
 	    {
@@ -74,7 +74,7 @@ public class FrontierPackets
 						buffer.writeInt(itemStack.getCount()); // write item count explicitly
 					}
 
-					ServerPlayNetworking.send(player, ClientPacketHandlers.SETTLEMENT_RESOURCES_RESPONSE_ID, buffer);
+					ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_ID, buffer);
 				}
 			});
 		});

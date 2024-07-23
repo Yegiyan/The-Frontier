@@ -8,7 +8,7 @@ import com.frontier.PlayerData;
 import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextUtil.TextAlign;
 import com.frontier.gui.util.TextureElement;
-import com.frontier.network.FrontierPackets;
+import com.frontier.network.FrontierPacketsServer;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -128,7 +128,7 @@ public class StructureScreen extends Screen
     }
     private Blueprint blueprint;
     
-    private ButtonWidget buildButton, upgradeButton;
+    private ButtonWidget buildButton;
     private ButtonWidget blueprintPageButton, resourcesPageButton, upgradePageButton;
     private ButtonWidget coreButton, militiaButton, laboringButton, craftingButton, ranchingButton, artisanButton, customsButton, miscButton;
     private ButtonWidget barracksButton, watchTowerButton, bountyHallButton;
@@ -140,13 +140,11 @@ public class StructureScreen extends Screen
     private ButtonWidget marketplaceButton, tavernButton;
     private ButtonWidget churchButton, libraryButton, cemeteryButton, wellButton, fountainButton;
     
-    // resource page vars
-    private int scrollOffset = 0;
-	private static final int MAX_VISIBLE_ROWS = 7;
+	private static final int MAX_VISIBLE_ROWS = 8;
 	private static final int ITEM_SIZE = 18;
 	private static final int ITEMS_PER_ROW = 11;
-    
-    List<ItemStack> structureInventory;
+	List<ItemStack> structureInventory;
+	private int scrollOffset = 0;
     
     private Text priceText;
     
@@ -237,10 +235,8 @@ public class StructureScreen extends Screen
 			priceText = Text.literal("0");
 
 		initializeBuildButton();
-		//initializeUpgradeButton();
 		
         addDrawableChild(buildButton);
-        //addDrawableChild(upgradeButton);
 		addDrawableChild(blueprintPageButton);
 		addDrawableChild(resourcesPageButton);
 		addDrawableChild(upgradePageButton);
@@ -270,7 +266,7 @@ public class StructureScreen extends Screen
 		upgradePageButton.active = true;
 	}
 
-	private void initializeResorucesPageButtons()
+	private void initializeResourcesPageButtons()
 	{
 		resourcesPageButton.active = false;
 	}
@@ -290,26 +286,10 @@ public class StructureScreen extends Screen
                 PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
                 // TODO: Pass building info
                 passedData.writeInt(blueprint.getValue());
-                ClientPlayNetworking.send(FrontierPackets.BUILD_STRUCTURE_ID, passedData);
+                ClientPlayNetworking.send(FrontierPacketsServer.BUILD_STRUCTURE_ID, passedData);
                 MinecraftClient.getInstance().setScreen(null);
             }
         }).dimensions(backgroundPosX + 192, backgroundPosY + 63, 45, 20).build();
-    }
-	
-	private void initializeUpgradeButton()
-	{
-        upgradeButton = ButtonWidget.builder(Text.literal("Upgrade"), button ->
-        {
-            PlayerData playerData = PlayerData.players.get(this.player.getUuid());
-            if (this.player != null && playerData != null)
-            {
-                PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
-                // TODO: Pass building info
-                //passedData.writeInt();
-                ClientPlayNetworking.send(FrontierPackets.UPGRADE_STRUCTURE_ID, passedData);
-                MinecraftClient.getInstance().setScreen(null);
-            }
-        }).dimensions(backgroundPosX + 120, backgroundPosY + 44, 52, 20).build();
     }
 	
 	private void initializeJobCategoryButtons()
@@ -378,7 +358,6 @@ public class StructureScreen extends Screen
 		blueprintText1 = Text.literal("PURCHASE BLUEPRINTS").formatted(Formatting.BOLD);
 		blueprintText2 = Text.literal("As the leader you can purchase blueprints from the Architect. Use the blueprint by right-clicking a desired location for your building. The Architect will use your settlement resources to construct it.");
 		blueprintText3 = Text.literal("You can also place the blueprint in an item frame above the entrance of your own custom building to activate it.");
-		setupTextures();
 		blueprint = Blueprint.NONE;
 		initializeJobCategoryButtons();
 	}
@@ -387,24 +366,16 @@ public class StructureScreen extends Screen
 	{
 		resourcesText1 = Text.literal("AVAILABLE RESOURCES").formatted(Formatting.BOLD);
 		resourcesText2 = Text.literal("(Town Hall & Warehouse)");
-		//setupTextures();
 		blueprint = Blueprint.NONE;
-		initializeResorucesPageButtons();
+		initializeResourcesPageButtons();
 	}
 	
 	private void setupUpgradePage()
 	{
 		upgradeText1 = Text.literal("UPGRADE BUILDING").formatted(Formatting.BOLD);
-		upgradeText2 = Text.literal("Each building has 5 upgradeable tiers (0-4). Upgrades cannot surpass the tier of the Town Hall by more than 1. Buildings cannot be upgraded if "
-				+ "they currently require repairs.");
-		setupTextures();
+		upgradeText2 = Text.literal("Each building has 5 upgradeable tiers (0-4). Upgrades cannot surpass the tier of the Town Hall by more than 1. Buildings cannot be upgraded if they currently require repairs.");
 		blueprint = Blueprint.NONE;
 		initializeUpgradePageButtons();
-	}
-
-	private void setupTextures()
-	{
-		//rect3Textures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f));
 	}
 
 	private void setupCorePage()
@@ -737,11 +708,6 @@ public class StructureScreen extends Screen
 		else
 			buildButton.visible = true;
 
-		//if (page == Page.UPGRADE)
-		//	upgradeButton.visible = true;
-		//else
-		//	upgradeButton.visible = false;
-
 		if (blueprint != Blueprint.NONE && this.playerEmeralds >= blueprint.getValue())
 			buildButton.active = true;
 		else
@@ -847,11 +813,16 @@ public class StructureScreen extends Screen
 		}
 
 		int x = backgroundPosX + 10;
-		int y = backgroundPosY + 70;
+		int y = backgroundPosY + 50;
+		//int itemsPerPage = MAX_VISIBLE_ROWS * ITEMS_PER_ROW;
 
 		if (structureInventory != null)
 		{
+			// sort inventory before rendering by item count in descending order
+			structureInventory.sort((itemStack1, itemStack2) -> Integer.compare(itemStack2.getCount(), itemStack1.getCount()));
+
 			int totalItems = structureInventory.size();
+			// int maxScroll = Math.max(0, (int)Math.ceil((double)totalItems / ITEMS_PER_ROW) - MAX_VISIBLE_ROWS);
 
 			for (int i = scrollOffset * ITEMS_PER_ROW; i < Math.min(totalItems, (scrollOffset + MAX_VISIBLE_ROWS) * ITEMS_PER_ROW); i++)
 			{
@@ -878,29 +849,13 @@ public class StructureScreen extends Screen
 		}
 	}
 	
-	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double amount)
-	{
-		int totalItems = structureInventory.size();
-		int maxScroll = Math.max(0, (int) Math.ceil((double) totalItems / ITEMS_PER_ROW) - MAX_VISIBLE_ROWS);
-
-		if (amount > 0)
-			scrollOffset = Math.max(0, scrollOffset - 1);
-		else if (amount < 0)
-			scrollOffset = Math.min(maxScroll, scrollOffset + 1);
-		return super.mouseScrolled(mouseX, mouseY, amount);
-	}
-	
 	private void renderUpgradePage(DrawContext context, int mouseX, int mouseY)
 	{
 		TextUtil.drawText(context, textRenderer, upgradeText1, backgroundPosX + 76, backgroundPosY + 22, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
 		TextUtil.drawText(context, textRenderer, upgradeText2, backgroundPosX + 125, backgroundPosY + 50, new Color(255, 255, 255).getRGB(), true, true, 220, TextAlign.CENTER);
 		
-		//context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 32), 0, 0, 55, 32, 54, 32);
-		//context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 46), 0, 0, 16, 16, 16, 16);
 		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 105), 0, 0, 225, 2, 32, 2);
 
-		//rect2Textures.add(new TextureElement(INFO_TEXTURE, (backgroundPosX + 141), (backgroundPosY + 74), 22, 22, 1, 23, 256, 256, null, 0.5f));
         for (TextureElement element : rect2Textures)
 		{
 			element.drawRect(context);
@@ -1328,6 +1283,19 @@ public class StructureScreen extends Screen
     private static int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));
     }
+    
+    @Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double amount)
+	{
+		int totalItems = structureInventory.size();
+		int maxScroll = Math.max(0, (int) Math.ceil((double) totalItems / ITEMS_PER_ROW) - MAX_VISIBLE_ROWS);
+
+		if (amount > 0)
+			scrollOffset = Math.max(0, scrollOffset - 1);
+		else if (amount < 0)
+			scrollOffset = Math.min(maxScroll, scrollOffset + 1);
+		return super.mouseScrolled(mouseX, mouseY, amount);
+	}
     
     @Override
     public boolean shouldPause() 

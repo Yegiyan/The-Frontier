@@ -14,7 +14,7 @@ import com.frontier.Frontier;
 import com.frontier.PlayerData;
 import com.frontier.calendar.FrontierCalendarManager;
 import com.frontier.gui.SettlerCardScreen;
-import com.frontier.network.FrontierPackets;
+import com.frontier.network.FrontierPacketsServer;
 import com.frontier.settlements.Grave;
 import com.frontier.settlements.Settlement;
 import com.frontier.settlements.SettlementManager;
@@ -548,7 +548,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    for (int i = 0; i < inventory.size(); i++)
 	        buf.writeItemStack(inventory.getStack(i));
 	    for (ServerPlayerEntity player : PlayerLookup.tracking(this))
-	        ServerPlayNetworking.send(player, FrontierPackets.SYNC_SETTLER_INVENTORY_ID, buf);
+	        ServerPlayNetworking.send(player, FrontierPacketsServer.SYNC_SETTLER_INVENTORY_ID, buf);
 	}
 
 	public void setClientInventory(DefaultedList<ItemStack> inventory)

@@ -10,6 +10,6 @@ public class FrontierClient implements ClientModInitializer
 	@Override
 	public void onInitializeClient()
 	{
-		ClientPacketHandlers.registerClientPacketHandlers();
+		FrontierPacketsClient.registerClientPacketHandlers();
 	}
 }

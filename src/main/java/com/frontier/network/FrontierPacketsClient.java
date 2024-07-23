@@ -14,13 +14,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 
-public class ClientPacketHandlers
+public class FrontierPacketsClient
 {
 	public static final Identifier SETTLEMENT_RESOURCES_RESPONSE_ID = new Identifier(Frontier.MOD_ID, "settlement_resources_response");
 	
 	public static void registerClientPacketHandlers()
 	{
-		ClientPlayNetworking.registerGlobalReceiver(FrontierPackets.SYNC_SETTLER_INVENTORY_ID, (client, handler, buf, responseSender) ->
+		ClientPlayNetworking.registerGlobalReceiver(FrontierPacketsServer.SYNC_SETTLER_INVENTORY_ID, (client, handler, buf, responseSender) ->
 		{
 			int entityId = buf.readInt();
 			DefaultedList<ItemStack> inventory = DefaultedList.ofSize(buf.readInt(), ItemStack.EMPTY);

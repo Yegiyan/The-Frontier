@@ -2,7 +2,7 @@ package com.frontier.gui;
 
 import java.awt.Color;
 
-import com.frontier.network.FrontierPackets;
+import com.frontier.network.FrontierPacketsServer;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -66,7 +66,7 @@ public class CreateSettlementScreen extends Screen
         	
         	PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
     	    passedData.writeString(factionName);
-    	    ClientPlayNetworking.send(FrontierPackets.CREATE_SETTLEMENT_ID, passedData);
+    	    ClientPlayNetworking.send(FrontierPacketsServer.CREATE_SETTLEMENT_ID, passedData);
         	
             MinecraftClient.getInstance().setScreen(null);
         }).dimensions(backgroundPosX + 173, backgroundPosY + 91, 60, 20).build();

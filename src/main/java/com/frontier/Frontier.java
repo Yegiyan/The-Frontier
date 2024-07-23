@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import com.frontier.calendar.FrontierCalendarManager;
 import com.frontier.events.RequestNomads;
-import com.frontier.network.FrontierPackets;
+import com.frontier.network.FrontierPacketsServer;
 import com.frontier.regions.RegionManager;
 import com.frontier.register.FrontierCommands;
 import com.frontier.register.FrontierEntities;
@@ -44,7 +44,7 @@ public class Frontier implements ModInitializer
         SettlementManager.registerCallback();
         RequestNomads.registerCallback();
 
-        FrontierPackets.apply();
+        FrontierPacketsServer.registerServerPacketHandlers();
 
         FrontierUpdate.worldEvents();
     }
