@@ -16,6 +16,8 @@ public class MoveTowardsBellGoal extends Goal
     private final double speed;
     private Vec3d lastTickPosition;
     private int stuckTicks;
+    
+    private final double DISTANCE = 5D;
 
     public MoveTowardsBellGoal(NomadEntity nomad, double speed) 
     {
@@ -58,7 +60,7 @@ public class MoveTowardsBellGoal extends Goal
     private boolean isInBellRange() 
     {
         BlockPos bellPos = this.nomad.getBellPosition();
-        return bellPos != null && bellPos.isWithinDistance(this.nomad.getPos(), 10D);
+        return bellPos != null && bellPos.isWithinDistance(this.nomad.getPos(), DISTANCE);
     }
 
     private void updateStuckTicks() 

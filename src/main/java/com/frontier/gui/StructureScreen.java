@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.frontier.PlayerData;
 import com.frontier.gui.util.TextUtil;
-import com.frontier.gui.util.TextWrapper;
+import com.frontier.gui.util.TextUtil.TextAlign;
 import com.frontier.gui.util.TextureElement;
 import com.frontier.network.FrontierPackets;
 
@@ -34,14 +34,12 @@ public class StructureScreen extends Screen
     public static final int BACKGROUND_WIDTH = 256;
     public static final int BACKGROUND_HEIGHT = 335;
 	
+    private static final Identifier NAMEPLATE_TEXTURE = new Identifier("minecraft", "textures/gui/social_interactions.png");
     private static final Identifier SEPARATOR_TEXTURE = new Identifier("minecraft", "textures/gui/header_separator.png");
     private static final Identifier HANGINGSIGN_TEXTURE = new Identifier("minecraft", "textures/gui/hanging_signs/spruce.png");
     private static final Identifier EMERALD_TEXTURE = new Identifier("minecraft", "textures/item/emerald.png");    
     private static final Identifier INFO_TEXTURE = new Identifier("minecraft", "textures/gui/widgets.png");
 
-    private static final Identifier CONSTRUCTION_TEXTURE = new Identifier("minecraft", "textures/painting/earth.png");
-    private static final Identifier UPGRADE_TEXTURE = new Identifier("minecraft", "textures/painting/wind.png");
-    
     private static final Identifier TOWNHALL_TEXTURE = new Identifier("minecraft", "textures/item/bell.png");
     private static final Identifier WAREHOUSE_TEXTURE = new Identifier("minecraft", "textures/block/barrel_side.png");
     private static final Identifier HOUSE_TEXTURE = new Identifier("minecraft", "textures/block/oak_door_top.png");
@@ -67,7 +65,7 @@ public class StructureScreen extends Screen
     private static final Identifier TANNERY_TEXTURE = new Identifier("minecraft", "textures/block/loom_front.png");
     
     private static final Identifier APIARY_TEXTURE = new Identifier("minecraft", "textures/block/bee_nest_front.png");
-    private static final Identifier CHICKENCOOP_TEXTURE = new Identifier("minecraft", "textures/block/farmland.png");
+    private static final Identifier CHICKENCOOP_TEXTURE = new Identifier("minecraft", "textures/block/spruce_trapdoor.png");
     private static final Identifier COWBARN_TEXTURE = new Identifier("minecraft", "textures/block/composter_bottom.png");
     private static final Identifier PIGPEN_TEXTURE = new Identifier("minecraft", "textures/block/packed_mud.png");
     private static final Identifier SHEEPPASTURE_TEXTURE = new Identifier("minecraft", "textures/block/white_wool.png");
@@ -88,12 +86,12 @@ public class StructureScreen extends Screen
     private static final Identifier WELL_TEXTURE = new Identifier("minecraft", "textures/block/chain.png");
     private static final Identifier FOUNTAIN_TEXTURE = new Identifier("minecraft", "textures/block/dark_prismarine.png");
     
-    private List<TextureElement> constructionTextures = new ArrayList<>();
-    private List<TextureElement> resourcesTextures = new ArrayList<>();
+    private List<TextureElement> blueprintTextures = new ArrayList<>();
     private List<TextureElement> upgradeTextures = new ArrayList<>();
     
     private List<TextureElement> rect1Textures = new ArrayList<>();
     private List<TextureElement> rect2Textures = new ArrayList<>();
+    private List<TextureElement> rect3Textures = new ArrayList<>();
     
     private List<TextureElement> coreTextures = new ArrayList<>();
     private List<TextureElement> militaryTextures = new ArrayList<>();
@@ -107,10 +105,10 @@ public class StructureScreen extends Screen
     private int backgroundPosX;
     private int backgroundPosY;
     
-    public enum Page { CONSTRUCTION, RESOURCES, UPGRADE, CORE, MILITARY, LABOR, CRAFT, RANCH, ARTISAN, CUSTOMS, MISC }
+    public enum Page { BLUEPRINT, RESOURCES, UPGRADE, CORE, MILITARY, LABOR, CRAFT, RANCH, ARTISAN, CUSTOMS, MISC }
     private Page page;
     
-    public enum Build
+    public enum Blueprint
     {
         NONE(0), TOWNHALL(2), WAREHOUSE(4), HOUSE(3),  ROAD(12), BRIDGE(10), WALL(6),
         BARRACKS(4), APOTHECARY(12), BOUNTYHALL(6), WATCHTOWER(10),
@@ -122,15 +120,16 @@ public class StructureScreen extends Screen
         CHURCH(10), LIBRARY(12), CEMETERY(6), WELL(4), FOUNTAIN(6);
 
         private int value;
-        Build(int value) { this.value = value; }
+        Blueprint(int value) { this.value = value; }
         public int getValue() { return value; }
         public void setValue(int value) { this.value = value; }
+        public void updateValue(int value) { this.value += value; this.value += clamp(this.value, 1, 100); }
         public MutableText getText() { return Text.literal(String.valueOf(value)); }
     }
-    private Build build;
+    private Blueprint blueprint;
     
     private ButtonWidget buildButton, upgradeButton;
-    private ButtonWidget constructPageButton, resourcesPageButton, upgradePageButton;
+    private ButtonWidget blueprintPageButton, resourcesPageButton, upgradePageButton;
     private ButtonWidget coreButton, militiaButton, laboringButton, craftingButton, ranchingButton, artisanButton, customsButton, miscButton;
     private ButtonWidget barracksButton, watchTowerButton, bountyHallButton;
     private ButtonWidget townhallButton, warehouseButton, houseButton, roadButton, bridgeButton, wallButton;
@@ -141,14 +140,22 @@ public class StructureScreen extends Screen
     private ButtonWidget marketplaceButton, tavernButton;
     private ButtonWidget churchButton, libraryButton, cemeteryButton, wellButton, fountainButton;
     
-    @SuppressWarnings("unused") private Text buildPriceTitle;
-    private Text buildPriceText;
+    // resource page vars
+    private int scrollOffset = 0;
+	private static final int MAX_VISIBLE_ROWS = 7;
+	private static final int ITEM_SIZE = 18;
+	private static final int ITEMS_PER_ROW = 11;
+    
+    List<ItemStack> structureInventory;
+    
+    private Text priceText;
     
     private Text titleText1;
     private Text titleText2;
     
-    private Text constructText1;
-    private Text constructText2;
+    private Text blueprintText1;
+    private Text blueprintText2;
+    private Text blueprintText3;
     
     private Text resourcesText1;
     private Text resourcesText2;
@@ -159,12 +166,13 @@ public class StructureScreen extends Screen
     PlayerEntity player;
     int playerEmeralds;
     
-	public StructureScreen()
+	public StructureScreen(List<ItemStack> structureInventory)
 	{
-		super(Text.literal("Construction Screen"));
-		this.page = Page.CONSTRUCTION;
+		super(Text.literal("Structure Management Screen"));
+		this.page = Page.BLUEPRINT;
 		this.player = MinecraftClient.getInstance().player;
 		this.playerEmeralds = 0;
+		this.structureInventory = structureInventory;
 	}
 
 	@Override
@@ -173,8 +181,7 @@ public class StructureScreen extends Screen
 		backgroundPosX = ((this.width - BACKGROUND_WIDTH) / 2) + UI_OFFSET_X;
 		backgroundPosY = ((this.height - BACKGROUND_HEIGHT) / 2) + UI_OFFSET_Y;
 
-		buildPriceTitle = Text.literal("Building Cost");
-		buildPriceText = Text.literal("0");
+		priceText = Text.literal("0");
 		
 		updateButtons();
 	}
@@ -189,8 +196,8 @@ public class StructureScreen extends Screen
 		
 		switch (page)
 		{
-			case CONSTRUCTION:
-				setupConstructionPage();
+			case BLUEPRINT:
+				setupBlueprintPage();
 				break;
 			case RESOURCES:
 				setupResourcesPage();
@@ -226,27 +233,27 @@ public class StructureScreen extends Screen
 				break;
 		}
 
-		if (build == Build.NONE)
-			buildPriceText = Text.literal("0");
+		if (blueprint == Blueprint.NONE)
+			priceText = Text.literal("0");
 
 		initializeBuildButton();
-		initializeUpgradeButton();
+		//initializeUpgradeButton();
 		
         addDrawableChild(buildButton);
-        addDrawableChild(upgradeButton);
-		addDrawableChild(constructPageButton);
+        //addDrawableChild(upgradeButton);
+		addDrawableChild(blueprintPageButton);
 		addDrawableChild(resourcesPageButton);
 		addDrawableChild(upgradePageButton);
 	}
 
 	private void initializeMainButtons()
 	{
-		constructPageButton = ButtonWidget.builder(Text.literal("Construct"), button ->
+		blueprintPageButton = ButtonWidget.builder(Text.literal("Blueprints"), button ->
 		{
-			page = Page.CONSTRUCTION;
+			page = Page.BLUEPRINT;
 			updateButtons();
 		}).dimensions(backgroundPosX + 0, backgroundPosY - 25, 70, 20).build();
-		constructPageButton.active = true;
+		blueprintPageButton.active = true;
 		
 		resourcesPageButton = ButtonWidget.builder(Text.literal("Resources"), button ->
 		{
@@ -275,14 +282,14 @@ public class StructureScreen extends Screen
 	
 	private void initializeBuildButton()
 	{
-        buildButton = ButtonWidget.builder(Text.literal("Build"), button ->
+        buildButton = ButtonWidget.builder(Text.literal("Buy"), button ->
         {
             PlayerData playerData = PlayerData.players.get(this.player.getUuid());
             if (this.player != null && playerData != null)
             {
                 PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
                 // TODO: Pass building info
-                passedData.writeInt(build.getValue());
+                passedData.writeInt(blueprint.getValue());
                 ClientPlayNetworking.send(FrontierPackets.BUILD_STRUCTURE_ID, passedData);
                 MinecraftClient.getInstance().setScreen(null);
             }
@@ -307,7 +314,7 @@ public class StructureScreen extends Screen
 	
 	private void initializeJobCategoryButtons()
 	{
-		constructPageButton.active = false;
+		blueprintPageButton.active = false;
 		coreButton = ButtonWidget.builder(Text.literal("Core"), button ->
 		{
 			page = Page.CORE;
@@ -366,42 +373,38 @@ public class StructureScreen extends Screen
 		addDrawableChild(miscButton);
 	}
 	
-	private void setupConstructionPage()
+	private void setupBlueprintPage()
 	{
-		constructText1 = Text.literal("CONSTRUCT BUILDING").formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
-		constructText2 = Text.literal("As the leader you can order the architect to construct a variety of buildings. "
-				+ "Each building has 5 upgradeable tiers (0-4). Upgrades cannot surpass the tier of the town hall by more than 1. "
-				+ "You can also create your own custom buildings by...");
-		
-		build = Build.NONE;
+		blueprintText1 = Text.literal("PURCHASE BLUEPRINTS").formatted(Formatting.BOLD);
+		blueprintText2 = Text.literal("As the leader you can purchase blueprints from the Architect. Use the blueprint by right-clicking a desired location for your building. The Architect will use your settlement resources to construct it.");
+		blueprintText3 = Text.literal("You can also place the blueprint in an item frame above the entrance of your own custom building to activate it.");
 		setupTextures();
+		blueprint = Blueprint.NONE;
 		initializeJobCategoryButtons();
 	}
 	
 	private void setupResourcesPage()
 	{
-		resourcesText1 = Text.literal("AVAILABLE RESOURCES").formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
+		resourcesText1 = Text.literal("AVAILABLE RESOURCES").formatted(Formatting.BOLD);
 		resourcesText2 = Text.literal("(Town Hall & Warehouse)");
-		
-		build = Build.NONE;
-		setupTextures();
+		//setupTextures();
+		blueprint = Blueprint.NONE;
 		initializeResorucesPageButtons();
 	}
 	
 	private void setupUpgradePage()
 	{
-		upgradeText1 = Text.literal("UPGRADE BUILDING").formatted(Formatting.BOLD).formatted(Formatting.UNDERLINE);
-		upgradeText2 = Text.literal("");
-		
-		build = Build.NONE;
+		upgradeText1 = Text.literal("UPGRADE BUILDING").formatted(Formatting.BOLD);
+		upgradeText2 = Text.literal("Each building has 5 upgradeable tiers (0-4). Upgrades cannot surpass the tier of the Town Hall by more than 1. Buildings cannot be upgraded if "
+				+ "they currently require repairs.");
 		setupTextures();
+		blueprint = Blueprint.NONE;
 		initializeUpgradePageButtons();
 	}
 
 	private void setupTextures()
 	{
-		constructionTextures.add(new TextureElement(CONSTRUCTION_TEXTURE, (backgroundPosX + 177), (backgroundPosY + 9), 32, 16, 2.0f));
-		upgradeTextures.add(new TextureElement(UPGRADE_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 9), 32, 16, 2.0f));
+		//rect3Textures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f));
 	}
 
 	private void setupCorePage()
@@ -411,32 +414,32 @@ public class StructureScreen extends Screen
 		
 		townhallButton = ButtonWidget.builder(Text.literal("Town Hall"), button ->
 		{
-			build = Build.TOWNHALL;
-			buildPriceText = Build.TOWNHALL.getText();
+			blueprint = Blueprint.TOWNHALL;
+			priceText = Blueprint.TOWNHALL.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		warehouseButton = ButtonWidget.builder(Text.literal("Warehouse"), button ->
 		{
-			build = Build.WAREHOUSE;
-			buildPriceText = Build.WAREHOUSE.getText();
+			blueprint = Blueprint.WAREHOUSE;
+			priceText = Blueprint.WAREHOUSE.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		houseButton = ButtonWidget.builder(Text.literal("House"), button ->
 		{
-			build = Build.HOUSE;
-			buildPriceText = Build.HOUSE.getText();
+			blueprint = Blueprint.HOUSE;
+			priceText = Blueprint.HOUSE.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		roadButton = ButtonWidget.builder(Text.literal("Road"), button ->
 		{
-			build = Build.ROAD;
-			buildPriceText = Build.ROAD.getText();
+			blueprint = Blueprint.ROAD;
+			priceText = Blueprint.ROAD.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		bridgeButton = ButtonWidget.builder(Text.literal("Bridge"), button ->
 		{
-			build = Build.BRIDGE;
-			buildPriceText = Build.BRIDGE.getText();
+			blueprint = Blueprint.BRIDGE;
+			priceText = Blueprint.BRIDGE.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(townhallButton);
@@ -453,26 +456,26 @@ public class StructureScreen extends Screen
 
 		barracksButton = ButtonWidget.builder(Text.literal("Barracks"), button ->
 		{
-			build = Build.BARRACKS;
-			buildPriceText = Build.BARRACKS.getText();
+			blueprint = Blueprint.BARRACKS;
+			priceText = Blueprint.BARRACKS.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		watchTowerButton = ButtonWidget.builder(Text.literal("Watch Tower"), button ->
 		{
-			build = Build.WATCHTOWER;
-			buildPriceText = Build.WATCHTOWER.getText();
+			blueprint = Blueprint.WATCHTOWER;
+			priceText = Blueprint.WATCHTOWER.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		bountyHallButton = ButtonWidget.builder(Text.literal("Bounty Hall"), button ->
 		{
-			build = Build.BOUNTYHALL;
-			buildPriceText = Build.BOUNTYHALL.getText();
+			blueprint = Blueprint.BOUNTYHALL;
+			priceText = Blueprint.BOUNTYHALL.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		wallButton = ButtonWidget.builder(Text.literal("Wall"), button ->
 		{
-			build = Build.WALL;
-			buildPriceText = Build.WALL.getText();
+			blueprint = Blueprint.WALL;
+			priceText = Blueprint.WALL.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 
 		addDrawableChild(barracksButton);
@@ -488,32 +491,32 @@ public class StructureScreen extends Screen
 		
 		farmButton = ButtonWidget.builder(Text.literal("Farm"), button ->
 		{
-			build = Build.FARM;
-			buildPriceText = Build.FARM.getText();
+			blueprint = Blueprint.FARM;
+			priceText = Blueprint.FARM.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		groveButton = ButtonWidget.builder(Text.literal("Grove"), button ->
 		{
-			build = Build.GROVE;
-			buildPriceText = Build.GROVE.getText();
+			blueprint = Blueprint.GROVE;
+			priceText = Blueprint.GROVE.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		mineButton = ButtonWidget.builder(Text.literal("Mine"), button ->
 		{
-			build = Build.MINE;
-			buildPriceText = Build.MINE.getText();
+			blueprint = Blueprint.MINE;
+			priceText = Blueprint.MINE.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		fisheryButton = ButtonWidget.builder(Text.literal("Fishery"), button ->
 		{
-			build = Build.FISHERY;
-			buildPriceText = Build.FISHERY.getText();
+			blueprint = Blueprint.FISHERY;
+			priceText = Blueprint.FISHERY.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
 		lodgeButton = ButtonWidget.builder(Text.literal("Lodge"), button ->
 		{
-			build = Build.LODGE;
-			buildPriceText = Build.LODGE.getText();
+			blueprint = Blueprint.LODGE;
+			priceText = Blueprint.LODGE.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(farmButton);
@@ -530,38 +533,38 @@ public class StructureScreen extends Screen
 		
 		alchemyLabButton = ButtonWidget.builder(Text.literal("Alchemy Lab"), button ->
 		{
-			build = Build.ALCHEMYLAB;
-			buildPriceText = Build.ALCHEMYLAB.getText();
+			blueprint = Blueprint.ALCHEMYLAB;
+			priceText = Blueprint.ALCHEMYLAB.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		arcanumButton = ButtonWidget.builder(Text.literal("Arcanum"), button ->
 		{
-			build = Build.ARCANUM;
-			buildPriceText = Build.ARCANUM.getText();
+			blueprint = Blueprint.ARCANUM;
+			priceText = Blueprint.ARCANUM.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		blacksmithButton = ButtonWidget.builder(Text.literal("Blacksmith"), button ->
 		{
-			build = Build.BLACKSMITH;
-			buildPriceText = Build.BLACKSMITH.getText();
+			blueprint = Blueprint.BLACKSMITH;
+			priceText = Blueprint.BLACKSMITH.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		cartographyButton = ButtonWidget.builder(Text.literal("Cartography"), button ->
 		{
-			build = Build.CARTOGRAPHY;
-			buildPriceText = Build.CARTOGRAPHY.getText();
+			blueprint = Blueprint.CARTOGRAPHY;
+			priceText = Blueprint.CARTOGRAPHY.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		fletcheryButton = ButtonWidget.builder(Text.literal("Fletchery"), button ->
 		{
-			build = Build.FLETCHERY;
-			buildPriceText = Build.FLETCHERY.getText();
+			blueprint = Blueprint.FLETCHERY;
+			priceText = Blueprint.FLETCHERY.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 
 		tanneryButton = ButtonWidget.builder(Text.literal("Tannery"), button ->
 		{
-			build = Build.TANNERY;
-			buildPriceText = Build.TANNERY.getText();
+			blueprint = Blueprint.TANNERY;
+			priceText = Blueprint.TANNERY.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(alchemyLabButton);
@@ -579,38 +582,38 @@ public class StructureScreen extends Screen
 		
 		apiaryButton = ButtonWidget.builder(Text.literal("Apiary"), button ->
 		{
-			build = Build.APIARY;
-			buildPriceText = Build.APIARY.getText();
+			blueprint = Blueprint.APIARY;
+			priceText = Blueprint.APIARY.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		cowBarnButton = ButtonWidget.builder(Text.literal("Cow Barn"), button ->
 		{
-			build = Build.COWBARN;
-			buildPriceText = Build.COWBARN.getText();
+			blueprint = Blueprint.COWBARN;
+			priceText = Blueprint.COWBARN.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		chickenCoopButton = ButtonWidget.builder(Text.literal("Chicken Coop"), button ->
 		{
-			build = Build.CHICKENCOOP;
-			buildPriceText = Build.CHICKENCOOP.getText();
+			blueprint = Blueprint.CHICKENCOOP;
+			priceText = Blueprint.CHICKENCOOP.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		sheepPastureButton = ButtonWidget.builder(Text.literal("Sheep Pasture"), button ->
 		{
-			build = Build.SHEEPPASTURE;
-			buildPriceText = Build.SHEEPPASTURE.getText();
+			blueprint = Blueprint.SHEEPPASTURE;
+			priceText = Blueprint.SHEEPPASTURE.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		stableButton = ButtonWidget.builder(Text.literal("Stable"), button ->
 		{
-			build = Build.STABLE;
-			buildPriceText = Build.STABLE.getText();
+			blueprint = Blueprint.STABLE;
+			priceText = Blueprint.STABLE.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
 		pigPenButton = ButtonWidget.builder(Text.literal("Pig Pen"), button ->
 		{
-			build = Build.PIGPEN;
-			buildPriceText = Build.PIGPEN.getText();
+			blueprint = Blueprint.PIGPEN;
+			priceText = Blueprint.PIGPEN.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(apiaryButton);
@@ -628,32 +631,32 @@ public class StructureScreen extends Screen
 		
 		bakeryButton = ButtonWidget.builder(Text.literal("Bakery"), button ->
 		{
-			build = Build.BAKERY;
-			buildPriceText = Build.BAKERY.getText();
+			blueprint = Blueprint.BAKERY;
+			priceText = Blueprint.BAKERY.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		abattoirButton = ButtonWidget.builder(Text.literal("Abattoir"), button ->
 		{
-			build = Build.ABATTOIR;
-			buildPriceText = Build.ABATTOIR.getText();
+			blueprint = Blueprint.ABATTOIR;
+			priceText = Blueprint.ABATTOIR.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		greengroceryButton = ButtonWidget.builder(Text.literal("Greengrocery"), button ->
 		{
-			build = Build.GREENGROCERY;
-			buildPriceText = Build.GREENGROCERY.getText();
+			blueprint = Blueprint.GREENGROCERY;
+			priceText = Blueprint.GREENGROCERY.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		woodshopButton = ButtonWidget.builder(Text.literal("Woodshop"), button ->
 		{
-			build = Build.WOODSHOP;
-			buildPriceText = Build.WOODSHOP.getText();
+			blueprint = Blueprint.WOODSHOP;
+			priceText = Blueprint.WOODSHOP.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		masonryButton = ButtonWidget.builder(Text.literal("Masonry"), button ->
 		{
-			build = Build.MASONRY;
-			buildPriceText = Build.MASONRY.getText();
+			blueprint = Blueprint.MASONRY;
+			priceText = Blueprint.MASONRY.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(bakeryButton);
@@ -670,14 +673,14 @@ public class StructureScreen extends Screen
 		
 		marketplaceButton = ButtonWidget.builder(Text.literal("Marketplace"), button ->
 		{
-			build = Build.MARKETPLACE;
-			buildPriceText = Build.MARKETPLACE.getText();
+			blueprint = Blueprint.MARKETPLACE;
+			priceText = Blueprint.MARKETPLACE.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		tavernButton = ButtonWidget.builder(Text.literal("Tavern"), button ->
 		{
-			build = Build.TAVERN;
-			buildPriceText = Build.TAVERN.getText();
+			blueprint = Blueprint.TAVERN;
+			priceText = Blueprint.TAVERN.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		addDrawableChild(marketplaceButton);
@@ -691,32 +694,32 @@ public class StructureScreen extends Screen
 		
 		churchButton = ButtonWidget.builder(Text.literal("Church"), button ->
 		{
-			build = Build.CHURCH;
-			buildPriceText = Build.CHURCH.getText();
+			blueprint = Blueprint.CHURCH;
+			priceText = Blueprint.CHURCH.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 125, 65, 20).build();
 		
 		cemeteryButton = ButtonWidget.builder(Text.literal("Cemetery"), button ->
 		{
-			build = Build.CEMETERY;
-			buildPriceText = Build.CEMETERY.getText();
+			blueprint = Blueprint.CEMETERY;
+			priceText = Blueprint.CEMETERY.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 125, 65, 20).build();
 		
 		libraryButton = ButtonWidget.builder(Text.literal("Library"), button ->
 		{
-			build = Build.LIBRARY;
-			buildPriceText = Build.LIBRARY.getText();
+			blueprint = Blueprint.LIBRARY;
+			priceText = Blueprint.LIBRARY.getText();
 		}).dimensions(backgroundPosX + 170, backgroundPosY + 125, 65, 20).build();
 		
 		wellButton = ButtonWidget.builder(Text.literal("Well"), button ->
 		{
-			build = Build.WELL;
-			buildPriceText = Build.WELL.getText();
+			blueprint = Blueprint.WELL;
+			priceText = Blueprint.WELL.getText();
 		}).dimensions(backgroundPosX + 10, backgroundPosY + 155, 65, 20).build();
 		
 		fountainButton = ButtonWidget.builder(Text.literal("Fountain"), button ->
 		{
-			build = Build.FOUNTAIN;
-			buildPriceText = Build.FOUNTAIN.getText();
+			blueprint = Blueprint.FOUNTAIN;
+			priceText = Blueprint.FOUNTAIN.getText();
 		}).dimensions(backgroundPosX + 90, backgroundPosY + 155, 65, 20).build();
 		
 		addDrawableChild(churchButton);
@@ -729,17 +732,17 @@ public class StructureScreen extends Screen
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
 	{
-		if (page == Page.CONSTRUCTION || page == Page.RESOURCES || page == Page.UPGRADE)
+		if (page == Page.BLUEPRINT || page == Page.RESOURCES || page == Page.UPGRADE)
 			buildButton.visible = false;
 		else
 			buildButton.visible = true;
 
-		if (page == Page.UPGRADE)
-			upgradeButton.visible = true;
-		else
-			upgradeButton.visible = false;
+		//if (page == Page.UPGRADE)
+		//	upgradeButton.visible = true;
+		//else
+		//	upgradeButton.visible = false;
 
-		if (build != Build.NONE && this.playerEmeralds >= build.getValue())
+		if (blueprint != Blueprint.NONE && this.playerEmeralds >= blueprint.getValue())
 			buildButton.active = true;
 		else
 			buildButton.active = false;
@@ -748,10 +751,11 @@ public class StructureScreen extends Screen
 	    context.drawTexture(BACKGROUND_TEXTURE, backgroundPosX, backgroundPosY, 0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
 	    super.render(context, mouseX, mouseY, delta);
 
-	    if (page != Page.CONSTRUCTION && page != Page.RESOURCES && page != Page.UPGRADE)
+	    if (page != Page.BLUEPRINT && page != Page.RESOURCES && page != Page.UPGRADE)
 	    {
-	        TextWrapper.render(context, this.textRenderer, titleText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
-	        TextWrapper.render(context, this.textRenderer, titleText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 145);
+	        TextUtil.drawText(context, textRenderer, titleText1, backgroundPosX + 12, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
+			TextUtil.drawText(context, textRenderer, titleText2, backgroundPosX + 12, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
+	        
 	        context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 110), 0, 0, 225, 2, 32, 2);
 	        context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 16), 0, 0, 55, 32, 54, 32);
 	        context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 30), 0, 0, 16, 16, 16, 16);
@@ -764,13 +768,13 @@ public class StructureScreen extends Screen
 					TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 			}
 	        
-	        drawTextureForBuild(context, mouseX, mouseY, build);
+	        drawTextureForBuild(context, mouseX, mouseY, blueprint);
 	    }
 
 	    switch (page)
 	    {
-	        case CONSTRUCTION:
-	            renderConstructionPage(context, mouseX, mouseY);
+	        case BLUEPRINT:
+	            renderBlueprintPage(context, mouseX, mouseY);
 	            break;
 	        case RESOURCES:
 	            renderResourcesPage(context, mouseX, mouseY);
@@ -805,14 +809,23 @@ public class StructureScreen extends Screen
 	    }
 	}
 
-	private void renderConstructionPage(DrawContext context, int mouseX, int mouseY)
+	private void renderBlueprintPage(DrawContext context, int mouseX, int mouseY)
 	{
-		TextWrapper.render(context, this.textRenderer, constructText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
-		TextWrapper.render(context, this.textRenderer, constructText2, backgroundPosX + 14, backgroundPosY + 50, new Color(255, 255, 255).getRGB(), 220);
+		TextUtil.drawText(context, textRenderer, blueprintText1, backgroundPosX + 64, backgroundPosY + 22, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
+		TextUtil.drawText(context, textRenderer, blueprintText2, backgroundPosX + 125, backgroundPosY + 50, new Color(255, 255, 255).getRGB(), true, true, 220, TextAlign.CENTER);
+		TextUtil.drawText(context, textRenderer, blueprintText3, backgroundPosX + 125, backgroundPosY + 105, new Color(255, 255, 255).getRGB(), true, true, 220, TextAlign.CENTER);
 		
-		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 140), 0, 0, 225, 2, 32, 2);
+		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 143), 0, 0, 225, 2, 32, 2);
 
-		for (TextureElement element : constructionTextures)
+		rect3Textures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f));
+		for (TextureElement element : rect3Textures)
+		{
+			element.drawRect(context);
+			if (element.isMouseOver(mouseX, mouseY))
+				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
+		}
+		
+		for (TextureElement element : blueprintTextures)
 		{
 			element.draw(context);
 			if (element.isMouseOver(mouseX, mouseY))
@@ -822,28 +835,81 @@ public class StructureScreen extends Screen
 	
 	private void renderResourcesPage(DrawContext context, int mouseX, int mouseY)
 	{
-		TextWrapper.render(context, this.textRenderer, resourcesText1, backgroundPosX + 60, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
-		TextWrapper.render(context, this.textRenderer, resourcesText2, backgroundPosX + 64, backgroundPosY + 28, new Color(255, 255, 255).getRGB(), 145);
-		
-		for (TextureElement element : resourcesTextures)
+		TextUtil.drawText(context, textRenderer, resourcesText1, backgroundPosX + 64, backgroundPosY + 18, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
+		TextUtil.drawText(context, textRenderer, resourcesText2, backgroundPosX + 68, backgroundPosY + 26, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
+
+		rect3Textures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f));
+		for (TextureElement element : rect3Textures)
 		{
-			element.draw(context);
+			element.drawRect(context);
 			if (element.isMouseOver(mouseX, mouseY))
 				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
+
+		int x = backgroundPosX + 10;
+		int y = backgroundPosY + 70;
+
+		if (structureInventory != null)
+		{
+			int totalItems = structureInventory.size();
+
+			for (int i = scrollOffset * ITEMS_PER_ROW; i < Math.min(totalItems, (scrollOffset + MAX_VISIBLE_ROWS) * ITEMS_PER_ROW); i++)
+			{
+				ItemStack itemStack = structureInventory.get(i);
+				if (itemStack != null)
+				{
+					context.drawItem(itemStack, x, y);
+
+					int count = Math.min(itemStack.getCount(), 999);
+					String countString = String.valueOf(count);
+
+					context.getMatrices().push();
+					context.getMatrices().translate(0, 0, 200);
+					context.drawText(textRenderer, countString, x + ITEM_SIZE - textRenderer.getWidth(countString), y + ITEM_SIZE - textRenderer.fontHeight, 0xFFFFFF, true);
+					context.getMatrices().pop();
+				}
+				x += ITEM_SIZE + 3;
+				if ((i + 1) % ITEMS_PER_ROW == 0)
+				{
+					x = backgroundPosX + 10;
+					y += ITEM_SIZE + 2;
+				}
+			}
+		}
+	}
+	
+	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double amount)
+	{
+		int totalItems = structureInventory.size();
+		int maxScroll = Math.max(0, (int) Math.ceil((double) totalItems / ITEMS_PER_ROW) - MAX_VISIBLE_ROWS);
+
+		if (amount > 0)
+			scrollOffset = Math.max(0, scrollOffset - 1);
+		else if (amount < 0)
+			scrollOffset = Math.min(maxScroll, scrollOffset + 1);
+		return super.mouseScrolled(mouseX, mouseY, amount);
 	}
 	
 	private void renderUpgradePage(DrawContext context, int mouseX, int mouseY)
 	{
-		TextWrapper.render(context, this.textRenderer, upgradeText1, backgroundPosX + 120, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 145);
-		TextWrapper.render(context, this.textRenderer, upgradeText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 220);
+		TextUtil.drawText(context, textRenderer, upgradeText1, backgroundPosX + 76, backgroundPosY + 22, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
+		TextUtil.drawText(context, textRenderer, upgradeText2, backgroundPosX + 125, backgroundPosY + 50, new Color(255, 255, 255).getRGB(), true, true, 220, TextAlign.CENTER);
 		
-		context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 32), 0, 0, 55, 32, 54, 32);
-		context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 46), 0, 0, 16, 16, 16, 16);
-		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 70), 0, 0, 225, 2, 32, 2);
+		//context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 32), 0, 0, 55, 32, 54, 32);
+		//context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 46), 0, 0, 16, 16, 16, 16);
+		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 105), 0, 0, 225, 2, 32, 2);
 
-		rect2Textures.add(new TextureElement(INFO_TEXTURE, (backgroundPosX + 141), (backgroundPosY + 30), 22, 22, 1, 23, 256, 256, null, 0.5f));
+		//rect2Textures.add(new TextureElement(INFO_TEXTURE, (backgroundPosX + 141), (backgroundPosY + 74), 22, 22, 1, 23, 256, 256, null, 0.5f));
         for (TextureElement element : rect2Textures)
+		{
+			element.drawRect(context);
+			if (element.isMouseOver(mouseX, mouseY))
+				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
+		}
+        
+        rect3Textures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f));
+		for (TextureElement element : rect3Textures)
 		{
 			element.drawRect(context);
 			if (element.isMouseOver(mouseX, mouseY))
@@ -860,24 +926,24 @@ public class StructureScreen extends Screen
 
 	private void renderCorePage(DrawContext context, int mouseX, int mouseY)
 	{
-		townhallButton.active = (build != Build.TOWNHALL);
-		warehouseButton.active = (build != Build.WAREHOUSE);
-		houseButton.active = (build != Build.HOUSE);
-		roadButton.active = (build != Build.ROAD);
-		bridgeButton.active = (build != Build.BRIDGE);
+		townhallButton.active = (blueprint != Blueprint.TOWNHALL);
+		warehouseButton.active = (blueprint != Blueprint.WAREHOUSE);
+		houseButton.active = (blueprint != Blueprint.HOUSE);
+		roadButton.active = (blueprint != Blueprint.ROAD);
+		bridgeButton.active = (blueprint != Blueprint.BRIDGE);
 		
 		if (townhallButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.TOWNHALL);
+		    priceText = getFormattedPriceText(Blueprint.TOWNHALL);
 		else if (warehouseButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.WAREHOUSE);
+		    priceText = getFormattedPriceText(Blueprint.WAREHOUSE);
 		else if (houseButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.HOUSE);
+		    priceText = getFormattedPriceText(Blueprint.HOUSE);
 		else if (roadButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.ROAD);
+		    priceText = getFormattedPriceText(Blueprint.ROAD);
 		else if (bridgeButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.BRIDGE);
+		    priceText = getFormattedPriceText(Blueprint.BRIDGE);
 		else
-		    buildPriceText = build.getText();
+		    priceText = blueprint.getText();
 
 		for (TextureElement element : coreTextures)
 		{
@@ -891,21 +957,21 @@ public class StructureScreen extends Screen
 
 	private void renderMilitaryPage(DrawContext context, int mouseX, int mouseY)
 	{
-		barracksButton.active = (build != Build.BARRACKS);
-		watchTowerButton.active = (build != Build.WATCHTOWER);
-		bountyHallButton.active = (build != Build.BOUNTYHALL);
-		wallButton.active = (build != Build.WALL);
+		barracksButton.active = (blueprint != Blueprint.BARRACKS);
+		watchTowerButton.active = (blueprint != Blueprint.WATCHTOWER);
+		bountyHallButton.active = (blueprint != Blueprint.BOUNTYHALL);
+		wallButton.active = (blueprint != Blueprint.WALL);
 
 		if (barracksButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.BARRACKS);
+		    priceText = getFormattedPriceText(Blueprint.BARRACKS);
 		else if (watchTowerButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.WATCHTOWER);
+		    priceText = getFormattedPriceText(Blueprint.WATCHTOWER);
 		else if (bountyHallButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.BOUNTYHALL);
+		    priceText = getFormattedPriceText(Blueprint.BOUNTYHALL);
 		else if (wallButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.WALL);
+		    priceText = getFormattedPriceText(Blueprint.WALL);
 		else
-			buildPriceText = build.getText();
+			priceText = blueprint.getText();
 
 		for (TextureElement element : militaryTextures)
 		{
@@ -919,24 +985,24 @@ public class StructureScreen extends Screen
 
     private void renderLaboringPage(DrawContext context, int mouseX, int mouseY)
     {
-		farmButton.active = (build != Build.FARM);
-		fisheryButton.active = (build != Build.FISHERY);
-		lodgeButton.active = (build != Build.LODGE);
-		groveButton.active = (build != Build.GROVE);
-		mineButton.active = (build != Build.MINE);
+		farmButton.active = (blueprint != Blueprint.FARM);
+		fisheryButton.active = (blueprint != Blueprint.FISHERY);
+		lodgeButton.active = (blueprint != Blueprint.LODGE);
+		groveButton.active = (blueprint != Blueprint.GROVE);
+		mineButton.active = (blueprint != Blueprint.MINE);
 
 		if (farmButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.FARM);
+		    priceText = getFormattedPriceText(Blueprint.FARM);
 		else if (fisheryButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.FISHERY);
+		    priceText = getFormattedPriceText(Blueprint.FISHERY);
 		else if (lodgeButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.LODGE);
+		    priceText = getFormattedPriceText(Blueprint.LODGE);
 		else if (groveButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.GROVE);
+		    priceText = getFormattedPriceText(Blueprint.GROVE);
 		else if (mineButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.MINE);
+		    priceText = getFormattedPriceText(Blueprint.MINE);
 		else
-			buildPriceText = build.getText();
+			priceText = blueprint.getText();
 
 		for (TextureElement element : laboringTextures)
 		{
@@ -950,27 +1016,27 @@ public class StructureScreen extends Screen
 
     private void renderCraftingPage(DrawContext context, int mouseX, int mouseY)
     {
-		alchemyLabButton.active = (build != Build.ALCHEMYLAB);
-		arcanumButton.active = (build != Build.ARCANUM);
-		blacksmithButton.active = (build != Build.BLACKSMITH);
-		cartographyButton.active = (build != Build.CARTOGRAPHY);
-		fletcheryButton.active = (build != Build.FLETCHERY);
-		tanneryButton.active = (build != Build.TANNERY);
+		alchemyLabButton.active = (blueprint != Blueprint.ALCHEMYLAB);
+		arcanumButton.active = (blueprint != Blueprint.ARCANUM);
+		blacksmithButton.active = (blueprint != Blueprint.BLACKSMITH);
+		cartographyButton.active = (blueprint != Blueprint.CARTOGRAPHY);
+		fletcheryButton.active = (blueprint != Blueprint.FLETCHERY);
+		tanneryButton.active = (blueprint != Blueprint.TANNERY);
 
 		if (alchemyLabButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.ALCHEMYLAB);
+		    priceText = getFormattedPriceText(Blueprint.ALCHEMYLAB);
 		else if (arcanumButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.ARCANUM);
+		    priceText = getFormattedPriceText(Blueprint.ARCANUM);
 		else if (blacksmithButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.BLACKSMITH);
+		    priceText = getFormattedPriceText(Blueprint.BLACKSMITH);
 		else if (cartographyButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.CARTOGRAPHY);
+		    priceText = getFormattedPriceText(Blueprint.CARTOGRAPHY);
 		else if (fletcheryButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.FLETCHERY);
+		    priceText = getFormattedPriceText(Blueprint.FLETCHERY);
 		else if (tanneryButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.TANNERY);
+		    priceText = getFormattedPriceText(Blueprint.TANNERY);
 		else
-			buildPriceText = build.getText();
+			priceText = blueprint.getText();
 
 		for (TextureElement element : craftingTextures)
 		{
@@ -984,27 +1050,27 @@ public class StructureScreen extends Screen
 
     private void renderRanchingPage(DrawContext context, int mouseX, int mouseY)
     {
-		apiaryButton.active = (build != Build.APIARY);
-		cowBarnButton.active = (build != Build.COWBARN);
-		chickenCoopButton.active = (build != Build.CHICKENCOOP);
-		sheepPastureButton.active = (build != Build.SHEEPPASTURE);
-		stableButton.active = (build != Build.STABLE);
-		pigPenButton.active = (build != Build.PIGPEN);
+		apiaryButton.active = (blueprint != Blueprint.APIARY);
+		cowBarnButton.active = (blueprint != Blueprint.COWBARN);
+		chickenCoopButton.active = (blueprint != Blueprint.CHICKENCOOP);
+		sheepPastureButton.active = (blueprint != Blueprint.SHEEPPASTURE);
+		stableButton.active = (blueprint != Blueprint.STABLE);
+		pigPenButton.active = (blueprint != Blueprint.PIGPEN);
 		
 		if (apiaryButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.APIARY);
+		    priceText = getFormattedPriceText(Blueprint.APIARY);
 		else if (cowBarnButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.COWBARN);
+		    priceText = getFormattedPriceText(Blueprint.COWBARN);
 		else if (chickenCoopButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.CHICKENCOOP);
+		    priceText = getFormattedPriceText(Blueprint.CHICKENCOOP);
 		else if (sheepPastureButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.SHEEPPASTURE);
+		    priceText = getFormattedPriceText(Blueprint.SHEEPPASTURE);
 		else if (stableButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.STABLE);
+		    priceText = getFormattedPriceText(Blueprint.STABLE);
 		else if (pigPenButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.PIGPEN);
+		    priceText = getFormattedPriceText(Blueprint.PIGPEN);
 		else
-			buildPriceText = build.getText();
+			priceText = blueprint.getText();
 
 		for (TextureElement element : ranchingTextures)
 		{
@@ -1018,24 +1084,24 @@ public class StructureScreen extends Screen
 
     private void renderArtisanPage(DrawContext context, int mouseX, int mouseY)
     {
-		bakeryButton.active = (build != Build.BAKERY);
-		abattoirButton.active = (build != Build.ABATTOIR);
-		greengroceryButton.active = (build != Build.GREENGROCERY);
-		woodshopButton.active = (build != Build.WOODSHOP);
-		masonryButton.active = (build != Build.MASONRY);
+		bakeryButton.active = (blueprint != Blueprint.BAKERY);
+		abattoirButton.active = (blueprint != Blueprint.ABATTOIR);
+		greengroceryButton.active = (blueprint != Blueprint.GREENGROCERY);
+		woodshopButton.active = (blueprint != Blueprint.WOODSHOP);
+		masonryButton.active = (blueprint != Blueprint.MASONRY);
 
 		if (bakeryButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.BAKERY);
+		    priceText = getFormattedPriceText(Blueprint.BAKERY);
 		else if (abattoirButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.ABATTOIR);
+		    priceText = getFormattedPriceText(Blueprint.ABATTOIR);
 		else if (greengroceryButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.GREENGROCERY);
+		    priceText = getFormattedPriceText(Blueprint.GREENGROCERY);
 		else if (woodshopButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.WOODSHOP);
+		    priceText = getFormattedPriceText(Blueprint.WOODSHOP);
 		else if (masonryButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.MASONRY);
+		    priceText = getFormattedPriceText(Blueprint.MASONRY);
 		else
-			buildPriceText = build.getText();
+			priceText = blueprint.getText();
 
 		for (TextureElement element : artisanTextures)
 		{
@@ -1049,15 +1115,15 @@ public class StructureScreen extends Screen
     
     private void renderCustomsPage(DrawContext context, int mouseX, int mouseY)
     {
-		marketplaceButton.active = (build != Build.MARKETPLACE);
-		tavernButton.active = (build != Build.TAVERN);
+		marketplaceButton.active = (blueprint != Blueprint.MARKETPLACE);
+		tavernButton.active = (blueprint != Blueprint.TAVERN);
 
 		if (marketplaceButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.MARKETPLACE);
+		    priceText = getFormattedPriceText(Blueprint.MARKETPLACE);
 		else if (tavernButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.TAVERN);
+		    priceText = getFormattedPriceText(Blueprint.TAVERN);
 		else
-			buildPriceText = build.getText();
+			priceText = blueprint.getText();
 
 		for (TextureElement element : customsTextures)
 		{
@@ -1071,24 +1137,24 @@ public class StructureScreen extends Screen
     
     private void renderMiscPage(DrawContext context, int mouseX, int mouseY)
     {
-		churchButton.active = (build != Build.CHURCH);
-		libraryButton.active = (build != Build.LIBRARY);
-		cemeteryButton.active = (build != Build.CEMETERY);
-		wellButton.active = (build != Build.WELL);
-		fountainButton.active = (build != Build.FOUNTAIN);
+		churchButton.active = (blueprint != Blueprint.CHURCH);
+		libraryButton.active = (blueprint != Blueprint.LIBRARY);
+		cemeteryButton.active = (blueprint != Blueprint.CEMETERY);
+		wellButton.active = (blueprint != Blueprint.WELL);
+		fountainButton.active = (blueprint != Blueprint.FOUNTAIN);
 
 		if (churchButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.CHURCH);
+		    priceText = getFormattedPriceText(Blueprint.CHURCH);
 		else if (libraryButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.LIBRARY);
+		    priceText = getFormattedPriceText(Blueprint.LIBRARY);
 		else if (cemeteryButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.CEMETERY);
+		    priceText = getFormattedPriceText(Blueprint.CEMETERY);
 		else if (wellButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.WELL);
+		    priceText = getFormattedPriceText(Blueprint.WELL);
 		else if (fountainButton.isMouseOver(mouseX, mouseY))
-		    buildPriceText = getFormattedPriceText(Build.FOUNTAIN);
+		    priceText = getFormattedPriceText(Blueprint.FOUNTAIN);
 		else
-			buildPriceText = build.getText();
+			priceText = blueprint.getText();
 
 		for (TextureElement element : miscTextures)
 		{
@@ -1102,13 +1168,13 @@ public class StructureScreen extends Screen
 
     private  void drawPriceText(DrawContext context)
     {
-    	if (this.playerEmeralds < build.getValue())
-			TextUtil.drawTextR(context, this.textRenderer, buildPriceText, backgroundPosX + 201, backgroundPosY + 34, new Color(235, 50, 30).getRGB(), true);
+    	if (this.playerEmeralds < blueprint.getValue())
+			TextUtil.drawText(context, textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 34, new Color(235, 50, 30).getRGB(), true, true, 200, TextAlign.RIGHT);
 		else
-			TextUtil.drawTextR(context, this.textRenderer, buildPriceText, backgroundPosX + 201, backgroundPosY + 34, new Color(255, 255, 255).getRGB(), true);
+			TextUtil.drawText(context, textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 34, new Color(255, 255, 255).getRGB(), true, true, 200, TextAlign.RIGHT);
     }
     
-    private void drawTextureForBuild(DrawContext context, int mouseX, int mouseY, Build build)
+    private void drawTextureForBuild(DrawContext context, int mouseX, int mouseY, Blueprint build)
     {
         TextureElement textureElement = null;
         int posX = 171;
@@ -1195,7 +1261,7 @@ public class StructureScreen extends Screen
                 textureElement = new TextureElement(PIGPEN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "An area for holding pigs", 0.75f);
                 break;
             case BAKERY:
-                textureElement = new TextureElement(BAKERY_TEXTURE, (backgroundPosX + 194), (backgroundPosY + 79), 16, 24, "Shop that sells various baked goods", 1.0f);
+                textureElement = new TextureElement(BAKERY_TEXTURE, (backgroundPosX + 169), (backgroundPosY + 55), 16, 24, "Shop that sells various baked goods", 1.0f);
                 break;
             case ABATTOIR:
                 textureElement = new TextureElement(ABATTOIR_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells a large variety of cooked food", 0.75f);
@@ -1251,12 +1317,16 @@ public class StructureScreen extends Screen
         return emeraldCount;
     }
     
-    private Text getFormattedPriceText(Build build)
+    private Text getFormattedPriceText(Blueprint build)
     {
         if (this.playerEmeralds >= build.getValue())
             return build.getText().formatted(Formatting.GRAY);
         else 
             return build.getText().formatted(Formatting.RED);
+    }
+    
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
     
     @Override

@@ -120,7 +120,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	        }
 	    }
 
-	    if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && hand.equals(Hand.MAIN_HAND) && !this.getSettlerProfession().equals("Nomad"))
+	    if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && hand.equals(Hand.MAIN_HAND) && !isNomad())
 	    	MinecraftClient.getInstance().setScreen(new SettlerCardScreen(this));
 	    
 	    //printEntityInfo(player, hand);
@@ -495,8 +495,11 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    this.dropInventory();
 	    if (!this.getWorld().isClient)
 	    {
-	    	getSettlement().updateStatistic("Deaths", 1);
-	    	getSettlement().addGrave(new Grave(getSettlerName(), getSettlerExpertise(), "0/0/0", FrontierCalendarManager.getDateWithZero()));
+	    	if (getSettlement() != null)
+	    	{
+	    		getSettlement().updateStatistic("Deaths", 1);
+		    	getSettlement().addGrave(new Grave(getSettlerName(), getSettlerExpertise(), "0/0/0", FrontierCalendarManager.getDateWithZero()));
+	    	}
 	    }
 	}
 	

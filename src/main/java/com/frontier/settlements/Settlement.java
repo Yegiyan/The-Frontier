@@ -252,6 +252,14 @@ public class Settlement
 	public List<Structure> getStructures() {
 		return structures;
 	}
+	
+	public Structure getStructureByName(String name)
+	{
+        for (Structure structure : structures)
+            if (structure.getName().equals(name))
+                return structure;
+        return null;
+    }
 
 	public List<Grave> getGraves() {
 		return graves;

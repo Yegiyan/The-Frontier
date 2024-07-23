@@ -2,6 +2,7 @@ package com.frontier.structures;
 
 import com.frontier.Frontier;
 
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -14,7 +15,7 @@ public class Warehouse extends Structure
     }
     
     @Override
-	protected void update()
+	protected void update(ServerWorld world)
 	{
 		//Frontier.LOGGER.info(getName() + " of " + getFaction() + " is updating!");
 	}

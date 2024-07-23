@@ -39,7 +39,7 @@ public class StructureManager
             	else
             		structure.requiresRepair = false;
             	
-            	structure.update();
+            	structure.update(server.getOverworld());
             }
             
         }

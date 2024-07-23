@@ -1,11 +1,13 @@
 package com.frontier.gui;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import com.frontier.PlayerData;
 import com.frontier.gui.util.TextUtil;
+import com.frontier.gui.util.TextUtil.TextAlign;
 import com.frontier.gui.util.TextureElement;
 import com.frontier.regions.RegionManager;
 import com.frontier.settlements.SettlementManager;
@@ -158,9 +160,10 @@ public class PlayerCardScreen extends Screen
 			TextUtil.drawText(context, this.textRenderer, nameText, backgroundPosX + 30, backgroundPosY + 15);
 			TextUtil.drawText(context, this.textRenderer, regionText, backgroundPosX + 30, backgroundPosY + 36);
 			TextUtil.drawText(context, this.textRenderer, territoryText, backgroundPosX + 30, backgroundPosY + 57);
-			TextUtil.drawTextR(context, this.textRenderer, professionText, backgroundPosX + 215, backgroundPosY + 15, true);
-			TextUtil.drawTextR(context, this.textRenderer, factionText, backgroundPosX + 215, backgroundPosY + 36, true);
-			TextUtil.drawTextR(context, this.textRenderer, renownText, backgroundPosX + 215, backgroundPosY + 57, true);
+			
+			TextUtil.drawText(context, textRenderer, professionText, backgroundPosX + 219, backgroundPosY + 15, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.RIGHT);
+			TextUtil.drawText(context, textRenderer, factionText, backgroundPosX + 219, backgroundPosY + 36, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.RIGHT);
+			TextUtil.drawText(context, textRenderer, renownText, backgroundPosX + 219, backgroundPosY + 57, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.RIGHT);
 
 			context.drawTexture(SEPARATOR_TEXTURE, backgroundPosX + 12, backgroundPosY + 80, 0, 0, 225, 2, 32, 2);
 		}

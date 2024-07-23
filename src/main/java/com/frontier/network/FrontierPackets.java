@@ -1,8 +1,10 @@
 package com.frontier.network;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.frontier.Frontier;
+import com.frontier.PlayerData;
 import com.frontier.entities.settler.ArchitectEntity;
 import com.frontier.entities.settler.HireSettler;
 import com.frontier.entities.settler.NomadEntity;
@@ -10,10 +12,12 @@ import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.register.FrontierEntities;
 import com.frontier.settlements.SettlementManager;
 
+import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
@@ -24,6 +28,7 @@ public class FrontierPackets
 	public static final Identifier CREATE_SETTLEMENT_ID = new Identifier(Frontier.MOD_ID, "create_settlement");
 	public static final Identifier ABANDON_SETTLEMENT_ID = new Identifier(Frontier.MOD_ID, "abandon_settlement");
 	
+	public static final Identifier SETTLEMENT_RESOURCES_REQUEST_ID = new Identifier(Frontier.MOD_ID, "settlement_resources_request");
 	public static final Identifier BUILD_STRUCTURE_ID = new Identifier(Frontier.MOD_ID, "build_structure");
 	public static final Identifier UPGRADE_STRUCTURE_ID = new Identifier(Frontier.MOD_ID, "upgrade_structure");
 	
@@ -38,7 +43,8 @@ public class FrontierPackets
 	        server.execute(() ->
 	        {
 	            SettlementManager.create(player.getUuid(), factionName, server);
-	            SettlementManager.getSettlement(factionName).updateStatistic("Players", 1);
+	            if (SettlementManager.getSettlement(factionName) != null)
+	            	SettlementManager.getSettlement(factionName).updateStatistic("Players", 1);
 	        });
 	    });
 		
@@ -50,6 +56,28 @@ public class FrontierPackets
 	        	SettlementManager.abandon(player.getUuid(), factionName, server);
 	        });
 	    });
+		
+		ServerPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_REQUEST_ID, (server, player, handler, buf, responseSender) ->
+		{
+			server.execute(() ->
+			{
+				PlayerData playerData = PlayerData.players.get(player.getUuid());
+				if (playerData != null)
+				{
+					List<ItemStack> structureInventory = SettlementManager.getSettlement(playerData.getFaction()).getStructureByName("townhall").getStructureInventory(player.getServer().getOverworld());
+
+					PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+					buffer.writeInt(structureInventory.size());
+					for (ItemStack itemStack : structureInventory)
+					{
+						buffer.writeItemStack(itemStack);
+						buffer.writeInt(itemStack.getCount()); // write item count explicitly
+					}
+
+					ServerPlayNetworking.send(player, ClientPacketHandlers.SETTLEMENT_RESOURCES_RESPONSE_ID, buffer);
+				}
+			});
+		});
 		
 		ServerPlayNetworking.registerGlobalReceiver(BUILD_STRUCTURE_ID, (server, player, handler, buf, responseSender) ->
 		{

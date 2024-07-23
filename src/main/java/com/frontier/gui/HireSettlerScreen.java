@@ -8,8 +8,8 @@ import com.frontier.Frontier;
 import com.frontier.PlayerData;
 import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.util.TextUtil;
-import com.frontier.gui.util.TextWrapper;
 import com.frontier.gui.util.TextureElement;
+import com.frontier.gui.util.TextUtil.TextAlign;
 import com.frontier.network.FrontierPackets;
 
 import io.netty.buffer.Unpooled;
@@ -100,7 +100,7 @@ public class HireSettlerScreen extends Screen
     
     public enum Hire
     {
-        NONE(0), ARCHITECT(2), COURIER(4), DELIVERER(3),  INNKEEPER(12), MERCHANT(10), PRIEST(6),
+        NONE(0), ARCHITECT(0), COURIER(8), DELIVERER(4),  INNKEEPER(12), MERCHANT(10), PRIEST(6),
         ARCHER(4), CLERIC(10), KNIGHT(6),
         FARMER(4), FISHERMAN(5), FORAGER(3), HUNTER(3), LUMBERJACK(4),  MINER(8),
         ALCHEMIST(12), ARCANIST(10), BLACKSMITH(8), CARTOGRAPHER(10), FLETCHER(6), TANNER(8),
@@ -111,6 +111,7 @@ public class HireSettlerScreen extends Screen
         Hire(int value) { this.value = value; }
         public int getValue() { return value; }
         public void setValue(int value) { this.value = value; }
+        public void updateValue(int value) { this.value += value; this.value += clamp(this.value, 1, 100); }
         public MutableText getText() { return Text.literal(String.valueOf(value)); }
     }
     private Hire hire;
@@ -163,7 +164,6 @@ public class HireSettlerScreen extends Screen
     private ButtonWidget hireClericButton;
     private ButtonWidget hireKnightButton;
     
-    private Text priceTitle;
     private Text priceText;
     private Text titleText1;
     private Text titleText2;
@@ -210,7 +210,6 @@ public class HireSettlerScreen extends Screen
 		moraleText = Text.literal(String.valueOf(settler.getSettlerMorale()));
 		skillText = Text.literal(String.valueOf(settler.getSettlerSkill()));
 
-		priceTitle = Text.literal("Hiring Cost");
 		priceText = Text.literal("0");
 		
 		updateButtons();
@@ -261,7 +260,7 @@ public class HireSettlerScreen extends Screen
 
 	private void initializeInfoButton()
 	{
-		infoButton = ButtonWidget.builder(Text.literal("Nomad's Info"), button ->
+		infoButton = ButtonWidget.builder(Text.literal(settler.getSettlerFirstName()), button ->
 		{
 			page = Page.MAIN;
 			updateButtons();
@@ -413,7 +412,7 @@ public class HireSettlerScreen extends Screen
                 ClientPlayNetworking.send(FrontierPackets.HIRE_SETTLER_ID, passedData);
                 MinecraftClient.getInstance().setScreen(null);
             }
-        }).dimensions(backgroundPosX + 180, backgroundPosY + 70, 45, 20).build();
+        }).dimensions(backgroundPosX + 180, backgroundPosY + 55, 45, 20).build();
     }
 
 	private void setupGoverningPage()
@@ -467,8 +466,8 @@ public class HireSettlerScreen extends Screen
 
 	private void setupMilitaryPage()
 	{
-		titleText1 = Text.literal("Military units will guard, patrol, and defend your settlement and merchants.");
-		titleText2 = Text.literal("They will also follow their leader and enact raids on your enemies. Make sure they are armed!");
+		titleText1 = Text.literal("Military units will guard, patrol, and defend your settlement and its inhabitants.");
+		titleText2 = Text.literal("They will also follow their leader and enact raids on your enemies. Make sure they're armed!");
 
 		hireArcherButton = ButtonWidget.builder(Text.literal("Archer"), button ->
 		{
@@ -701,13 +700,12 @@ public class HireSettlerScreen extends Screen
 		
 		if (page != Page.MAIN)
 		{
-			context.drawText(this.textRenderer, priceTitle, (backgroundPosX + 175), (backgroundPosY + 16), new Color(255, 255, 255).getRGB(), true);
-			TextWrapper.render(context, this.textRenderer, titleText1, backgroundPosX + 14, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), 140);
-			TextWrapper.render(context, this.textRenderer, titleText2, backgroundPosX + 14, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), 140);
+			TextUtil.drawText(context, textRenderer, titleText1, backgroundPosX + 12, backgroundPosY + 16, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
+			TextUtil.drawText(context, textRenderer, titleText2, backgroundPosX + 12, backgroundPosY + 62, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
 			context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 110), 0, 0, 225, 2, 32, 2);
 
-			context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 28), 0, 0, 55, 32, 54, 32);
-			context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 42), 0, 0, 16, 16, 16, 16);
+			context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 16), 0, 0, 55, 32, 54, 32);
+			context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 30), 0, 0, 16, 16, 16, 16);
 		}
 		
 		switch (page)
@@ -757,8 +755,8 @@ public class HireSettlerScreen extends Screen
 		context.drawTexture(skinTexture, (backgroundPosX + 20), (backgroundPosY + 22), 8, 8, 8, 8, 64, 64);
 
 		context.drawText(this.textRenderer, nameText, (backgroundPosX + 35), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);
-		TextUtil.drawTextR(context, this.textRenderer, expertiseText, (backgroundPosX + 207), (backgroundPosY + 22), new Color(70, 150, 25).getRGB(), true);
-
+		TextUtil.drawText(context, textRenderer, expertiseText, backgroundPosX + 211, backgroundPosY + 22, new Color(70, 150, 25).getRGB(), true, true, 140, TextAlign.RIGHT);
+		
 		context.drawText(this.textRenderer, healthText, (backgroundPosX + 218), (backgroundPosY + 52), new Color(65, 65, 65).getRGB(), false);
 		context.drawText(this.textRenderer, hungerText, (backgroundPosX + 218), (backgroundPosY + 64), new Color(65, 65, 65).getRGB(), false);
 		context.drawText(this.textRenderer, moraleText, (backgroundPosX + 218), (backgroundPosY + 76), new Color(65, 65, 65).getRGB(), false);
@@ -959,18 +957,15 @@ public class HireSettlerScreen extends Screen
 				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
-		if (this.playerEmeralds < hire.getValue())
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), true);
-		else
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), true);
+		drawPriceText(context);
     }
 
     private  void drawPriceText(DrawContext context)
     {
     	if (this.playerEmeralds < hire.getValue())
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(235, 50, 30).getRGB(), true);
+			TextUtil.drawText(context, textRenderer, priceText, backgroundPosX + 204, backgroundPosY + 34, new Color(235, 50, 30).getRGB(), true, true, 200, TextAlign.RIGHT);
 		else
-			TextUtil.drawTextR(context, this.textRenderer, priceText, backgroundPosX + 201, backgroundPosY + 46, new Color(255, 255, 255).getRGB(), true);
+			TextUtil.drawText(context, textRenderer, priceText, backgroundPosX + 204, backgroundPosY + 34, new Color(255, 255, 255).getRGB(), true, true, 200, TextAlign.RIGHT);
     }
     
     private void drawBar(DrawContext context, int x, int y, float value, int barIndex)
@@ -1035,6 +1030,10 @@ public class HireSettlerScreen extends Screen
             return hire.getText().formatted(Formatting.GRAY);
         else 
             return hire.getText().formatted(Formatting.RED);
+    }
+    
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
     
     @Override

@@ -24,10 +24,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.FurnaceBlock;
+import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.entity.FurnaceBlockEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
@@ -96,7 +98,7 @@ public abstract class Structure
 	protected abstract void onConstruction();
 	protected abstract void onUpgrade();
 	protected abstract void onRemove();
-	protected abstract void update();
+	protected abstract void update(ServerWorld world);
 
 	public Structure(String name, String faction, StructureType type, BlockPos position, Direction facing)
 	{
@@ -627,6 +629,7 @@ public abstract class Structure
 			if (structure.getName().equals("townhall") || structure.getName().equals("warehouse"))
 			{
 				Map<BlockPos, List<ItemStack>> chestContents = structure.getChestContents(world);
+				Map<BlockPos, List<ItemStack>> barrelContents = structure.getBarrelContents(world);
 				Map<BlockPos, ItemStack> furnaceOutputs = structure.getFurnaceOutputContents(world);
 
 				for (Map.Entry<BlockPos, BlockState> entry : missingBlocks.entrySet())
@@ -634,12 +637,13 @@ public abstract class Structure
 					String blockName = entry.getValue().getBlock().getTranslationKey();
 					int requiredCount = 1; // each missing block counts as 1
 
-					requiredCount = removeResourcesFromInventory(chestContents, blockName, requiredCount);
+					requiredCount = removeResourcesFromChests(chestContents, blockName, requiredCount);
+					requiredCount = removeResourcesFromBarrels(barrelContents, blockName, requiredCount);
 					requiredCount = removeResourcesFromFurnaceOutputs(furnaceOutputs, blockName, requiredCount);
 
 					if (requiredCount > 0)
 					{
-						Frontier.LOGGER.info("Cannot repair " + this.getName() + ": Not enough resources in chests!");
+						Frontier.LOGGER.info("Cannot repair " + this.getName() + ": Not enough resources in chests, barrels, or furnaces!");
 						return;
 					}
 				}
@@ -694,7 +698,7 @@ public abstract class Structure
 		return missingBlocks;
 	}
 
-	private int removeResourcesFromInventory(Map<BlockPos, List<ItemStack>> inventory, String blockName, int requiredCount)
+	private int removeResourcesFromChests(Map<BlockPos, List<ItemStack>> inventory, String blockName, int requiredCount)
 	{
 		for (List<ItemStack> items : inventory.values())
 		{
@@ -718,6 +722,32 @@ public abstract class Structure
 			}
 		}
 		return requiredCount; // return remaining count
+	}
+	
+	private int removeResourcesFromBarrels(Map<BlockPos, List<ItemStack>> inventory, String blockName, int requiredCount)
+	{
+	    for (List<ItemStack> items : inventory.values())
+	    {
+	        Iterator<ItemStack> iterator = items.iterator();
+	        while (iterator.hasNext())
+	        {
+	            ItemStack item = iterator.next();
+	            if (item.getItem().getTranslationKey().equals(blockName))
+	            {
+	                int availableCount = item.getCount();
+	                int toRemove = Math.min(availableCount, requiredCount);
+	                item.decrement(toRemove);
+	                requiredCount -= toRemove;
+
+	                if (item.isEmpty())
+	                    iterator.remove();
+
+	                if (requiredCount <= 0)
+	                    return 0; // all required resources removed
+	            }
+	        }
+	    }
+	    return requiredCount; // return remaining count
 	}
 
 	private int removeResourcesFromFurnaceOutputs(Map<BlockPos, ItemStack> furnaceOutputs, String blockName, int requiredCount)
@@ -743,6 +773,24 @@ public abstract class Structure
 		return requiredCount; // return remaining count
 	}
     
+	public List<ItemStack> getStructureContents(ServerWorld world)
+	{
+        List<ItemStack> contents = new ArrayList<>();
+
+        Map<BlockPos, List<ItemStack>> chestContents = getChestContents(world);
+        for (List<ItemStack> itemList : chestContents.values())
+            contents.addAll(itemList);
+
+        Map<BlockPos, List<ItemStack>> barrelContents = getBarrelContents(world);
+        for (List<ItemStack> itemList : barrelContents.values())
+            contents.addAll(itemList);
+
+        Map<BlockPos, ItemStack> furnaceOutputs = getFurnaceOutputContents(world);
+        	contents.addAll(furnaceOutputs.values());
+
+        return contents;
+    }
+	
 	public Map<BlockPos, List<ItemStack>> getChestContents(ServerWorld world)
     {
         List<BlockPos> chestPositions = findChests(world);
@@ -765,6 +813,29 @@ public abstract class Structure
         }
         return chestContents;
     }
+	
+	public Map<BlockPos, List<ItemStack>> getBarrelContents(ServerWorld world)
+	{
+	    List<BlockPos> barrelPositions = findBarrels(world);
+	    Map<BlockPos, List<ItemStack>> barrelContents = new HashMap<>();
+	    for (BlockPos barrelPos : barrelPositions)
+	    {
+	        BlockEntity blockEntity = world.getBlockEntity(barrelPos);
+	        if (blockEntity instanceof BarrelBlockEntity)
+	        {
+	            Inventory inventory = (Inventory) blockEntity;
+	            List<ItemStack> items = new ArrayList<>();
+	            for (int i = 0; i < inventory.size(); i++)
+	            {
+	                ItemStack itemStack = inventory.getStack(i);
+	                if (!itemStack.isEmpty())
+	                    items.add(itemStack);
+	            }
+	            barrelContents.put(barrelPos, items);
+	        }
+	    }
+	    return barrelContents;
+	}
     
     public Map<BlockPos, ItemStack> getFurnaceOutputContents(ServerWorld world)
     {
@@ -794,6 +865,18 @@ public abstract class Structure
         });
         return chestPositions;
     }
+    
+    public List<BlockPos> findBarrels(ServerWorld world)
+    {
+        List<BlockPos> barrelPositions = new ArrayList<>();
+        processStructure(world, (blockPos, blockState) ->
+        {
+            if (blockState.isOf(Blocks.BARREL))
+                barrelPositions.add(blockPos);
+        });
+        return barrelPositions;
+    }
+
     
     public List<BlockPos> findFurnaces(ServerWorld world)
     {
@@ -888,6 +971,49 @@ public abstract class Structure
 		if (this.tier < this.maxTier)
 			return true;
 		return false;
+	}
+    
+    public List<ItemStack> getStructureInventory(ServerWorld world)
+	{
+	    Map<Item, ItemStack> itemMap = new HashMap<>();
+
+	    Map<BlockPos, List<ItemStack>> chestContents = getChestContents(world);
+	    for (List<ItemStack> itemList : chestContents.values())
+	    {
+	        for (ItemStack itemStack : itemList)
+	        {
+	            itemMap.merge(itemStack.getItem(), itemStack.copy(), (existing, newStack) ->
+	            {
+	                existing.increment(newStack.getCount());
+	                return existing;
+	            });
+	        }
+	    }
+
+	    Map<BlockPos, List<ItemStack>> barrelContents = getBarrelContents(world);
+	    for (List<ItemStack> itemList : barrelContents.values())
+	    {
+	        for (ItemStack itemStack : itemList)
+	        {
+	            itemMap.merge(itemStack.getItem(), itemStack.copy(), (existing, newStack) ->
+	            {
+	                existing.increment(newStack.getCount());
+	                return existing;
+	            });
+	        }
+	    }
+
+	    Map<BlockPos, ItemStack> furnaceOutputs = getFurnaceOutputContents(world);
+	    for (ItemStack itemStack : furnaceOutputs.values())
+	    {
+	        itemMap.merge(itemStack.getItem(), itemStack.copy(), (existing, newStack) ->
+	        {
+	            existing.increment(newStack.getCount());
+	            return existing;
+	        });
+	    }
+
+	    return new ArrayList<>(itemMap.values());
 	}
     
 	public int[] getStructureSize()

@@ -7,6 +7,7 @@ import java.util.List;
 import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextureElement;
+import com.frontier.gui.util.TextUtil.TextAlign;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 
 import net.minecraft.client.gui.DrawContext;
@@ -106,8 +107,8 @@ public class SettlerCardScreen extends Screen
         moraleText = Text.literal(String.valueOf(settler.getSettlerMorale()));
         skillText = Text.literal(String.valueOf(settler.getSettlerSkill()));
 
-        this.cardButton = ButtonWidget.builder(Text.literal("INFORMATION"), button -> { toggleMenu = false; }).dimensions(backgroundPosX + 0, backgroundPosY - 25, 80, 20).build();
-        this.taskButton = ButtonWidget.builder(Text.literal("TASK LIST"), button -> { toggleMenu = true; }).dimensions(backgroundPosX + 168, backgroundPosY - 25, 80, 20).build();
+        this.cardButton = ButtonWidget.builder(Text.literal(settler.getSettlerFirstName()), button -> { toggleMenu = false; }).dimensions(backgroundPosX + 0, backgroundPosY - 25, 80, 20).build();
+        this.taskButton = ButtonWidget.builder(Text.literal("Task List"), button -> { toggleMenu = true; }).dimensions(backgroundPosX + 168, backgroundPosY - 25, 80, 20).build();
 
         addDrawableChild(cardButton);
         addDrawableChild(taskButton);
@@ -157,8 +158,8 @@ public class SettlerCardScreen extends Screen
             context.drawTexture(skinTexture, (backgroundPosX + 20), (backgroundPosY + 22), 8, 8, 8, 8, 64, 64);
 
             context.drawText(this.textRenderer, nameText, (backgroundPosX + 35), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);
-            TextUtil.drawTextR(context, this.textRenderer, professionText, (backgroundPosX + 207), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);
-
+            TextUtil.drawText(context, textRenderer, professionText, backgroundPosX + 212, backgroundPosY + 22, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.RIGHT);
+            
             context.drawText(this.textRenderer, healthText, (backgroundPosX + 218), (backgroundPosY + 49), new Color(65, 65, 65).getRGB(), false);
             context.drawText(this.textRenderer, hungerText, (backgroundPosX + 218), (backgroundPosY + 59), new Color(65, 65, 65).getRGB(), false);
             context.drawText(this.textRenderer, moraleText, (backgroundPosX + 218), (backgroundPosY + 69), new Color(65, 65, 65).getRGB(), false);
