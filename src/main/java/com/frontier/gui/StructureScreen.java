@@ -2,9 +2,12 @@ package com.frontier.gui;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.frontier.PlayerData;
+import com.frontier.gui.util.CheckboxElement;
 import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextUtil.TextAlign;
 import com.frontier.gui.util.TextureElement;
@@ -12,16 +15,87 @@ import com.frontier.network.FrontierPacketsServer;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.CakeBlock;
+import net.minecraft.block.CandleCakeBlock;
+import net.minecraft.block.ChorusFlowerBlock;
+import net.minecraft.block.ChorusPlantBlock;
+import net.minecraft.block.CoralBlock;
+import net.minecraft.block.CoralBlockBlock;
+import net.minecraft.block.CoralFanBlock;
+import net.minecraft.block.CoralParentBlock;
+import net.minecraft.block.CoralWallFanBlock;
+import net.minecraft.block.DeadCoralBlock;
+import net.minecraft.block.DeadCoralFanBlock;
+import net.minecraft.block.DeadCoralWallFanBlock;
+import net.minecraft.block.FungusBlock;
+import net.minecraft.block.GlowLichenBlock;
+import net.minecraft.block.MelonBlock;
+import net.minecraft.block.MushroomBlock;
+import net.minecraft.block.MushroomPlantBlock;
+import net.minecraft.block.NetherWartBlock;
+import net.minecraft.block.PumpkinBlock;
+import net.minecraft.block.SnifferEggBlock;
+import net.minecraft.block.SweetBerryBushBlock;
+import net.minecraft.block.TurtleEggBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ArmorItem;
+import net.minecraft.item.ArrowItem;
+import net.minecraft.item.AxeItem;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.BoatItem;
+import net.minecraft.item.BookItem;
+import net.minecraft.item.BrushItem;
+import net.minecraft.item.BucketItem;
+import net.minecraft.item.CompassItem;
+import net.minecraft.item.CrossbowItem;
+import net.minecraft.item.DyeableHorseArmorItem;
+import net.minecraft.item.EggItem;
+import net.minecraft.item.ElytraItem;
+import net.minecraft.item.EmptyMapItem;
+import net.minecraft.item.EnchantedBookItem;
+import net.minecraft.item.EnderEyeItem;
+import net.minecraft.item.EnderPearlItem;
+import net.minecraft.item.FilledMapItem;
+import net.minecraft.item.FireChargeItem;
+import net.minecraft.item.FireworkRocketItem;
+import net.minecraft.item.FireworkStarItem;
+import net.minecraft.item.FishingRodItem;
+import net.minecraft.item.FlintAndSteelItem;
+import net.minecraft.item.GoatHornItem;
+import net.minecraft.item.HoeItem;
+import net.minecraft.item.HorseArmorItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.KnowledgeBookItem;
+import net.minecraft.item.LeadItem;
+import net.minecraft.item.MinecartItem;
+import net.minecraft.item.MusicDiscItem;
+import net.minecraft.item.NameTagItem;
+import net.minecraft.item.OnAStickItem;
+import net.minecraft.item.PickaxeItem;
+import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.item.SaddleItem;
+import net.minecraft.item.ShearsItem;
+import net.minecraft.item.ShieldItem;
+import net.minecraft.item.ShovelItem;
+import net.minecraft.item.SpyglassItem;
+import net.minecraft.item.SwordItem;
+import net.minecraft.item.TridentItem;
+import net.minecraft.item.WritableBookItem;
+import net.minecraft.item.WrittenBookItem;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Colors;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
@@ -32,7 +106,7 @@ public class StructureScreen extends Screen
     
     private static final Identifier BACKGROUND_TEXTURE = new Identifier("minecraft", "textures/gui/demo_background.png");
     public static final int BACKGROUND_WIDTH = 256;
-    public static final int BACKGROUND_HEIGHT = 335;
+    public static final int BACKGROUND_HEIGHT = 338;
 	
     private static final Identifier NAMEPLATE_TEXTURE = new Identifier("minecraft", "textures/gui/social_interactions.png");
     private static final Identifier SEPARATOR_TEXTURE = new Identifier("minecraft", "textures/gui/header_separator.png");
@@ -89,9 +163,7 @@ public class StructureScreen extends Screen
     private List<TextureElement> blueprintTextures = new ArrayList<>();
     private List<TextureElement> upgradeTextures = new ArrayList<>();
     
-    private List<TextureElement> rect1Textures = new ArrayList<>();
-    private List<TextureElement> rect2Textures = new ArrayList<>();
-    private List<TextureElement> rect3Textures = new ArrayList<>();
+    private List<TextureElement> rectTextures = new ArrayList<>();
     
     private List<TextureElement> coreTextures = new ArrayList<>();
     private List<TextureElement> militaryTextures = new ArrayList<>();
@@ -140,11 +212,17 @@ public class StructureScreen extends Screen
     private ButtonWidget marketplaceButton, tavernButton;
     private ButtonWidget churchButton, libraryButton, cemeteryButton, wellButton, fountainButton;
     
-	private static final int MAX_VISIBLE_ROWS = 8;
+	private static final int MAX_VISIBLE_ROWS = 6;
 	private static final int ITEM_SIZE = 18;
 	private static final int ITEMS_PER_ROW = 11;
+	private static final int SCROLLBAR_HEIGHT = 116;
+	private static final int SCROLLBAR_WIDTH = 2;
 	List<ItemStack> structureInventory;
 	private int scrollOffset = 0;
+	
+	private List<ItemStack> filteredInventory = new ArrayList<>();
+	private List<CheckboxElement> checkboxes = new ArrayList<>();
+	private boolean[] checkboxStates;
     
     private Text priceText;
     
@@ -269,6 +347,26 @@ public class StructureScreen extends Screen
 	private void initializeResourcesPageButtons()
 	{
 		resourcesPageButton.active = false;
+		
+		float scale = 0.75f;
+		checkboxes.clear();
+	    checkboxes.add(new CheckboxElement(backgroundPosX + 13, backgroundPosY + 52, "All", scale));
+	    checkboxes.add(new CheckboxElement(backgroundPosX + 13, backgroundPosY + 70, "Build", scale));
+	    checkboxes.add(new CheckboxElement(backgroundPosX + 73, backgroundPosY + 52, "Tools", scale));
+	    checkboxes.add(new CheckboxElement(backgroundPosX + 73, backgroundPosY + 70, "Combat", scale));
+	    checkboxes.add(new CheckboxElement(backgroundPosX + 133, backgroundPosY + 52, "Food", scale));
+	    checkboxes.add(new CheckboxElement(backgroundPosX + 133, backgroundPosY + 70, "Crops", scale));
+	    checkboxes.add(new CheckboxElement(backgroundPosX + 193, backgroundPosY + 52, "Ores", scale));
+	    checkboxes.add(new CheckboxElement(backgroundPosX + 193, backgroundPosY + 70, "Misc", scale));
+	    
+	    if (checkboxStates == null)
+	    {
+	    	checkboxStates = new boolean[checkboxes.size()];
+	    	checkboxStates[0] = true;
+	    }
+
+	    loadCheckboxStates();
+	    updateInventoryFilter();
 	}
 	
 	private void initializeUpgradePageButtons()
@@ -365,9 +463,9 @@ public class StructureScreen extends Screen
 	private void setupResourcesPage()
 	{
 		resourcesText1 = Text.literal("AVAILABLE RESOURCES").formatted(Formatting.BOLD);
-		resourcesText2 = Text.literal("(Town Hall & Warehouse)");
-		blueprint = Blueprint.NONE;
-		initializeResourcesPageButtons();
+	    resourcesText2 = Text.literal("(Town Hall / Warehouse / Barracks)");
+	    blueprint = Blueprint.NONE;
+	    initializeResourcesPageButtons();
 	}
 	
 	private void setupUpgradePage()
@@ -703,6 +801,8 @@ public class StructureScreen extends Screen
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
 	{
+		resetTexturesArrays();
+		
 		if (page == Page.BLUEPRINT || page == Page.RESOURCES || page == Page.UPGRADE)
 			buildButton.visible = false;
 		else
@@ -726,8 +826,8 @@ public class StructureScreen extends Screen
 	        context.drawTexture(HANGINGSIGN_TEXTURE, (backgroundPosX + 175), (backgroundPosY + 16), 0, 0, 55, 32, 54, 32);
 	        context.drawTexture(EMERALD_TEXTURE, (backgroundPosX + 207), (backgroundPosY + 30), 0, 0, 16, 16, 16, 16);
 	        
-	        rect1Textures.add(new TextureElement(INFO_TEXTURE, (backgroundPosX + 166), (backgroundPosY + 62), 22, 22, 1, 23, 256, 256, null, 1.0f));
-	        for (TextureElement element : rect1Textures)
+	        rectTextures.add(new TextureElement(INFO_TEXTURE, (backgroundPosX + 166), (backgroundPosY + 62), 22, 22, 1, 23, 256, 256, null, 1.0f, 1.0f));
+	        for (TextureElement element : rectTextures)
 			{
 				element.drawRect(context);
 				if (element.isMouseOver(mouseX, mouseY))
@@ -736,7 +836,7 @@ public class StructureScreen extends Screen
 	        
 	        drawTextureForBuild(context, mouseX, mouseY, blueprint);
 	    }
-
+	    
 	    switch (page)
 	    {
 	        case BLUEPRINT:
@@ -783,8 +883,8 @@ public class StructureScreen extends Screen
 		
 		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 143), 0, 0, 225, 2, 32, 2);
 
-		rect3Textures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f));
-		for (TextureElement element : rect3Textures)
+		rectTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f, 1.0f));
+		for (TextureElement element : rectTextures)
 		{
 			element.drawRect(context);
 			if (element.isMouseOver(mouseX, mouseY))
@@ -801,32 +901,34 @@ public class StructureScreen extends Screen
 	
 	private void renderResourcesPage(DrawContext context, int mouseX, int mouseY)
 	{
-		TextUtil.drawText(context, textRenderer, resourcesText1, backgroundPosX + 64, backgroundPosY + 18, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
-		TextUtil.drawText(context, textRenderer, resourcesText2, backgroundPosX + 68, backgroundPosY + 26, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
+		TextUtil.drawText(context, textRenderer, resourcesText1, backgroundPosX + 64, backgroundPosY + 20, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
+		TextUtil.drawText(context, textRenderer, resourcesText2, backgroundPosX + 33, backgroundPosY + 30, new Color(255, 255, 255).getRGB(), true, true, 200, TextAlign.LEFT);
 
-		rect3Textures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f));
-		for (TextureElement element : rect3Textures)
+		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 90), 0, 0, 225, 2, 32, 2);
+		
+		rectTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f, 1.15f));
+		for (TextureElement element : rectTextures)
 		{
 			element.drawRect(context);
 			if (element.isMouseOver(mouseX, mouseY))
 				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
 
+		for (CheckboxElement checkbox : checkboxes)
+			checkbox.render(context, textRenderer);
+
 		int x = backgroundPosX + 10;
-		int y = backgroundPosY + 50;
-		//int itemsPerPage = MAX_VISIBLE_ROWS * ITEMS_PER_ROW;
+		int y = backgroundPosY + 95;
 
-		if (structureInventory != null)
+		if (filteredInventory != null)
 		{
-			// sort inventory before rendering by item count in descending order
-			structureInventory.sort((itemStack1, itemStack2) -> Integer.compare(itemStack2.getCount(), itemStack1.getCount()));
+			filteredInventory.sort((itemStack1, itemStack2) -> Integer.compare(itemStack2.getCount(), itemStack1.getCount()));
 
-			int totalItems = structureInventory.size();
-			// int maxScroll = Math.max(0, (int)Math.ceil((double)totalItems / ITEMS_PER_ROW) - MAX_VISIBLE_ROWS);
+			int totalItems = filteredInventory.size();
 
 			for (int i = scrollOffset * ITEMS_PER_ROW; i < Math.min(totalItems, (scrollOffset + MAX_VISIBLE_ROWS) * ITEMS_PER_ROW); i++)
 			{
-				ItemStack itemStack = structureInventory.get(i);
+				ItemStack itemStack = filteredInventory.get(i);
 				if (itemStack != null)
 				{
 					context.drawItem(itemStack, x, y);
@@ -836,7 +938,7 @@ public class StructureScreen extends Screen
 
 					context.getMatrices().push();
 					context.getMatrices().translate(0, 0, 200);
-					context.drawText(textRenderer, countString, x + ITEM_SIZE - textRenderer.getWidth(countString), y + ITEM_SIZE - textRenderer.fontHeight, 0xFFFFFF, true);
+					context.drawText(textRenderer, countString, x + ITEM_SIZE - textRenderer.getWidth(countString), y + ITEM_SIZE - textRenderer.fontHeight, Colors.WHITE, true);
 					context.getMatrices().pop();
 				}
 				x += ITEM_SIZE + 3;
@@ -847,6 +949,8 @@ public class StructureScreen extends Screen
 				}
 			}
 		}
+		
+		renderScrollbar(context);
 	}
 	
 	private void renderUpgradePage(DrawContext context, int mouseX, int mouseY)
@@ -856,15 +960,15 @@ public class StructureScreen extends Screen
 		
 		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 105), 0, 0, 225, 2, 32, 2);
 
-        for (TextureElement element : rect2Textures)
+        for (TextureElement element : rectTextures)
 		{
 			element.drawRect(context);
 			if (element.isMouseOver(mouseX, mouseY))
 				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		}
         
-        rect3Textures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f));
-		for (TextureElement element : rect3Textures)
+        rectTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f, 1.0f));
+		for (TextureElement element : rectTextures)
 		{
 			element.drawRect(context);
 			if (element.isMouseOver(mouseX, mouseY))
@@ -1121,6 +1225,21 @@ public class StructureScreen extends Screen
 		drawPriceText(context);
     }
 
+    private void renderScrollbar(DrawContext context)
+	{
+		int totalItems = filteredInventory.size();
+		int visibleItems = MAX_VISIBLE_ROWS * ITEMS_PER_ROW;
+		int maxScroll = Math.max(0, (int) Math.ceil((double) totalItems / ITEMS_PER_ROW) - MAX_VISIBLE_ROWS);
+
+		if (totalItems > visibleItems)
+		{
+			int scrollbarHeight = Math.max(SCROLLBAR_HEIGHT * visibleItems / totalItems, 10); // minimum scrollbar height
+			int scrollbarX = backgroundPosX + 242;
+			int scrollbarY = backgroundPosY + 95 + (SCROLLBAR_HEIGHT - scrollbarHeight) * scrollOffset / maxScroll;
+			context.fill(scrollbarX, scrollbarY, scrollbarX + SCROLLBAR_WIDTH, scrollbarY + scrollbarHeight, new Color(170, 170, 170).getRGB());
+		}
+	}
+    
     private  void drawPriceText(DrawContext context)
     {
     	if (this.playerEmeralds < blueprint.getValue())
@@ -1138,118 +1257,118 @@ public class StructureScreen extends Screen
         switch (build)
         {
             case TOWNHALL:
-                textureElement = new TextureElement(TOWNHALL_TEXTURE, (backgroundPosX + 169), (backgroundPosY + 66), 16, 16, "Uses settlement supplies to construct buildings", 1.0f);
+                textureElement = new TextureElement(TOWNHALL_TEXTURE, (backgroundPosX + 169), (backgroundPosY + 66), 16, 16, "Uses settlement supplies to construct buildings", 1.0f, 1.0f);
                 break;
             case WAREHOUSE:
-                textureElement = new TextureElement(WAREHOUSE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Stores all resources for your settlement to utilize", 0.75f);
+                textureElement = new TextureElement(WAREHOUSE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Stores all resources for your settlement to utilize", 0.75f, 0.75f);
                 break;
             case HOUSE:
-                textureElement = new TextureElement(HOUSE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "The required living space for your settlers", 0.75f);
+                textureElement = new TextureElement(HOUSE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "The required living space for your settlers", 0.75f, 0.75f);
                 break;
             case ROAD:
-                textureElement = new TextureElement(ROAD_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Connects you to other settlements and creates traffic", 0.75f);
+                textureElement = new TextureElement(ROAD_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Connects you to other settlements and creates traffic", 0.75f, 0.75f);
                 break;
             case BRIDGE:
-                textureElement = new TextureElement(BRIDGE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Connects roads that are divided by empty space", 0.75f);
+                textureElement = new TextureElement(BRIDGE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Connects roads that are divided by empty space", 0.75f, 0.75f);
                 break;
             case BARRACKS:
-                textureElement = new TextureElement(BARRACKS_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Houses your military units and gives them benefits", 0.75f);
+                textureElement = new TextureElement(BARRACKS_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Houses your military units and gives them benefits", 0.75f, 0.75f);
                 break;
             case WATCHTOWER:
-                textureElement = new TextureElement(WATCHTOWER_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Increases faction territory and security", 0.75f);
+                textureElement = new TextureElement(WATCHTOWER_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Increases faction territory and security", 0.75f, 0.75f);
                 break;
             case BOUNTYHALL:
-                textureElement = new TextureElement(BOUNTYHALL_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Gives bounties that anyone can attempt to fulfill", 0.75f);
+                textureElement = new TextureElement(BOUNTYHALL_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Gives bounties that anyone can attempt to fulfill", 0.75f, 0.75f);
                 break;
             case WALL:
-                textureElement = new TextureElement(WALL_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Provides security for your settlement", 0.75f);
+                textureElement = new TextureElement(WALL_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Provides security for your settlement", 0.75f, 0.75f);
                 break;
             case FARM:
-                textureElement = new TextureElement(FARM_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated area for farmers to work", 0.75f);
+                textureElement = new TextureElement(FARM_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated area for farmers to work", 0.75f, 0.75f);
                 break;
             case GROVE:
-                textureElement = new TextureElement(GROVE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated area for lumberjacks to work", 0.75f);
+                textureElement = new TextureElement(GROVE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated area for lumberjacks to work", 0.75f, 0.75f);
                 break;
             case MINE:
-                textureElement = new TextureElement(MINE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated mine for miners to work", 0.75f);
+                textureElement = new TextureElement(MINE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated mine for miners to work", 0.75f, 0.75f);
                 break;
             case FISHERY:
-                textureElement = new TextureElement(FISHERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated water for a fisher to work", 0.75f);
+                textureElement = new TextureElement(FISHERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated water for a fisher to work", 0.75f, 0.75f);
                 break;
             case LODGE:
-                textureElement = new TextureElement(LODGE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Lodge for foragers to bring their findings", 0.75f);
+                textureElement = new TextureElement(LODGE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Lodge for foragers to bring their findings", 0.75f, 0.75f);
                 break;
             case ALCHEMYLAB:
-                textureElement = new TextureElement(ALCHEMYLAB_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells alchemic potions and items", 0.75f);
+                textureElement = new TextureElement(ALCHEMYLAB_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells alchemic potions and items", 0.75f, 0.75f);
                 break;
             case ARCANUM:
-                textureElement = new TextureElement(ARCANUM_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells enchanting gear and services", 0.75f);
+                textureElement = new TextureElement(ARCANUM_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells enchanting gear and services", 0.75f, 0.75f);
                 break;
             case BLACKSMITH:
-                textureElement = new TextureElement(BLACKSMITH_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Smith for tools, weapons, and gear", 0.75f);
+                textureElement = new TextureElement(BLACKSMITH_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Smith for tools, weapons, and gear", 0.75f, 0.75f);
                 break;
             case CARTOGRAPHY:
-                textureElement = new TextureElement(CARTOGRAPHY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells empty and treasure maps", 0.75f);
+                textureElement = new TextureElement(CARTOGRAPHY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells empty and treasure maps", 0.75f, 0.75f);
                 break;
             case FLETCHERY:
-                textureElement = new TextureElement(FLETCHERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling bows, arrows, and fletching items", 0.75f);
+                textureElement = new TextureElement(FLETCHERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling bows, arrows, and fletching items", 0.75f, 0.75f);
                 break;
             case TANNERY:
-                textureElement = new TextureElement(TANNERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling leather and stable items", 0.75f);
+                textureElement = new TextureElement(TANNERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling leather and stable items", 0.75f, 0.75f);
                 break;
             case APIARY:
-                textureElement = new TextureElement(APIARY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Station for maintaining beehives", 0.75f);
+                textureElement = new TextureElement(APIARY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Station for maintaining beehives", 0.75f, 0.75f);
                 break;
             case COWBARN:
-                textureElement = new TextureElement(COWBARN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Barn for holding cows", 0.75f);
+                textureElement = new TextureElement(COWBARN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Barn for holding cows", 0.75f, 0.75f);
                 break;
             case CHICKENCOOP:
-                textureElement = new TextureElement(CHICKENCOOP_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Building for holding chickens", 0.75f);
+                textureElement = new TextureElement(CHICKENCOOP_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Building for holding chickens", 0.75f, 0.75f);
                 break;
             case SHEEPPASTURE:
-                textureElement = new TextureElement(SHEEPPASTURE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Pasture area for holding sheep", 0.75f);
+                textureElement = new TextureElement(SHEEPPASTURE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Pasture area for holding sheep", 0.75f, 0.75f);
                 break;
             case STABLE:
-                textureElement = new TextureElement(STABLE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "A stable for holding various four-legged friends", 0.75f);
+                textureElement = new TextureElement(STABLE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "A stable for holding various four-legged friends", 0.75f, 0.75f);
                 break;
             case PIGPEN:
-                textureElement = new TextureElement(PIGPEN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "An area for holding pigs", 0.75f);
+                textureElement = new TextureElement(PIGPEN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "An area for holding pigs", 0.75f, 0.75f);
                 break;
             case BAKERY:
-                textureElement = new TextureElement(BAKERY_TEXTURE, (backgroundPosX + 169), (backgroundPosY + 55), 16, 24, "Shop that sells various baked goods", 1.0f);
+                textureElement = new TextureElement(BAKERY_TEXTURE, (backgroundPosX + 169), (backgroundPosY + 55), 16, 24, "Shop that sells various baked goods", 1.0f, 1.0f);
                 break;
             case ABATTOIR:
-                textureElement = new TextureElement(ABATTOIR_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells a large variety of cooked food", 0.75f);
+                textureElement = new TextureElement(ABATTOIR_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop that sells a large variety of cooked food", 0.75f, 0.75f);
                 break;
             case GREENGROCERY:
-                textureElement = new TextureElement(GREENGROCERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling fresh produce and crops", 0.75f);
+                textureElement = new TextureElement(GREENGROCERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling fresh produce and crops", 0.75f, 0.75f);
                 break;
             case WOODSHOP:
-                textureElement = new TextureElement(WOODSHOP_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling carpentry blocks and items", 0.75f);
+                textureElement = new TextureElement(WOODSHOP_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling carpentry blocks and items", 0.75f, 0.75f);
                 break;
             case MASONRY:
-                textureElement = new TextureElement(MASONRY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling various stones and bricks", 0.75f);
+                textureElement = new TextureElement(MASONRY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Shop for selling various stones and bricks", 0.75f, 0.75f);
                 break;
             case MARKETPLACE:
-                textureElement = new TextureElement(MARKETPLACE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated area for merchant stalls", 0.75f);
+                textureElement = new TextureElement(MARKETPLACE_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Designated area for merchant stalls", 0.75f, 0.75f);
                 break;
             case TAVERN:
-                textureElement = new TextureElement(TAVERN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "An inn for visitors of your settlement", 0.75f);
+                textureElement = new TextureElement(TAVERN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "An inn for visitors of your settlement", 0.75f, 0.75f);
                 break;
             case CHURCH:
-                textureElement = new TextureElement(CHURCH_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Houses the priest and helps with settler morale", 0.75f);
+                textureElement = new TextureElement(CHURCH_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Houses the priest and helps with settler morale", 0.75f, 0.75f);
                 break;
             case CEMETERY:
-                textureElement = new TextureElement(CEMETERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Provides graves for your unfortunate casualties", 0.75f);
+                textureElement = new TextureElement(CEMETERY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "Provides graves for your unfortunate casualties", 0.75f, 0.75f);
                 break;
             case LIBRARY:
-                textureElement = new TextureElement(LIBRARY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "A building for helping increase settler skills", 0.75f);
+                textureElement = new TextureElement(LIBRARY_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "A building for helping increase settler skills", 0.75f, 0.75f);
                 break;
             case WELL:
-                textureElement = new TextureElement(WELL_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 42, 16, "A well that adds flavor to your settlement", 0.75f);
+                textureElement = new TextureElement(WELL_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 42, 16, "A well that adds flavor to your settlement", 0.75f, 0.75f);
                 break;
             case FOUNTAIN:
-                textureElement = new TextureElement(FOUNTAIN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "A fountain that adds flavor to your settlement", 0.75f);
+                textureElement = new TextureElement(FOUNTAIN_TEXTURE, (backgroundPosX + posX), (backgroundPosY + posY), 16, 16, "A fountain that adds flavor to your settlement", 0.75f, 0.75f);
                 break;
             default:
                 break;
@@ -1262,6 +1381,191 @@ public class StructureScreen extends Screen
                 TextUtil.renderTooltip(context, this.textRenderer, textureElement.getToolTip(), mouseX, mouseY);
         }
     }
+    
+    private void updateInventoryFilter()
+	{
+	    filteredInventory.clear();
+	    boolean allSelected = checkboxes.get(0).isChecked();
+	    
+	    if (allSelected)
+	    {
+	        filteredInventory.addAll(structureInventory);
+	        return;
+	    }
+
+	    Set<String> selectedCategories = new HashSet<>();
+	    if (checkboxes.get(1).isChecked())
+	        selectedCategories.add("BUILD");
+	    if (checkboxes.get(2).isChecked())
+	        selectedCategories.add("TOOLS");
+	    if (checkboxes.get(3).isChecked())
+	        selectedCategories.add("COMBAT");
+	    if (checkboxes.get(4).isChecked())
+	        selectedCategories.add("FOOD");
+	    if (checkboxes.get(5).isChecked())
+	        selectedCategories.add("CROPS");
+	    if (checkboxes.get(6).isChecked())
+	        selectedCategories.add("ORES");
+	    if (checkboxes.get(7).isChecked())
+	        selectedCategories.add("MISC");
+
+	    for (ItemStack itemStack : structureInventory)
+	        if (selectedCategories.contains(getCategory(itemStack)))
+	            filteredInventory.add(itemStack);
+	    
+	    if (filteredInventory.size() <= MAX_VISIBLE_ROWS * ITEMS_PER_ROW)
+	        scrollOffset = 0;
+	    
+	    updateScrollbar();
+	}
+	
+	private String getCategory(ItemStack itemStack)
+	{
+		Item item = itemStack.getItem();
+		
+		if (item instanceof BlockItem)
+		{
+	        Block block = ((BlockItem) item).getBlock();
+	        
+	        if (block.getDefaultState().isIn(BlockTags.RAILS) || item.equals(Items.STRING))
+	            return "TOOLS";
+	        
+	        if (itemStack.isIn(ItemTags.VILLAGER_PLANTABLE_SEEDS)
+	         || item.equals(Items.BEETROOT_SEEDS)
+	         || item.equals(Items.MELON_SEEDS)
+	         || item.equals(Items.PUMPKIN_SEEDS)
+	         || item.equals(Items.TORCHFLOWER_SEEDS)
+	         || item.equals(Items.WHEAT_SEEDS)
+	         || item.equals(Items.BONE_BLOCK)
+	         || item.equals(Items.NETHER_SPROUTS)
+	         || block instanceof CoralBlock
+	         || block instanceof CoralBlockBlock
+	         || block instanceof CoralFanBlock
+	         || block instanceof CoralParentBlock
+	         || block instanceof CoralWallFanBlock
+	         || block instanceof DeadCoralBlock
+	         || block instanceof DeadCoralFanBlock
+	         || block instanceof DeadCoralWallFanBlock
+	         || block instanceof GlowLichenBlock
+	         || block instanceof MushroomBlock
+	         || block instanceof MushroomPlantBlock
+	         || block instanceof SnifferEggBlock
+	         || block instanceof TurtleEggBlock
+	         || block instanceof ChorusFlowerBlock
+	         || block instanceof ChorusPlantBlock
+	         || block instanceof FungusBlock
+	         || block instanceof NetherWartBlock)
+	            return "CROPS";
+	        
+	        if (block instanceof CakeBlock
+	         || block instanceof CandleCakeBlock
+	         || block instanceof MelonBlock
+	         || block instanceof PumpkinBlock
+	         || block instanceof SweetBerryBushBlock
+	         || item.equals(Items.GLOW_BERRIES)
+	         || item.equals(Items.CHORUS_FRUIT))
+	            return "FOOD";
+	        
+	        if (block.getDefaultState().isIn(BlockTags.COAL_ORES)
+	         || block.getDefaultState().isIn(BlockTags.COPPER_ORES)
+	         || block.getDefaultState().isIn(BlockTags.IRON_ORES)
+	         || block.getDefaultState().isIn(BlockTags.GOLD_ORES)
+	         || block.getDefaultState().isIn(BlockTags.REDSTONE_ORES)
+	         || block.getDefaultState().isIn(BlockTags.DIAMOND_ORES)
+	         || block.getDefaultState().isIn(BlockTags.EMERALD_ORES)
+	         || block.equals(Blocks.AMETHYST_BLOCK)
+	         || block.equals(Blocks.AMETHYST_CLUSTER)
+	         || block.equals(Blocks.BUDDING_AMETHYST)
+	         || block.equals(Blocks.SMALL_AMETHYST_BUD)
+	         || block.equals(Blocks.MEDIUM_AMETHYST_BUD)
+	         || block.equals(Blocks.LARGE_AMETHYST_BUD)
+	         || block.equals(Blocks.RAW_COPPER_BLOCK)
+	         || block.equals(Blocks.RAW_IRON_BLOCK)
+	         || block.equals(Blocks.RAW_GOLD_BLOCK)
+	         || block.equals(Blocks.REDSTONE_BLOCK)
+	         || block.equals(Blocks.NETHER_QUARTZ_ORE)
+	         || item.equals(Items.REDSTONE))
+	            return "ORES";
+	        
+	        return "BUILD";
+	    }
+		
+	    if (itemStack.getItem() instanceof BlockItem)
+	        return "BUILD";
+	    
+	    if (itemStack.getItem() instanceof ShovelItem 
+	     || itemStack.getItem() instanceof AxeItem
+	     || itemStack.getItem() instanceof PickaxeItem
+	     || itemStack.getItem() instanceof FishingRodItem
+	     || itemStack.getItem() instanceof OnAStickItem
+	     || itemStack.getItem() instanceof HoeItem
+	     || itemStack.getItem() instanceof ShearsItem
+	     || itemStack.getItem() instanceof BucketItem
+	     || itemStack.getItem() instanceof BrushItem
+	     || itemStack.getItem() instanceof CompassItem
+	     || itemStack.getItem() instanceof SpyglassItem
+	     || itemStack.getItem() instanceof SaddleItem
+	     || itemStack.getItem() instanceof EnderEyeItem
+	     || itemStack.getItem() instanceof EnderPearlItem
+	     || itemStack.getItem() instanceof FireworkRocketItem
+	     || itemStack.getItem() instanceof FireworkStarItem
+	     || itemStack.getItem() instanceof BoatItem
+	     || itemStack.getItem() instanceof EmptyMapItem
+	     || itemStack.getItem() instanceof FilledMapItem
+	     || itemStack.getItem() instanceof FireChargeItem
+	     || itemStack.getItem() instanceof FlintAndSteelItem
+	     || itemStack.getItem() instanceof BookItem
+	     || itemStack.getItem() instanceof EnchantedBookItem
+	     || itemStack.getItem() instanceof KnowledgeBookItem
+	     || itemStack.getItem() instanceof WritableBookItem
+	     || itemStack.getItem() instanceof WrittenBookItem
+	     || itemStack.getItem() instanceof ElytraItem
+	     || itemStack.getItem() instanceof MusicDiscItem
+	     || itemStack.getItem() instanceof GoatHornItem
+	     || itemStack.getItem() instanceof MinecartItem
+	     || itemStack.getItem() instanceof NameTagItem
+	     || itemStack.getItem() instanceof LeadItem
+	     || item.equals(Items.CLOCK)
+	     || item.equals(Items.BONE_MEAL))
+	        return "TOOLS";
+	    
+	    if (itemStack.getItem() instanceof SwordItem 
+	     || itemStack.getItem() instanceof AxeItem
+	     || itemStack.getItem() instanceof RangedWeaponItem
+	     || itemStack.getItem() instanceof CrossbowItem
+	     || itemStack.getItem() instanceof ArmorItem
+	     || itemStack.getItem() instanceof TridentItem
+	     || itemStack.getItem() instanceof ArrowItem
+	     || itemStack.getItem() instanceof ShieldItem
+	     || itemStack.getItem() instanceof HorseArmorItem
+	     || itemStack.getItem() instanceof DyeableHorseArmorItem)
+	        return "COMBAT";
+
+	    if (item.isFood()
+	     || item.equals(Items.GLISTERING_MELON_SLICE)
+	     || item.equals(Items.MILK_BUCKET)
+	     || item.equals(Items.POPPED_CHORUS_FRUIT))
+	        return "FOOD";
+
+	    if (item.equals(Items.BONE) || itemStack.getItem() instanceof EggItem)
+	    	return "CROPS";
+	    
+	    if (item.equals(Items.COAL)
+		 || item.equals(Items.CHARCOAL)
+		 || item.equals(Items.COPPER_INGOT)
+		 || item.equals(Items.IRON_INGOT)
+		 || item.equals(Items.GOLD_INGOT)
+		 || item.equals(Items.DIAMOND)
+		 || item.equals(Items.EMERALD)
+		 || item.equals(Items.RAW_COPPER)
+		 || item.equals(Items.RAW_IRON)
+		 || item.equals(Items.RAW_GOLD)
+		 || item.equals(Items.AMETHYST_SHARD)
+		 || item.equals(Items.QUARTZ))
+	    	return "ORES";
+	    
+	    return "MISC";
+	}
     
     private int countEmeralds(PlayerEntity player)
     {
@@ -1280,14 +1584,45 @@ public class StructureScreen extends Screen
             return build.getText().formatted(Formatting.RED);
     }
     
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
+    private void resetTexturesArrays()
+    {
+    	blueprintTextures.clear();
+	    upgradeTextures.clear();
+	    rectTextures.clear();
+	    coreTextures.clear();
+	    militaryTextures.clear();
+	    laboringTextures.clear();
+	    craftingTextures.clear();
+	    ranchingTextures.clear();
+	    artisanTextures.clear();
+	    customsTextures.clear();
+	    miscTextures.clear();
+    }
+    
+    private void saveCheckboxStates()
+    {
+        for (int i = 0; i < checkboxes.size(); i++)
+            checkboxStates[i] = checkboxes.get(i).isChecked();
+    }
+
+    private void loadCheckboxStates()
+    {
+        if (checkboxStates != null && checkboxStates.length == checkboxes.size())
+            for (int i = 0; i < checkboxes.size(); i++)
+                checkboxes.get(i).setChecked(checkboxStates[i]);
+    }
+    
+    private void updateScrollbar()
+    {
+        int totalItems = filteredInventory.size();
+        int maxScroll = Math.max(0, (int) Math.ceil((double) totalItems / ITEMS_PER_ROW) - MAX_VISIBLE_ROWS);
+        scrollOffset = Math.min(scrollOffset, maxScroll);
     }
     
     @Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double amount)
 	{
-		int totalItems = structureInventory.size();
+		int totalItems = filteredInventory.size();
 		int maxScroll = Math.max(0, (int) Math.ceil((double) totalItems / ITEMS_PER_ROW) - MAX_VISIBLE_ROWS);
 
 		if (amount > 0)
@@ -1297,9 +1632,36 @@ public class StructureScreen extends Screen
 		return super.mouseScrolled(mouseX, mouseY, amount);
 	}
     
+	@Override
+	public boolean mouseClicked(double mouseX, double mouseY, int button)
+	{
+		for (CheckboxElement checkbox : checkboxes)
+		{
+			if (checkbox.isMouseOver((int) mouseX, (int) mouseY))
+			{
+				checkbox.toggle();
+				if (checkbox != checkboxes.get(0) && checkbox.isChecked())
+					checkboxes.get(0).setChecked(false);
+
+				if (checkbox == checkboxes.get(0) && checkboxes.get(0).isChecked())
+					for (int i = 1; i < checkboxes.size(); i++)
+						checkboxes.get(i).setChecked(false);
+
+				updateInventoryFilter();
+				saveCheckboxStates();
+				return true;
+			}
+		}
+		return super.mouseClicked(mouseX, mouseY, button);
+	}
+    
     @Override
     public boolean shouldPause() 
     {
     	return false;
+    }
+    
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 }

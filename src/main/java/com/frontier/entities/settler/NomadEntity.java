@@ -17,8 +17,6 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.ActionResult;
@@ -69,9 +67,9 @@ public class NomadEntity extends SettlerEntity
 	public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) 
 	{
 		PlayerData playerData = PlayerData.players.get(player.getUuid());
-		ItemStack itemStack = player.getStackInHand(hand);
+		//ItemStack itemStack = player.getStackInHand(hand);
 		
-		if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && itemStack.getItem() == Items.CLOCK && SettlementManager.getSettlement(playerData.getFaction()).isWithinTerritory(player.getBlockPos()))
+		if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && SettlementManager.getSettlement(playerData.getFaction()).isWithinTerritory(player.getBlockPos()))
 	    	MinecraftClient.getInstance().setScreen(new HireSettlerScreen(this));
 		
 	    return super.interactAt(player, hitPos, hand);

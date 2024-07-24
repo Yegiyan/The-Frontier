@@ -80,15 +80,15 @@ public class SettlerCardScreen extends Screen
         backgroundPosX = ((this.width - BACKGROUND_WIDTH) / 2) + UI_OFFSET_X;
         backgroundPosY = ((this.height - BACKGROUND_HEIGHT) / 2) + UI_OFFSET_Y;
 
-        barTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f));
+        barTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f, 1.0f));
         
-        textures.add(new TextureElement(PROFESSION_TEXTURE, (backgroundPosX + 216), (backgroundPosY + 20), 12, 12, "Profession", 1.0f));
-        textures.add(new TextureElement(NOTIFICATION_TEXTURE, (backgroundPosX + 197), (backgroundPosY + 114), 12, 12, notificationText, 2.0f));
+        textures.add(new TextureElement(PROFESSION_TEXTURE, (backgroundPosX + 216), (backgroundPosY + 20), 12, 12, "Profession", 1.0f, 1.0f));
+        textures.add(new TextureElement(NOTIFICATION_TEXTURE, (backgroundPosX + 197), (backgroundPosY + 114), 12, 12, notificationText, 2.0f, 2.0f));
         
-        barTextures.add(new TextureElement(HEALTH_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 48), 9, 9, 53, 0, 256, 256, "Health (" + (int) settler.getHealth() + " / 20)", 1.0f));
-        barTextures.add(new TextureElement(HUNGER_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 59), 9, 8, 53, 28, 256, 256, "Hunger", 1.0f));
-        barTextures.add(new TextureElement(MORALE_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 68), 9, 9, 161, 0, 256, 256, "Morale", 1.0f));
-        barTextures.add(new TextureElement(SKILL_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 78), 9, 9, 89, 0, 256, 256, "Skill", 1.0f));
+        barTextures.add(new TextureElement(HEALTH_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 48), 9, 9, 53, 0, 256, 256, "Health (" + (int) settler.getHealth() + " / 20)", 1.0f, 1.0f));
+        barTextures.add(new TextureElement(HUNGER_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 59), 9, 8, 53, 28, 256, 256, "Hunger", 1.0f, 1.0f));
+        barTextures.add(new TextureElement(MORALE_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 68), 9, 9, 161, 0, 256, 256, "Morale", 1.0f, 1.0f));
+        barTextures.add(new TextureElement(SKILL_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 78), 9, 9, 89, 0, 256, 256, "Skill", 1.0f, 1.0f));
 
         boolean isMale = settler.getSettlerGender().equals("Male");
         Identifier[] textures = settler.getTextures(isMale);

@@ -85,18 +85,18 @@ public class PlayerCardScreen extends Screen
 		backgroundPosY = (this.height - BACKGROUND_HEIGHT) / 2 + UI_OFFSET_Y;
 
 		if (player.getWorld().getRegistryKey().equals(World.OVERWORLD))
-			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region (" + RegionManager.getPlayerDirection(player.getBlockPos()) + ")" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f));
+			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region (" + RegionManager.getPlayerDirection(player.getBlockPos()) + ")" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f, 1.0f));
 		else if (player.getWorld().getRegistryKey().equals(World.NETHER))
-			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f));
+			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f, 1.0f));
 		else if (player.getWorld().getRegistryKey().equals(World.END))
-			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f));
+			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f, 1.0f));
 		else
-			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f));
+			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f, 1.0f));
 		
-		textures.add(new TextureElement(TERRITORY_TEXTURE, backgroundPosX + 12, backgroundPosY + 55, 12, 12, "Current Territory", 1.0f));
-		textures.add(new TextureElement(professionTexture, backgroundPosX + 225, backgroundPosY + 14, 12, 12, "Profession", 1.0f));
-		textures.add(new TextureElement(FACTION_TEXTURE, backgroundPosX + 225, backgroundPosY + 35, 12, 12, "Faction", 1.0f));
-		textures.add(new TextureElement(RENOWN_TEXTURE, backgroundPosX + 225, backgroundPosY + 55, 12, 12, "Renown", 1.0f));
+		textures.add(new TextureElement(TERRITORY_TEXTURE, backgroundPosX + 12, backgroundPosY + 55, 12, 12, "Current Territory", 1.0f, 1.0f));
+		textures.add(new TextureElement(professionTexture, backgroundPosX + 225, backgroundPosY + 14, 12, 12, "Profession", 1.0f, 1.0f));
+		textures.add(new TextureElement(FACTION_TEXTURE, backgroundPosX + 225, backgroundPosY + 35, 12, 12, "Faction", 1.0f, 1.0f));
+		textures.add(new TextureElement(RENOWN_TEXTURE, backgroundPosX + 225, backgroundPosY + 55, 12, 12, "Renown", 1.0f, 1.0f));
 
 		if (player != null && playerData != null)
 		{

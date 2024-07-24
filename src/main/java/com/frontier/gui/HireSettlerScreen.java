@@ -279,54 +279,54 @@ public class HireSettlerScreen extends Screen
 
 	private void setupTextures()
 	{
-		barTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f));
-		mainTextures.add(new TextureElement(expertiseTexture, (backgroundPosX + 214), (backgroundPosY + 18), 12, 12, "Expertise", 1.2f));
+		barTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f, 1.0f));
+		mainTextures.add(new TextureElement(expertiseTexture, (backgroundPosX + 214), (backgroundPosY + 18), 12, 12, "Expertise", 1.2f, 1.2f));
 
-		governingTextures.add(new TextureElement(ARCHITECT_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Uses settlement supplies to construct buildings", 1.0f));
-		governingTextures.add(new TextureElement(COURIER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sends requests or demands to other settlements", 1.0f));
-		governingTextures.add(new TextureElement(DELIVERER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Disperses settlement supplies to other settlers", 1.0f));
-		governingTextures.add(new TextureElement(INNKEEPER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Provides shelter and rest for foreigners", 1.0f));
-		governingTextures.add(new TextureElement(MERCHANT_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Exports your settlement goods to foreigners", 1.0f));
-		governingTextures.add(new TextureElement(PRIEST_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Tends to the cemetery and provides decursing services", 1.0f));
+		governingTextures.add(new TextureElement(ARCHITECT_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Uses settlement supplies to construct buildings", 1.0f, 1.0f));
+		governingTextures.add(new TextureElement(COURIER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sends requests or demands to other settlements", 1.0f, 1.0f));
+		governingTextures.add(new TextureElement(DELIVERER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Disperses settlement supplies to other settlers", 1.0f, 1.0f));
+		governingTextures.add(new TextureElement(INNKEEPER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Provides shelter and rest for foreigners", 1.0f, 1.0f));
+		governingTextures.add(new TextureElement(MERCHANT_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Exports your settlement goods to foreigners", 1.0f, 1.0f));
+		governingTextures.add(new TextureElement(PRIEST_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Tends to the cemetery and provides decursing services", 1.0f, 1.0f));
 		
-		militaryTextures.add(new TextureElement(ARCHER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Ranged fighter that wears leather armor", 1.0f));
-		militaryTextures.add(new TextureElement(CLERIC_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Medic that heals allies in and out of combat", 1.0f));
-		militaryTextures.add(new TextureElement(KNIGHT_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Melee fighter that wears leather or heavy armor", 1.0f));
+		militaryTextures.add(new TextureElement(ARCHER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Ranged fighter that wears leather armor", 1.0f, 1.0f));
+		militaryTextures.add(new TextureElement(CLERIC_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Medic that heals allies in and out of combat", 1.0f, 1.0f));
+		militaryTextures.add(new TextureElement(KNIGHT_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Melee fighter that wears leather or heavy armor", 1.0f, 1.0f));
 		
-		laboringTextures.add(new TextureElement(FARMER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Plants and harvests various types of crops", 1.0f));
-		laboringTextures.add(new TextureElement(LUMBERJACK_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Finds and cuts down trees for lumber", 1.0f));
-		laboringTextures.add(new TextureElement(MINER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "DIGGY DIGGY HOLE, I'M DIGGING A HOLE", 1.0f));
-		laboringTextures.add(new TextureElement(FISHERMAN_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Catches fish and oddities found in the water", 1.0f));
-		laboringTextures.add(new TextureElement(HUNTER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Hunts for animals to kill or lead back", 1.0f));
-		laboringTextures.add(new TextureElement(FORAGER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Searches for seeds, fruits, and vegetables", 1.0f));
+		laboringTextures.add(new TextureElement(FARMER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Plants and harvests various types of crops", 1.0f, 1.0f));
+		laboringTextures.add(new TextureElement(LUMBERJACK_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Finds and cuts down trees for lumber", 1.0f, 1.0f));
+		laboringTextures.add(new TextureElement(MINER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "DIGGY DIGGY HOLE, I'M DIGGING A HOLE", 1.0f, 1.0f));
+		laboringTextures.add(new TextureElement(FISHERMAN_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Catches fish and oddities found in the water", 1.0f, 1.0f));
+		laboringTextures.add(new TextureElement(HUNTER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Hunts for animals to kill or lead back", 1.0f, 1.0f));
+		laboringTextures.add(new TextureElement(FORAGER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Searches for seeds, fruits, and vegetables", 1.0f, 1.0f));
 		
-		craftingTextures.add(new TextureElement(ALCHEMIST_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Sells alchemy ingredients and potions", 1.0f));
-		craftingTextures.add(new TextureElement(ARCANIST_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sells enchanting items and gear", 1.0f));
-		craftingTextures.add(new TextureElement(BLACKSMITH_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Sells tools, armor, and weapons", 1.0f));
-		craftingTextures.add(new TextureElement(CARTOGRAPHER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Creates empty and treasure maps", 1.0f));
-		craftingTextures.add(new TextureElement(FLETCHER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Sells bows, arrows, and fletching items", 1.0f));
-		craftingTextures.add(new TextureElement(TANNER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Sells leather and stable items", 1.0f));	
+		craftingTextures.add(new TextureElement(ALCHEMIST_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Sells alchemy ingredients and potions", 1.0f, 1.0f));
+		craftingTextures.add(new TextureElement(ARCANIST_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sells enchanting items and gear", 1.0f, 1.0f));
+		craftingTextures.add(new TextureElement(BLACKSMITH_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Sells tools, armor, and weapons", 1.0f, 1.0f));
+		craftingTextures.add(new TextureElement(CARTOGRAPHER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Creates empty and treasure maps", 1.0f, 1.0f));
+		craftingTextures.add(new TextureElement(FLETCHER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Sells bows, arrows, and fletching items", 1.0f, 1.0f));
+		craftingTextures.add(new TextureElement(TANNER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Sells leather and stable items", 1.0f, 1.0f));	
 		
-		ranchingTextures.add(new TextureElement(BEEKEEPER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "OH GOD NO, NOT THE BEES", 1.0f));
-		ranchingTextures.add(new TextureElement(COWHAND_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Raises cows for their meat and leather", 1.0f));
-		ranchingTextures.add(new TextureElement(POULTRYMAN_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Raises chickens for their meat and eggs", 1.0f));
-		ranchingTextures.add(new TextureElement(SHEPHERD_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Raises sheep for their wool", 1.0f));
-		ranchingTextures.add(new TextureElement(STABLEHAND_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Raises donkeys, mules, camels, horses, and wolves", 1.0f));
-		ranchingTextures.add(new TextureElement(SWINEHERD_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Raises pigs for their meat", 1.0f));
+		ranchingTextures.add(new TextureElement(BEEKEEPER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "OH GOD NO, NOT THE BEES", 1.0f, 1.0f));
+		ranchingTextures.add(new TextureElement(COWHAND_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Raises cows for their meat and leather", 1.0f, 1.0f));
+		ranchingTextures.add(new TextureElement(POULTRYMAN_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Raises chickens for their meat and eggs", 1.0f, 1.0f));
+		ranchingTextures.add(new TextureElement(SHEPHERD_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Raises sheep for their wool", 1.0f, 1.0f));
+		ranchingTextures.add(new TextureElement(STABLEHAND_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Raises donkeys, mules, camels, horses, and wolves", 1.0f, 1.0f));
+		ranchingTextures.add(new TextureElement(SWINEHERD_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 150), 16, 16, "Raises pigs for their meat", 1.0f, 1.0f));
 		
-		artisanTextures.add(new TextureElement(BAKER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Bakes bread, cookies, and cakes", 1.0f));
-		artisanTextures.add(new TextureElement(COOK_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Cooks a variety of meat and soups", 1.0f));
-		artisanTextures.add(new TextureElement(GREENGROCER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Prepares fresh fruits and vegetables", 1.0f));
-		artisanTextures.add(new TextureElement(CARPENTER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Sells a variety of wooden items and blocks", 1.0f));
-		artisanTextures.add(new TextureElement(MASON_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Sells a variety of stone blocks and brick", 1.0f));
+		artisanTextures.add(new TextureElement(BAKER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Bakes bread, cookies, and cakes", 1.0f, 1.0f));
+		artisanTextures.add(new TextureElement(COOK_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Cooks a variety of meat and soups", 1.0f, 1.0f));
+		artisanTextures.add(new TextureElement(GREENGROCER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Prepares fresh fruits and vegetables", 1.0f, 1.0f));
+		artisanTextures.add(new TextureElement(CARPENTER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Sells a variety of wooden items and blocks", 1.0f, 1.0f));
+		artisanTextures.add(new TextureElement(MASON_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 150), 16, 16, "Sells a variety of stone blocks and brick", 1.0f, 1.0f));
 	}
 
 	private void setupBarTextures()
 	{
-		barTextures.add(new TextureElement(ICONS_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 51), 9, 9, 53, 0, 256, 256, "Health (" + (int) settler.getHealth() + " / 20)", 1.0f));
-		barTextures.add(new TextureElement(ICONS_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 64), 9, 8, 53, 28, 256, 256, "Hunger", 1.0f));
-		barTextures.add(new TextureElement(ICONS_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 75), 9, 9, 161, 0, 256, 256, "Morale", 1.0f));
-		barTextures.add(new TextureElement(ICONS_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 87), 9, 9, 89, 0, 256, 256, "Skill (in field of expertise)", 1.0f));
+		barTextures.add(new TextureElement(ICONS_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 51), 9, 9, 53, 0, 256, 256, "Health (" + (int) settler.getHealth() + " / 20)", 1.0f, 1.0f));
+		barTextures.add(new TextureElement(ICONS_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 64), 9, 8, 53, 28, 256, 256, "Hunger", 1.0f, 1.0f));
+		barTextures.add(new TextureElement(ICONS_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 75), 9, 9, 161, 0, 256, 256, "Morale", 1.0f, 1.0f));
+		barTextures.add(new TextureElement(ICONS_TEXTURE, (backgroundPosX + 14), (backgroundPosY + 87), 9, 9, 89, 0, 256, 256, "Skill (in field of expertise)", 1.0f, 1.0f));
 	}
 
 	private void setupPortrait()

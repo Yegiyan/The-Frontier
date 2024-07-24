@@ -5,7 +5,7 @@ import net.minecraft.util.Identifier;
 
 public class TextureElement 
 {
-	private Identifier textureID;
+    private Identifier textureID;
     private int x;
     private int y;
     private int width;
@@ -15,9 +15,10 @@ public class TextureElement
     private int rectWidth;
     private int rectHeight;
     private String tooltip;
-    private float scale;
+    private float scaleX;
+    private float scaleY;
 
-    public TextureElement(Identifier textureID, int x, int y, int width, int height, int rectX, int rectY, int rectWidth, int rectHeight, String tooltip, float scale) 
+    public TextureElement(Identifier textureID, int x, int y, int width, int height, int rectX, int rectY, int rectWidth, int rectHeight, String tooltip, float scaleX, float scaleY) 
     {
         this.textureID = textureID;
         this.x = x;
@@ -29,10 +30,11 @@ public class TextureElement
         this.rectWidth = rectWidth;
         this.rectHeight = rectHeight;
         this.tooltip = tooltip;
-        this.scale = scale;
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
     }
     
-    public TextureElement(Identifier textureID, int x, int y, int width, int height, String tooltip, float scale) 
+    public TextureElement(Identifier textureID, int x, int y, int width, int height, String tooltip, float scaleX, float scaleY) 
     {
         this.textureID = textureID;
         this.x = x;
@@ -40,24 +42,26 @@ public class TextureElement
         this.width = width;
         this.height = height;
         this.tooltip = tooltip;
-        this.scale = scale;
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
     }
     
-    public TextureElement(Identifier textureID, int x, int y, int width, int height, float scale) 
+    public TextureElement(Identifier textureID, int x, int y, int width, int height, float scaleX, float scaleY) 
     {
         this.textureID = textureID;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.scale = scale;
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
     }
 
     public void draw(DrawContext context) 
     {
         context.getMatrices().push();
         context.getMatrices().translate(x, y, 0);
-        context.getMatrices().scale(scale, scale, 1);
+        context.getMatrices().scale(scaleX, scaleY, 1);
         context.drawTexture(textureID, 0, 0, 0, 0, width, height, width, height);
         context.getMatrices().pop();
     }
@@ -66,27 +70,27 @@ public class TextureElement
     {
         context.getMatrices().push();
         context.getMatrices().translate(x, y, 0);
-        context.getMatrices().scale(scale, scale, 1);
+        context.getMatrices().scale(scaleX, scaleY, 1);
         context.drawTexture(textureID, 0, 0, rectX, rectY, width, height, rectWidth, rectHeight);
         context.getMatrices().pop();
     }
     
     public boolean isMouseOver(int mouseX, int mouseY) 
     {
-        int scaledWidth = (int) (width * scale);
-        int scaledHeight = (int) (height * scale);
+        int scaledWidth = (int) (width * scaleX);
+        int scaledHeight = (int) (height * scaleY);
         return mouseX >= x && mouseX < x + scaledWidth && mouseY >= y && mouseY < y + scaledHeight;
     }
     
     public void setToolTip(String tooltip) {
-    	this.tooltip = tooltip;
+        this.tooltip = tooltip;
     }
     
     public String getToolTip() {
-    	return this.tooltip;
+        return this.tooltip;
     }
 
-	public Identifier getTexture() {
-		return textureID;
-	}
+    public Identifier getTexture() {
+        return textureID;
+    }
 }
