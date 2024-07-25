@@ -158,7 +158,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	}
 
 	@Override
-	public void writeCustomDataToNbt(NbtCompound nbt) 
+	public void writeCustomDataToNbt(NbtCompound nbt)
 	{
 	    super.writeCustomDataToNbt(nbt);
 	    nbt.putUuid("UUID", this.uuid);

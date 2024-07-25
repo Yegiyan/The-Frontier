@@ -28,14 +28,14 @@ public class ArchitectEntity extends SettlerEntity
 	        new Identifier("frontier", "textures/entity/architect/architect_male_2.png"),
 	        };
 	
-	public static final Identifier[] ARCHITECT_TEXTURES_FEMALE = new Identifier[] 
+	public static final Identifier[] ARCHITECT_TEXTURES_FEMALE = new Identifier[]
 			{
 	        new Identifier("frontier", "textures/entity/architect/architect_female_0.png"),
 	        new Identifier("frontier", "textures/entity/architect/architect_female_1.png"),
 	        new Identifier("frontier", "textures/entity/architect/architect_female_2.png"),
 	        };
 	
-	public ArchitectEntity(EntityType<? extends PathAwareEntity> entityType, World world) 
+	public ArchitectEntity(EntityType<? extends PathAwareEntity> entityType, World world)
 	{
 	    super(entityType, world);
 	    if (!world.isClient)
@@ -45,13 +45,13 @@ public class ArchitectEntity extends SettlerEntity
 	}
 	
 	@Override
-	protected void initGoals() 
+	protected void initGoals()
 	{
 		super.initGoals();
 	}
 	
 	@Override
-	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, EntityData entityData, NbtCompound entityNbt) 
+	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, EntityData entityData, NbtCompound entityNbt)
 	{
 		entityData = super.initialize(world, difficulty, spawnReason, entityData, entityNbt);
 	    return entityData;
@@ -92,13 +92,13 @@ public class ArchitectEntity extends SettlerEntity
     }
 	
 	@Override
-	public void readCustomDataFromNbt(NbtCompound nbt) 
+	public void readCustomDataFromNbt(NbtCompound nbt)
 	{
 	    super.readCustomDataFromNbt(nbt);
 	}
 
 	@Override
-	public void writeCustomDataToNbt(NbtCompound nbt) 
+	public void writeCustomDataToNbt(NbtCompound nbt)
 	{
 	    super.writeCustomDataToNbt(nbt);
 	}

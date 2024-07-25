@@ -281,6 +281,14 @@ public class Settlement
 		this.settlers.add(settler);
 	}
 	
+	public SettlerEntity getSettlerByUUID(UUID uuid)
+	{
+        for (SettlerEntity settler : settlers)
+            if (settler.getUuid().equals(uuid))
+                return settler;
+        return null;
+    }
+	
 	public void removeSettler(UUID uuid) {
 	    settlers.removeIf(settler -> settler.getUuid().equals(uuid));
 	}

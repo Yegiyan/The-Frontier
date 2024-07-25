@@ -9,7 +9,6 @@ public class FrontierKeyBindings
 {
 	public static KeyBinding keyCharacterSheet;
 	public static KeyBinding keyToggleRegions;
-	public static KeyBinding keyToggleConstructionGUI;
 
     public static void register() 
     {
@@ -18,13 +17,6 @@ public class FrontierKeyBindings
                 InputUtil.Type.KEYSYM,    // KEYSYM = keyboard | MOUSE = mouse
                 GLFW.GLFW_KEY_G,          // default key
                 "The Frontier"            // category name
-        );
-        
-        keyToggleConstructionGUI = new KeyBinding(
-                "Toggle Construction GUI",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_B,
-                "The Frontier"
         );
         
         keyToggleRegions = new KeyBinding(

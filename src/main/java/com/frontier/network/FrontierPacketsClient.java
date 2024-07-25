@@ -2,10 +2,13 @@ package com.frontier.network;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.frontier.Frontier;
+import com.frontier.entities.settler.ArchitectEntity;
 import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.StructureScreen;
+import com.frontier.settlements.SettlementManager;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
@@ -37,6 +40,9 @@ public class FrontierPacketsClient
 		ClientPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_RESPONSE_ID, (client, handler, buf, responseSender) ->
 		{
 			int size = buf.readInt();
+			UUID settlerUUID = buf.readUuid();
+			String settlerFaction = buf.readString(32767);
+			
 			List<ItemStack> structureInventory = new ArrayList<>();
 			for (int i = 0; i < size; i++)
 			{
@@ -46,9 +52,11 @@ public class FrontierPacketsClient
 			    structureInventory.add(itemStack);
 			}
 		    
+			ArchitectEntity architect = (ArchitectEntity) SettlementManager.getSettlerByUUID(settlerFaction, settlerUUID);
+			
 		    client.execute(() ->
 		    {
-		        MinecraftClient.getInstance().setScreen(new StructureScreen(structureInventory));
+		        MinecraftClient.getInstance().setScreen(new StructureScreen(structureInventory, architect));
 		    });
 		});
 	}

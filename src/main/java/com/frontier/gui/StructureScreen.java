@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.frontier.PlayerData;
+import com.frontier.entities.settler.ArchitectEntity;
 import com.frontier.gui.util.CheckboxElement;
 import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextUtil.TextAlign;
@@ -201,7 +202,7 @@ public class StructureScreen extends Screen
     private Blueprint blueprint;
     
     private ButtonWidget buildButton;
-    private ButtonWidget blueprintPageButton, resourcesPageButton, upgradePageButton;
+    private ButtonWidget architectButton, blueprintPageButton, resourcesPageButton, upgradePageButton;
     private ButtonWidget coreButton, militiaButton, laboringButton, craftingButton, ranchingButton, artisanButton, customsButton, miscButton;
     private ButtonWidget barracksButton, watchTowerButton, bountyHallButton;
     private ButtonWidget townhallButton, warehouseButton, houseButton, roadButton, bridgeButton, wallButton;
@@ -240,15 +241,17 @@ public class StructureScreen extends Screen
     private Text upgradeText2;
     
     PlayerEntity player;
+    ArchitectEntity architect;
     int playerEmeralds;
     
-	public StructureScreen(List<ItemStack> structureInventory)
+	public StructureScreen(List<ItemStack> structureInventory, ArchitectEntity architect)
 	{
 		super(Text.literal("Structure Management Screen"));
 		this.page = Page.BLUEPRINT;
 		this.player = MinecraftClient.getInstance().player;
 		this.playerEmeralds = 0;
 		this.structureInventory = structureInventory;
+		this.architect = architect;
 	}
 
 	@Override
@@ -315,6 +318,7 @@ public class StructureScreen extends Screen
 		initializeBuildButton();
 		
         addDrawableChild(buildButton);
+        addDrawableChild(architectButton);
 		addDrawableChild(blueprintPageButton);
 		addDrawableChild(resourcesPageButton);
 		addDrawableChild(upgradePageButton);
@@ -322,25 +326,31 @@ public class StructureScreen extends Screen
 
 	private void initializeMainButtons()
 	{
+		architectButton = ButtonWidget.builder(Text.literal(architect.getSettlerFirstName()), button ->
+		{
+			MinecraftClient.getInstance().setScreen(new SettlerCardScreen(architect));
+		}).dimensions(backgroundPosX + 0, backgroundPosY - 25, 60, 20).build();
+		architectButton.active = true;
+		
 		blueprintPageButton = ButtonWidget.builder(Text.literal("Blueprints"), button ->
 		{
 			page = Page.BLUEPRINT;
 			updateButtons();
-		}).dimensions(backgroundPosX + 0, backgroundPosY - 25, 70, 20).build();
+		}).dimensions(backgroundPosX + 62, backgroundPosY - 25, 60, 20).build();
 		blueprintPageButton.active = true;
 		
 		resourcesPageButton = ButtonWidget.builder(Text.literal("Resources"), button ->
 		{
 			page = Page.RESOURCES;
 			updateButtons();
-		}).dimensions(backgroundPosX + 89, backgroundPosY - 25, 70, 20).build();
+		}).dimensions(backgroundPosX + 126, backgroundPosY - 25, 60, 20).build();
 		resourcesPageButton.active = true;
 		
 		upgradePageButton = ButtonWidget.builder(Text.literal("Upgrade"), button ->
 		{
 			page = Page.UPGRADE;
 			updateButtons();
-		}).dimensions(backgroundPosX + 178, backgroundPosY - 25, 70, 20).build();
+		}).dimensions(backgroundPosX + 188, backgroundPosY - 25, 60, 20).build();
 		upgradePageButton.active = true;
 	}
 
@@ -471,7 +481,7 @@ public class StructureScreen extends Screen
 	private void setupUpgradePage()
 	{
 		upgradeText1 = Text.literal("UPGRADE BUILDING").formatted(Formatting.BOLD);
-		upgradeText2 = Text.literal("Each building has 5 upgradeable tiers (0-4). Upgrades cannot surpass the tier of the Town Hall by more than 1. Buildings cannot be upgraded if they currently require repairs.");
+		upgradeText2 = Text.literal("Each building has 5 upgradeable tiers (0-4). Upgrades cannot surpass the tier of the Town Hall by more than 1. Buildings cannot be upgraded if they require repairs.");
 		blueprint = Blueprint.NONE;
 		initializeUpgradePageButtons();
 	}
@@ -956,9 +966,9 @@ public class StructureScreen extends Screen
 	private void renderUpgradePage(DrawContext context, int mouseX, int mouseY)
 	{
 		TextUtil.drawText(context, textRenderer, upgradeText1, backgroundPosX + 76, backgroundPosY + 22, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
-		TextUtil.drawText(context, textRenderer, upgradeText2, backgroundPosX + 125, backgroundPosY + 50, new Color(255, 255, 255).getRGB(), true, true, 220, TextAlign.CENTER);
+		TextUtil.drawText(context, textRenderer, upgradeText2, backgroundPosX + 125, backgroundPosY + 50, new Color(255, 255, 255).getRGB(), true, true, 225, TextAlign.CENTER);
 		
-		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 105), 0, 0, 225, 2, 32, 2);
+		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 95), 0, 0, 225, 2, 32, 2);
 
         for (TextureElement element : rectTextures)
 		{
@@ -1236,7 +1246,7 @@ public class StructureScreen extends Screen
 			int scrollbarHeight = Math.max(SCROLLBAR_HEIGHT * visibleItems / totalItems, 10); // minimum scrollbar height
 			int scrollbarX = backgroundPosX + 242;
 			int scrollbarY = backgroundPosY + 95 + (SCROLLBAR_HEIGHT - scrollbarHeight) * scrollOffset / maxScroll;
-			context.fill(scrollbarX, scrollbarY, scrollbarX + SCROLLBAR_WIDTH, scrollbarY + scrollbarHeight, new Color(170, 170, 170).getRGB());
+			context.fill(scrollbarX, scrollbarY, scrollbarX + SCROLLBAR_WIDTH, scrollbarY + scrollbarHeight, new Color(145, 145, 145).getRGB());
 		}
 	}
     
@@ -1654,6 +1664,14 @@ public class StructureScreen extends Screen
 		}
 		return super.mouseClicked(mouseX, mouseY, button);
 	}
+	
+	@Override
+    public void tick()
+    {
+        super.tick();
+        if (this.architect.isDead() || !this.architect.isAlive() || this.architect.isRemoved())
+        	MinecraftClient.getInstance().setScreen(null);
+    }
     
     @Override
     public boolean shouldPause() 

@@ -742,6 +742,14 @@ public class SettlementManager
         return "Uncontested";
     }
 	
+	public static SettlerEntity getSettlerByUUID(String settlementName, UUID uuid)
+	{
+        Settlement settlement = settlements.get(settlementName);
+        if (settlement != null)
+            return settlement.getSettlerByUUID(uuid);
+        return null;
+    }
+	
     public static Map<String, Settlement> getSettlements() {
         return settlements;
     }

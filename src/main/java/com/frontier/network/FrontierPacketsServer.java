@@ -59,15 +59,21 @@ public class FrontierPacketsServer
 		
 		ServerPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_REQUEST_ID, (server, player, handler, buf, responseSender) ->
 		{
+			UUID settlerUUID = buf.readUuid();
+            String settlerFaction = buf.readString(32767);
+            
 			server.execute(() ->
 			{
 				PlayerData playerData = PlayerData.players.get(player.getUuid());
 				if (playerData != null)
 				{
 					List<ItemStack> structureInventory = SettlementManager.getSettlement(playerData.getFaction()).getStructureByName("townhall").getStructureInventory(player.getServer().getOverworld());
-
+					
 					PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
 					buffer.writeInt(structureInventory.size());
+					buffer.writeUuid(settlerUUID);
+					buffer.writeString(settlerFaction);
+					
 					for (ItemStack itemStack : structureInventory)
 					{
 						buffer.writeItemStack(itemStack);

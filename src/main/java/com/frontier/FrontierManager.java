@@ -1,12 +1,8 @@
 package com.frontier;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import com.frontier.entities.settler.SettlerEntity;
-import com.frontier.gui.StructureScreen;
-import com.frontier.network.FrontierPacketsServer;
 import com.frontier.gui.PlayerCardScreen;
 import com.frontier.regions.RegionManager;
 import com.frontier.register.FrontierKeyBindings;
@@ -15,14 +11,10 @@ import com.frontier.settlements.Settlement;
 import com.frontier.settlements.SettlementManager;
 import com.frontier.structures.Structure;
 
-import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
@@ -105,15 +97,11 @@ public class FrontierManager
 		FrontierKeyBindings.register();
         KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.keyCharacterSheet);
         KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.keyToggleRegions);
-        KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.keyToggleConstructionGUI);
         
         ClientTickEvents.END_CLIENT_TICK.register(client -> 
         {
             while (FrontierKeyBindings.keyCharacterSheet.wasPressed())
                 client.setScreen(new PlayerCardScreen());
-            
-            while (FrontierKeyBindings.keyToggleConstructionGUI.wasPressed())
-            	ClientPlayNetworking.send(FrontierPacketsServer.SETTLEMENT_RESOURCES_REQUEST_ID, new PacketByteBuf(Unpooled.buffer()));
             
             while (FrontierKeyBindings.keyToggleRegions.wasPressed())
                 RegionMapRenderer.isRenderingEnabled = !RegionMapRenderer.isRenderingEnabled;

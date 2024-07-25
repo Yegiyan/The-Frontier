@@ -8,14 +8,19 @@ import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextureElement;
 import com.frontier.gui.util.TextUtil.TextAlign;
+import com.frontier.network.FrontierPacketsServer;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 
+import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -49,6 +54,7 @@ public class SettlerCardScreen extends Screen
 
     private ButtonWidget cardButton;
     private ButtonWidget taskButton;
+    private ButtonWidget architectButton;
     private boolean toggleMenu = false;
 
     MinecraftProfileTexture portrait;
@@ -109,6 +115,18 @@ public class SettlerCardScreen extends Screen
 
         this.cardButton = ButtonWidget.builder(Text.literal(settler.getSettlerFirstName()), button -> { toggleMenu = false; }).dimensions(backgroundPosX + 0, backgroundPosY - 25, 80, 20).build();
         this.taskButton = ButtonWidget.builder(Text.literal("Task List"), button -> { toggleMenu = true; }).dimensions(backgroundPosX + 168, backgroundPosY - 25, 80, 20).build();
+        
+        if (settler.getSettlerProfession().equals("Architect"))
+        {
+        	this.architectButton = ButtonWidget.builder(Text.literal("Architect"), button ->
+        	{
+        		PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+        		passedData.writeUuid(settler.getUuid());
+                passedData.writeString(settler.getSettlerFaction());
+        		ClientPlayNetworking.send(FrontierPacketsServer.SETTLEMENT_RESOURCES_REQUEST_ID, passedData);
+        	}).dimensions(backgroundPosX + 84, backgroundPosY - 25, 80, 20).build();
+        	addDrawableChild(architectButton);
+        }
 
         addDrawableChild(cardButton);
         addDrawableChild(taskButton);
@@ -160,17 +178,17 @@ public class SettlerCardScreen extends Screen
             context.drawText(this.textRenderer, nameText, (backgroundPosX + 35), (backgroundPosY + 22), new Color(255, 255, 255).getRGB(), true);
             TextUtil.drawText(context, textRenderer, professionText, backgroundPosX + 212, backgroundPosY + 22, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.RIGHT);
             
+            drawBar(context, backgroundPosX + 29, backgroundPosY + 50, settler.getHealth() / 20.0f, 4);
+            drawBar(context, backgroundPosX + 29, backgroundPosY + 60, settler.getSettlerHunger() / 100.0f, 12);
+            drawBar(context, backgroundPosX + 29, backgroundPosY + 70, settler.getSettlerMorale() / 100.0f, 8);
+            drawBar(context, backgroundPosX + 29, backgroundPosY + 80, settler.getSettlerSkill() / 100.0f, 6);
+            
             context.drawText(this.textRenderer, healthText, (backgroundPosX + 218), (backgroundPosY + 49), new Color(65, 65, 65).getRGB(), false);
             context.drawText(this.textRenderer, hungerText, (backgroundPosX + 218), (backgroundPosY + 59), new Color(65, 65, 65).getRGB(), false);
             context.drawText(this.textRenderer, moraleText, (backgroundPosX + 218), (backgroundPosY + 69), new Color(65, 65, 65).getRGB(), false);
             context.drawText(this.textRenderer, skillText, (backgroundPosX + 218), (backgroundPosY + 79), new Color(65, 65, 65).getRGB(), false);
             
             context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 93), 0, 0, 225, 2, 32, 2);
-            
-            drawBar(context, backgroundPosX + 29, backgroundPosY + 50, settler.getHealth() / 20.0f, 4);
-            drawBar(context, backgroundPosX + 29, backgroundPosY + 60, settler.getSettlerHunger() / 100.0f, 12);
-            drawBar(context, backgroundPosX + 29, backgroundPosY + 70, settler.getSettlerMorale() / 100.0f, 8);
-            drawBar(context, backgroundPosX + 29, backgroundPosY + 80, settler.getSettlerSkill() / 100.0f, 6);
         }
 
         super.render(context, mouseX, mouseY, delta);
@@ -193,6 +211,14 @@ public class SettlerCardScreen extends Screen
         
         context.drawTexture(BARS_TEXTURE, x, y, 0, 5 * barIndex, 182, barHeight);
         context.drawTexture(BARS_TEXTURE, x, y, 0, 5 * (barIndex + 1), barWidth, barHeight);
+    }
+
+    @Override
+    public void tick()
+    {
+        super.tick();
+        if (this.settler.isDead() || !this.settler.isAlive() || this.settler.isRemoved())
+        	MinecraftClient.getInstance().setScreen(null);
     }
 
     @Override
