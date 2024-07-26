@@ -47,7 +47,7 @@ public class TerritoryRenderer
 				if (playerData.getProfession().equals("Leader") && SettlementManager.getSettlement(playerData.getFaction()) != null)
 				{
 					Set<ChunkPos> territory = SettlementManager.getSettlement(playerData.getFaction()).getTerritory();
-					TerritoryRenderer.drawTerritoryEdge(client, matrixStack, client.player, playerData,  territory);
+					drawTerritoryEdge(client, matrixStack, client.player, playerData, territory);
 				}
 			}
 		});
@@ -68,6 +68,17 @@ public class TerritoryRenderer
 
 		int[] yLevels = { leaderPos.getY() - 3, leaderPos.getY() - 2, leaderPos.getY() - 1, leaderPos.getY(), leaderPos.getY() + 1, leaderPos.getY() + 2, leaderPos.getY() + 3 };
 
+		RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+		RenderSystem.setShaderTexture(0, FORCEFIELD_TEXTURE);
+		RenderSystem.enableBlend();
+		RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
+		RenderSystem.setShaderColor(convertRGB(R), convertRGB(G), convertRGB(B), A);
+
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder buffer = tessellator.getBuffer();
+		long gameTime = client.world.getTime();
+		float textureOffset = (gameTime % 1000) / SCROLL_SPEED;
+
 		for (int y : yLevels)
 		{
 			for (int x = minX; x <= maxX; x++)
@@ -79,107 +90,98 @@ public class TerritoryRenderer
 					if (isEdge && isWithinRange)
 					{
 						BlockPos pos = new BlockPos(x, y, z);
-						Direction direction = Direction.NORTH;
-
-						if (x == minX)
-							direction = Direction.WEST;
-						else if (x == maxX)
-							direction = Direction.EAST;
-						else if (z == minZ)
-							direction = Direction.NORTH;
-						else if (z == maxZ)
-							direction = Direction.SOUTH;
-
-						TerritoryRenderer.drawForcefield(matrixStack, client, pos, direction); // Red color with 50% opacity
-
-						// draw extra texture to connect corners
+						Direction direction = getDirection(minX, maxX, minZ, maxZ, x, z);
+						drawForcefield(matrixStack, buffer, tessellator, client, pos, direction, textureOffset, 0.0f, 0.0f);
 						if ((x == minX || x == maxX) && (z == minZ || z == maxZ))
-							drawCorner(matrixStack, client, pos, x == minX, z == minZ);
+						{
+							drawCorner(matrixStack, buffer, tessellator, client, pos, x == minX, z == minZ, textureOffset, 0.0f, 0.0f);
+						}
 					}
 				}
 			}
 		}
+
+		RenderSystem.disableBlend();
+		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
-	private static void drawCorner(MatrixStack matrixStack, MinecraftClient client, BlockPos pos, boolean isMinX, boolean isMinZ)
+	private static Direction getDirection(int minX, int maxX, int minZ, int maxZ, int x, int z)
 	{
-		Direction direction = null;
-
-		if (isMinX && isMinZ)
-			direction = Direction.NORTH; // Top-left corner if facing North and West.
-		else if (isMinX && !isMinZ)
-			direction = Direction.SOUTH; // Bottom-left corner if facing South and West.
-		else if (!isMinX && isMinZ)
-			direction = Direction.NORTH; // Top-right corner if facing North and East.
-		else if (!isMinX && !isMinZ)
-			direction = Direction.SOUTH; // Bottom-right corner if facing South and East.
-
-		TerritoryRenderer.drawForcefield(matrixStack, client, pos, direction);
+		if (x == minX)
+			return Direction.WEST;
+		if (x == maxX)
+			return Direction.EAST;
+		if (z == minZ)
+			return Direction.NORTH;
+		if (z == maxZ)
+			return Direction.SOUTH;
+		return Direction.NORTH;
 	}
 
-	public static void drawForcefield(MatrixStack matrixStack, MinecraftClient client, BlockPos pos, Direction direction)
+	private static void drawCorner(MatrixStack matrixStack, BufferBuilder buffer, Tessellator tessellator, MinecraftClient client, BlockPos pos, boolean isMinX, boolean isMinZ, float textureOffset, float textureOffsetX, float textureOffsetY)
 	{
-		RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-		RenderSystem.setShaderTexture(0, FORCEFIELD_TEXTURE);
+		Direction direction = (isMinX ? (isMinZ ? Direction.NORTH : Direction.SOUTH) : (isMinZ ? Direction.NORTH : Direction.SOUTH));
+		drawForcefield(matrixStack, buffer, tessellator, client, pos, direction, textureOffset, textureOffsetX, textureOffsetY);
+	}
 
-		RenderSystem.enableBlend();
-		RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-
-		RenderSystem.setShaderColor(convertRGB(R), convertRGB(G), convertRGB(B), A);
+	public static void drawForcefield(MatrixStack matrixStack, BufferBuilder buffer, Tessellator tessellator, MinecraftClient client, BlockPos pos, Direction direction, float textureOffset, float textureOffsetX, float textureOffsetY)
+	{
+		double interpolatedX = client.player.prevX + (client.player.getX() - client.player.prevX) * client.getTickDelta();
+		double interpolatedY = client.player.prevY + (client.player.getY() - client.player.prevY) * client.getTickDelta();
+		double interpolatedZ = client.player.prevZ + (client.player.getZ() - client.player.prevZ) * client.getTickDelta();
 
 		matrixStack.push();
-		matrixStack.translate(pos.getX() - client.player.getX(), pos.getY() - client.player.getY(), pos.getZ() - client.player.getZ());
+		matrixStack.translate(pos.getX() - interpolatedX, pos.getY() - interpolatedY, pos.getZ() - interpolatedZ);
 		Matrix4f matrix = matrixStack.peek().getPositionMatrix();
 
 		float size = 1f;
-
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder buffer = tessellator.getBuffer();
-
 		buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
 
-		long gameTime = client.world.getTime();
 		switch (direction)
 		{
-		case NORTH:
-			drawQuad(buffer, matrix, 0, 0, 0, size, 0, 0, size, size, 0, 0, size, 0, gameTime, true);
-			drawQuad(buffer, matrix, 0, size, 0, size, size, 0, size, 0, 0, 0, 0, 0, gameTime, true);
-			break;
-		case SOUTH:
-			drawQuad(buffer, matrix, 0, 0, size, size, 0, size, size, size, size, 0, size, size, gameTime, false);
-			drawQuad(buffer, matrix, 0, size, size, size, size, size, size, 0, size, 0, 0, size, gameTime, false);
-			break;
-		case WEST:
-			drawQuad(buffer, matrix, 0, 0, 0, 0, 0, size, 0, size, size, 0, size, 0, gameTime, false);
-			drawQuad(buffer, matrix, 0, size, 0, 0, size, size, 0, 0, size, 0, 0, 0, gameTime, false);
-			break;
-		case EAST:
-			drawQuad(buffer, matrix, size, 0, 0, size, 0, size, size, size, size, size, size, 0, gameTime, true);
-			drawQuad(buffer, matrix, size, size, 0, size, size, size, size, 0, size, size, 0, 0, gameTime, true);
-			break;
-		default:
-			Frontier.LOGGER.error("TerritoryRenderer - quad direction not found!");
-			break;
+		case NORTH ->
+		{
+			drawQuad(buffer, matrix, 0, 0, 0, size, 0, 0, size, size, 0, 0, size, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
+			drawQuad(buffer, matrix, 0, size, 0, size, size, 0, size, 0, 0, 0, 0, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
+		}
+		case SOUTH ->
+		{
+			drawQuad(buffer, matrix, 0, 0, size, size, 0, size, size, size, size, 0, size, size, textureOffset, textureOffsetX, textureOffsetY, false);
+			drawQuad(buffer, matrix, 0, size, size, size, size, size, size, 0, size, 0, 0, size, textureOffset, textureOffsetX, textureOffsetY, false);
+		}
+		case WEST ->
+		{
+			drawQuad(buffer, matrix, 0, 0, 0, 0, 0, size, 0, size, size, 0, size, 0, textureOffset, textureOffsetX, textureOffsetY, false);
+			drawQuad(buffer, matrix, 0, size, 0, 0, size, size, 0, 0, size, 0, 0, 0, textureOffset, textureOffsetX, textureOffsetY, false);
+		}
+		case EAST ->
+		{
+			drawQuad(buffer, matrix, size, 0, 0, size, 0, size, size, size, size, size, size, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
+			drawQuad(buffer, matrix, size, size, 0, size, size, size, size, 0, size, size, 0, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
+		}
+		default -> Frontier.LOGGER.error("TerritoryRenderer - quad direction not found!");
 		}
 
 		tessellator.draw();
 		matrixStack.pop();
-
-		RenderSystem.disableBlend();
-		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f); // reset to default color (else hand & held items become RGB'd)
 	}
 
-	private static void drawQuad(BufferBuilder buffer, Matrix4f matrix, float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3, float x4, float y4, float z4,
-			float time, boolean reverse)
+	private static void drawQuad(BufferBuilder buffer, Matrix4f matrix, float x1, float y1, float z1, float x2, float y2, float z2, float x3, float y3, float z3, float x4, float y4, float z4, float textureOffset, float textureOffsetX, float textureOffsetY, boolean flipTexture)
 	{
-		float textureOffset = (time % 1000) / SCROLL_SPEED;
-		if (reverse)
-			textureOffset = -textureOffset;
-
-		buffer.vertex(matrix, x1, y1, z1).texture(0 + textureOffset, 0 + textureOffset).next();
-		buffer.vertex(matrix, x2, y2, z2).texture(1 + textureOffset, 0 + textureOffset).next();
-		buffer.vertex(matrix, x3, y3, z3).texture(1 + textureOffset, 1 + textureOffset).next();
-		buffer.vertex(matrix, x4, y4, z4).texture(0 + textureOffset, 1 + textureOffset).next();
+		if (flipTexture)
+		{
+			buffer.vertex(matrix, x1, y1, z1).texture(textureOffsetX + 1 - textureOffset, textureOffsetY + 1 - textureOffset).next();
+			buffer.vertex(matrix, x2, y2, z2).texture(textureOffsetX + 0 - textureOffset, textureOffsetY + 1 - textureOffset).next();
+			buffer.vertex(matrix, x3, y3, z3).texture(textureOffsetX + 0 - textureOffset, textureOffsetY + 0 - textureOffset).next();
+			buffer.vertex(matrix, x4, y4, z4).texture(textureOffsetX + 1 - textureOffset, textureOffsetY + 0 - textureOffset).next();
+		}
+		else
+		{
+			buffer.vertex(matrix, x1, y1, z1).texture(textureOffsetX + 0 + textureOffset, textureOffsetY + 0 + textureOffset).next();
+			buffer.vertex(matrix, x2, y2, z2).texture(textureOffsetX + 1 + textureOffset, textureOffsetY + 0 + textureOffset).next();
+			buffer.vertex(matrix, x3, y3, z3).texture(textureOffsetX + 1 + textureOffset, textureOffsetY + 1 + textureOffset).next();
+			buffer.vertex(matrix, x4, y4, z4).texture(textureOffsetX + 0 + textureOffset, textureOffsetY + 1 + textureOffset).next();
+		}
 	}
 
 	public static float convertRGB(float color)
