@@ -194,14 +194,14 @@ public class PlayerCardScreen extends Screen
 	{
 		if (player.getWorld().getRegistryKey().equals(World.OVERWORLD))
 		{
-			String territory = SettlementManager.getSettlementTerritory(player.getBlockPos());
+			String territory = SettlementManager.getSettlementTerritoryName(player.getBlockPos());
 			if (SettlementManager.settlementExists(territory))
 			{
 				int playerReputation = playerData.getReputation(territory);
 				territoryText = getFormattedTerritoryText(playerData, territory, playerReputation);
 			}
 			else
-				territoryText = Text.literal(SettlementManager.getSettlementTerritory(player.getBlockPos())).formatted(Formatting.WHITE);
+				territoryText = Text.literal(SettlementManager.getSettlementTerritoryName(player.getBlockPos())).formatted(Formatting.WHITE);
 		}
 		else if (player.getWorld().getRegistryKey().equals(World.NETHER))
 			territoryText = Text.literal("§kNether");

@@ -118,7 +118,7 @@ public class SettlerCardScreen extends Screen
         
         if (settler.getSettlerProfession().equals("Architect"))
         {
-        	this.architectButton = ButtonWidget.builder(Text.literal("Architect"), button ->
+        	this.architectButton = ButtonWidget.builder(Text.literal("Profession"), button ->
         	{
         		PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
         		passedData.writeUuid(settler.getUuid());

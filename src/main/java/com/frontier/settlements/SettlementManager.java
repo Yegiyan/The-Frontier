@@ -730,7 +730,7 @@ public class SettlementManager
         }
     }
     
-	public static String getSettlementTerritory(BlockPos pos)
+	public static String getSettlementTerritoryName(BlockPos pos)
 	{
         for (Map.Entry<String, Settlement> entry : settlements.entrySet())
         {

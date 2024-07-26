@@ -329,28 +329,28 @@ public class StructureScreen extends Screen
 		architectButton = ButtonWidget.builder(Text.literal(architect.getSettlerFirstName()), button ->
 		{
 			MinecraftClient.getInstance().setScreen(new SettlerCardScreen(architect));
-		}).dimensions(backgroundPosX + 0, backgroundPosY - 25, 60, 20).build();
+		}).dimensions(backgroundPosX + 0, backgroundPosY - 25, 61, 20).build();
 		architectButton.active = true;
 		
 		blueprintPageButton = ButtonWidget.builder(Text.literal("Blueprints"), button ->
 		{
 			page = Page.BLUEPRINT;
 			updateButtons();
-		}).dimensions(backgroundPosX + 62, backgroundPosY - 25, 60, 20).build();
+		}).dimensions(backgroundPosX + 62, backgroundPosY - 25, 61, 20).build();
 		blueprintPageButton.active = true;
 		
 		resourcesPageButton = ButtonWidget.builder(Text.literal("Resources"), button ->
 		{
 			page = Page.RESOURCES;
 			updateButtons();
-		}).dimensions(backgroundPosX + 126, backgroundPosY - 25, 60, 20).build();
+		}).dimensions(backgroundPosX + 125, backgroundPosY - 25, 61, 20).build();
 		resourcesPageButton.active = true;
 		
 		upgradePageButton = ButtonWidget.builder(Text.literal("Upgrade"), button ->
 		{
 			page = Page.UPGRADE;
 			updateButtons();
-		}).dimensions(backgroundPosX + 188, backgroundPosY - 25, 60, 20).build();
+		}).dimensions(backgroundPosX + 187, backgroundPosY - 25, 61, 20).build();
 		upgradePageButton.active = true;
 	}
 
