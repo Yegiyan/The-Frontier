@@ -233,16 +233,6 @@ public class SettlementManager
 		
 		saveSettlements(server);
 	}
-    
-	public static void drawSettlementBorder(MinecraftServer server)
-	{
-		for (Map.Entry<String, Settlement> entry : settlements.entrySet())
-        {
-            Settlement settlement = entry.getValue();
-            if (settlement.isLeaderHoldingClock(server))
-            	settlement.drawTerritoryEdge(server);
-        }
-	}
 	
 	public static void saveSettlements(MinecraftServer server)
 	{

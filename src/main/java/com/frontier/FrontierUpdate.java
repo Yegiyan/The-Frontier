@@ -9,9 +9,7 @@ public class FrontierUpdate
 {
 	// intervals in seconds
 	private static final int playerRepInterval = 5;
-	private static final int borderDrawInterval = 1;
 	private static int repTickCounter = 0;
-	private static int borderTickCounter = 0;
 	
 	public static void worldEvents()
 	{
@@ -25,13 +23,6 @@ public class FrontierUpdate
 	        {
 	            repTickCounter = 0;
 	            SettlementManager.updatePlayerReputations(server);
-	        }
-
-	        borderTickCounter++;
-	        if (borderTickCounter >= (20 * borderDrawInterval))
-	        {
-	            borderTickCounter = 0;
-	            SettlementManager.drawSettlementBorder(server);
 	        }
 	    });
 	}

@@ -15,8 +15,6 @@ import com.frontier.structures.TownHall;
 import com.frontier.structures.Warehouse;
 
 import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -154,45 +152,6 @@ public class Settlement
         boolean isOffHandClock = leaderPlayer.getOffHandStack().getItem() == Items.CLOCK;
         
         return isMainHandClock || isOffHandClock;
-    }
-    
-    public void drawTerritoryEdge(MinecraftServer server)
-    {
-        ServerWorld world = server.getOverworld();
-        ServerPlayerEntity leader = (ServerPlayerEntity) world.getPlayerByUuid(this.leader);
-
-        if (leader == null)
-            return;
-
-        BlockPos leaderPos = leader.getBlockPos();
-        final int visibilityBlockRange = 24;
-
-        // calculate territory bounds
-        int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
-        for (ChunkPos chunkPos : this.territory)
-        {
-            minX = Math.min(minX, chunkPos.getStartX());
-            minZ = Math.min(minZ, chunkPos.getStartZ());
-            maxX = Math.max(maxX, chunkPos.getEndX() + 1);
-            maxZ = Math.max(maxZ, chunkPos.getEndZ() + 1);
-        }
-
-        // iterate over the bounding box of the territory
-        ParticleEffect particleEffect = ParticleTypes.HAPPY_VILLAGER;
-        for (int x = minX; x <= maxX; x++)
-        {
-            for (int z = minZ; z <= maxZ; z++)
-            {
-                boolean isEdge = x == minX || x == maxX || z == minZ || z == maxZ;
-                boolean isWithinRange = Math.abs(leaderPos.getX() - x) <= visibilityBlockRange && Math.abs(leaderPos.getZ() - z) <= visibilityBlockRange;
-                if (isEdge && isWithinRange)
-                {
-                	world.spawnParticles(particleEffect, x, leaderPos.getY() + 0, z, 1, 0, 0, 0, 0.1);
-                	world.spawnParticles(particleEffect, x, leaderPos.getY() + 1, z, 1, 0, 0, 0, 0.1);
-                	world.spawnParticles(particleEffect, x, leaderPos.getY() + 2, z, 1, 0, 0, 0, 0.1);
-                }
-            }
-        }
     }
     
     public void expandTerritory(ChunkPos chunk) {

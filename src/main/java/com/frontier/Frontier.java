@@ -21,10 +21,9 @@ public class Frontier implements ModInitializer
 	public static String MOD_ID = "frontier";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	
-	// optimize territory border rendering
 	// display name above npc heads
 	// display their current goal below name(?)
-	// create blueprint items (warehouse & house)
+	// create blueprint items (townhall, warehouse, & house)
 	// show tier 0 dimensions of structure to player when they try to manually place
 	
 	// architect:

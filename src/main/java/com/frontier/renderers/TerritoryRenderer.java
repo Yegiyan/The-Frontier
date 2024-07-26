@@ -44,7 +44,7 @@ public class TerritoryRenderer
 			if (client.player != null)
 			{
 				PlayerData playerData = PlayerData.players.get(client.player.getUuid());
-				if (playerData.getProfession().equals("Leader") && SettlementManager.getSettlement(playerData.getFaction()) != null)
+				if (playerData.getProfession().equals("Leader") && SettlementManager.getSettlement(playerData.getFaction()) != null && SettlementManager.getSettlement(playerData.getFaction()).isLeaderHoldingClock(client.getServer()))
 				{
 					Set<ChunkPos> territory = SettlementManager.getSettlement(playerData.getFaction()).getTerritory();
 					drawTerritoryEdge(client, matrixStack, client.player, playerData, territory);
@@ -93,9 +93,7 @@ public class TerritoryRenderer
 						Direction direction = getDirection(minX, maxX, minZ, maxZ, x, z);
 						drawForcefield(matrixStack, buffer, tessellator, client, pos, direction, textureOffset, 0.0f, 0.0f);
 						if ((x == minX || x == maxX) && (z == minZ || z == maxZ))
-						{
 							drawCorner(matrixStack, buffer, tessellator, client, pos, x == minX, z == minZ, textureOffset, 0.0f, 0.0f);
-						}
 					}
 				}
 			}
@@ -139,27 +137,27 @@ public class TerritoryRenderer
 
 		switch (direction)
 		{
-		case NORTH ->
-		{
-			drawQuad(buffer, matrix, 0, 0, 0, size, 0, 0, size, size, 0, 0, size, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
-			drawQuad(buffer, matrix, 0, size, 0, size, size, 0, size, 0, 0, 0, 0, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
-		}
-		case SOUTH ->
-		{
-			drawQuad(buffer, matrix, 0, 0, size, size, 0, size, size, size, size, 0, size, size, textureOffset, textureOffsetX, textureOffsetY, false);
-			drawQuad(buffer, matrix, 0, size, size, size, size, size, size, 0, size, 0, 0, size, textureOffset, textureOffsetX, textureOffsetY, false);
-		}
-		case WEST ->
-		{
-			drawQuad(buffer, matrix, 0, 0, 0, 0, 0, size, 0, size, size, 0, size, 0, textureOffset, textureOffsetX, textureOffsetY, false);
-			drawQuad(buffer, matrix, 0, size, 0, 0, size, size, 0, 0, size, 0, 0, 0, textureOffset, textureOffsetX, textureOffsetY, false);
-		}
-		case EAST ->
-		{
-			drawQuad(buffer, matrix, size, 0, 0, size, 0, size, size, size, size, size, size, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
-			drawQuad(buffer, matrix, size, size, 0, size, size, size, size, 0, size, size, 0, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
-		}
-		default -> Frontier.LOGGER.error("TerritoryRenderer - quad direction not found!");
+			case NORTH ->
+			{
+				drawQuad(buffer, matrix, 0, 0, 0, size, 0, 0, size, size, 0, 0, size, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
+				drawQuad(buffer, matrix, 0, size, 0, size, size, 0, size, 0, 0, 0, 0, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
+			}
+			case SOUTH ->
+			{
+				drawQuad(buffer, matrix, 0, 0, size, size, 0, size, size, size, size, 0, size, size, textureOffset, textureOffsetX, textureOffsetY, false);
+				drawQuad(buffer, matrix, 0, size, size, size, size, size, size, 0, size, 0, 0, size, textureOffset, textureOffsetX, textureOffsetY, false);
+			}
+			case WEST ->
+			{
+				drawQuad(buffer, matrix, 0, 0, 0, 0, 0, size, 0, size, size, 0, size, 0, textureOffset, textureOffsetX, textureOffsetY, false);
+				drawQuad(buffer, matrix, 0, size, 0, 0, size, size, 0, 0, size, 0, 0, 0, textureOffset, textureOffsetX, textureOffsetY, false);
+			}
+			case EAST ->
+			{
+				drawQuad(buffer, matrix, size, 0, 0, size, 0, size, size, size, size, size, size, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
+				drawQuad(buffer, matrix, size, size, 0, size, size, size, size, 0, size, size, 0, 0, -textureOffset, textureOffsetX, textureOffsetY, true);
+			}
+			default -> Frontier.LOGGER.error("TerritoryRenderer - quad direction not found!");
 		}
 
 		tessellator.draw();
