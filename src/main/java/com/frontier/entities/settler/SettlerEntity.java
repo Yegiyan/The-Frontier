@@ -612,10 +612,6 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
         return false;
     }
     
-    public boolean isNomad() {
-    	return getSettlerFaction().equalsIgnoreCase("N/A");
-    }
-    
 	@Override
 	public Text getName()
 	{
@@ -649,6 +645,10 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	    this.dataTracker.set(SETTLER_LAST_NAME, name);
 	}
 
+	public boolean isNomad() {
+    	return getSettlerFaction().equalsIgnoreCase("N/A");
+    }
+	
 	public String getSettlerFaction() {
 	    return this.dataTracker.get(SETTLER_FACTION);
 	}

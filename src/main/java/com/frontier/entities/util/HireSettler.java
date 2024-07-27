@@ -1,10 +1,11 @@
-package com.frontier.entities.settler;
+package com.frontier.entities.util;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import com.frontier.entities.settler.ArchitectEntity;
 import com.frontier.settlements.SettlementManager;
 
 import net.minecraft.entity.EntityData;

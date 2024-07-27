@@ -6,9 +6,9 @@ import java.util.UUID;
 import com.frontier.Frontier;
 import com.frontier.PlayerData;
 import com.frontier.entities.settler.ArchitectEntity;
-import com.frontier.entities.settler.HireSettler;
 import com.frontier.entities.settler.NomadEntity;
 import com.frontier.entities.settler.SettlerEntity;
+import com.frontier.entities.util.HireSettler;
 import com.frontier.register.FrontierEntities;
 import com.frontier.settlements.SettlementManager;
 

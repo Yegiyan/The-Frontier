@@ -1,9 +1,10 @@
-package com.frontier.entities.settler;
+package com.frontier.entities.util;
 
 import java.util.Random;
 import java.util.Set;
 
-import com.frontier.entities.util.SettlerName;
+import com.frontier.entities.settler.NomadEntity;
+import com.frontier.entities.settler.SettlerEntity;
 
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.SpawnReason;
