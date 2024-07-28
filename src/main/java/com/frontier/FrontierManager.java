@@ -21,90 +21,110 @@ import net.minecraft.world.World;
 
 public class FrontierManager
 {
-	public static void entityData()
+
+	public static void registerEvents()
 	{
-		ServerLifecycleEvents.SERVER_STARTED.register(server -> 
-		{
-	        ServerWorld world = server.getWorld(World.OVERWORLD);
-	        if (world != null && !world.isClient)
-	            SettlerEntity.loadEntityData(world);
-	    });
+		registerEntityData();
+		registerPlayerData();
+		registerSettlementData();
+		registerRegionData();
+		registerKeyBindings();
 	}
-	
-	public static void playerData()
+
+	private static void registerEntityData()
+	{
+		ServerLifecycleEvents.SERVER_STARTED.register(server ->
+		{
+			ServerWorld world = server.getWorld(World.OVERWORLD);
+			if (world != null && !world.isClient)
+			{
+				SettlerEntity.loadEntityData(world);
+			}
+		});
+	}
+
+	private static void registerPlayerData()
 	{
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
 		{
-		    ServerPlayerEntity player = handler.player;
-		    UUID playerUUID = player.getUuid();
-		    PlayerData playerData = PlayerData.players.getOrDefault(playerUUID, new PlayerData(playerUUID, player.getEntityName(), "N/A", "Adventurer", 0, server));
-		    if (!PlayerData.players.containsKey(playerUUID))
-		    {
-		    	PlayerData.players.put(playerUUID, playerData);
-		    	playerData.saveData();
-		    }
+			ServerPlayerEntity player = handler.player;
+			UUID playerUUID = player.getUuid();
+			PlayerData playerData = PlayerData.players.getOrDefault(playerUUID, new PlayerData(playerUUID, player.getEntityName(), "N/A", "Adventurer", 0, server));
+			if (!PlayerData.players.containsKey(playerUUID))
+			{
+				PlayerData.players.put(playerUUID, playerData);
+				playerData.saveData();
+			}
 		});
-		
+
 		ServerLifecycleEvents.SERVER_STARTED.register(server ->
 		{
 			PlayerData.loadData(server);
-	    });
-		
+		});
+
 		ServerLifecycleEvents.SERVER_STOPPING.register(server ->
-        {
-        	PlayerData.reset();
-        });
+		{
+			PlayerData.reset();
+		});
 	}
-	
-	public static void settlementData()
-	{
-        ServerLifecycleEvents.SERVER_STARTED.register(server ->
-        {
-        	SettlementManager.loadSettlements(server);
-        	for (Settlement settlement : SettlementManager.getSettlements().values())
-            	for (Structure structure : settlement.getStructures())
-            		structure.resume(server.getOverworld());
-        });
 
-        ServerLifecycleEvents.SERVER_STOPPING.register(server ->
-        {
-        	SettlementManager.saveSettlements(server);
-        	SettlementManager.reset();
-        });
-    }
-	
-	public static void regionData()
+	private static void registerSettlementData()
 	{
-        ServerLifecycleEvents.SERVER_STARTED.register(server ->
-        {
-            RegionManager.setWorldSeed(server.getOverworld().getSeed());
-            ServerWorld world = server.getWorld(World.OVERWORLD);
-            if (world != null && !world.isClient)
-            	RegionManager.loadRegionData(world);
-        });
+		ServerLifecycleEvents.SERVER_STARTED.register(server ->
+		{
+			SettlementManager.loadSettlements(server);
+			for (Settlement settlement : SettlementManager.getSettlements().values())
+			{
+				for (Structure structure : settlement.getStructures())
+				{
+					structure.resume(server.getOverworld());
+				}
+			}
+		});
 
-        ServerLifecycleEvents.SERVER_STOPPING.register(server ->
-        {
-            ServerWorld world = server.getWorld(World.OVERWORLD);
-            if (world != null && !world.isClient)
-                RegionManager.saveRegionData(world);
-            RegionManager.reset();
-        });
-    }
-	
-	public static void keyBindings()
+		ServerLifecycleEvents.SERVER_STOPPING.register(server ->
+		{
+			SettlementManager.saveSettlements(server);
+			SettlementManager.reset();
+		});
+	}
+
+	private static void registerRegionData()
+	{
+		ServerLifecycleEvents.SERVER_STARTED.register(server ->
+		{
+			RegionManager.setWorldSeed(server.getOverworld().getSeed());
+			ServerWorld world = server.getWorld(World.OVERWORLD);
+			if (world != null && !world.isClient)
+			{
+				RegionManager.loadRegionData(world);
+			}
+		});
+
+		ServerLifecycleEvents.SERVER_STOPPING.register(server ->
+		{
+			ServerWorld world = server.getWorld(World.OVERWORLD);
+			if (world != null && !world.isClient)
+			{
+				RegionManager.saveRegionData(world);
+			}
+			RegionManager.reset();
+		});
+	}
+
+	private static void registerKeyBindings()
 	{
 		FrontierKeyBindings.register();
-        KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.keyCharacterSheet);
-        KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.keyToggleRegions);
-        
-        ClientTickEvents.END_CLIENT_TICK.register(client -> 
-        {
-            while (FrontierKeyBindings.keyCharacterSheet.wasPressed())
-                client.setScreen(new PlayerCardScreen());
-            
-            while (FrontierKeyBindings.keyToggleRegions.wasPressed())
-                RegionMapRenderer.isRenderingEnabled = !RegionMapRenderer.isRenderingEnabled;
-        });
+		KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.keyCharacterSheet);
+		KeyBindingHelper.registerKeyBinding(FrontierKeyBindings.keyToggleRegions);
+
+		ClientTickEvents.END_CLIENT_TICK.register(client ->
+		{
+			while (FrontierKeyBindings.keyCharacterSheet.wasPressed())
+				client.setScreen(new PlayerCardScreen());
+
+			while (FrontierKeyBindings.keyToggleRegions.wasPressed())
+				RegionMapRenderer.isRenderingEnabled = !RegionMapRenderer.isRenderingEnabled;
+		});
 	}
 }

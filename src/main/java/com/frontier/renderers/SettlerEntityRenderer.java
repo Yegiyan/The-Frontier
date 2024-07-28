@@ -32,7 +32,7 @@ public class SettlerEntityRenderer extends MobEntityRenderer<SettlerEntity, Play
     }
     
     @Override
-    public void render(SettlerEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) 
+    public void render(SettlerEntity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light)
     {
         String gender = entity.getSettlerGender();
         model = gender.equals("Male") ? normal : slim;

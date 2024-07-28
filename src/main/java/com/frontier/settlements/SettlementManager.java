@@ -20,6 +20,7 @@ import com.frontier.PlayerData;
 import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.AbandonSettlementScreen;
 import com.frontier.gui.CreateSettlementScreen;
+import com.frontier.items.FrontierItems;
 import com.frontier.register.FrontierEntities;
 import com.frontier.structures.Structure;
 import com.frontier.structures.TownHall;
@@ -69,7 +70,7 @@ public class SettlementManager
 	    		if (!world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == Items.CLOCK && world.getBlockState(blockHitResult.getBlockPos()).getBlock() == Blocks.BELL)
 	    			bellPos = blockHitResult.getBlockPos();
 	    		
-	    		if (world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == Items.CLOCK && world.getBlockState(blockHitResult.getBlockPos()).getBlock() == Blocks.BELL)
+	    		if (world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == FrontierItems.BLUEPRINT_TOWNHALL)
 		        {
 		        	MinecraftClient.getInstance().setScreen(new CreateSettlementScreen());
 		            return ActionResult.SUCCESS;

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.frontier.settlements.SettlementManager;
+import com.frontier.util.FrontierUtil;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
@@ -39,7 +40,7 @@ public class PlayerData
     public void updateRenown(int score)
     {
         this.renown += score;
-        this.renown = clamp(this.renown, -100, 100);
+        this.renown = FrontierUtil.clamp(this.renown, -100, 100);
     }
     
     public void saveData()
@@ -168,7 +169,7 @@ public class PlayerData
     }
 
     public void setRenown(int renown) {
-    	renown = clamp(renown, -100, 100);
+    	renown = FrontierUtil.clamp(renown, -100, 100);
         this.renown = renown;
     }
 
@@ -183,8 +184,4 @@ public class PlayerData
     public static void reset() {
         players.clear();
     }
-    
-    int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
-    }  
 }

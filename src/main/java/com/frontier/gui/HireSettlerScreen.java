@@ -8,9 +8,10 @@ import com.frontier.Frontier;
 import com.frontier.PlayerData;
 import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.util.TextUtil;
-import com.frontier.gui.util.TextureElement;
 import com.frontier.gui.util.TextUtil.TextAlign;
+import com.frontier.gui.util.TextureElement;
 import com.frontier.network.FrontierPacketsServer;
+import com.frontier.util.FrontierUtil;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -100,7 +101,7 @@ public class HireSettlerScreen extends Screen
     
     public enum Hire
     {
-        NONE(0), ARCHITECT(0), COURIER(8), DELIVERER(4),  INNKEEPER(12), MERCHANT(10), PRIEST(6),
+        NONE(0), ARCHITECT(5), COURIER(8), DELIVERER(4),  INNKEEPER(12), MERCHANT(10), PRIEST(6),
         ARCHER(4), CLERIC(10), KNIGHT(6),
         FARMER(4), FISHERMAN(5), FORAGER(3), HUNTER(3), LUMBERJACK(4),  MINER(8),
         ALCHEMIST(12), ARCANIST(10), BLACKSMITH(8), CARTOGRAPHER(10), FLETCHER(6), TANNER(8),
@@ -111,7 +112,7 @@ public class HireSettlerScreen extends Screen
         Hire(int value) { this.value = value; }
         public int getValue() { return value; }
         public void setValue(int value) { this.value = value; }
-        public void updateValue(int value) { this.value += value; this.value += clamp(this.value, 1, 100); }
+        public void updateValue(int value) { this.value += value; this.value += FrontierUtil.clamp(this.value, 1, 100); }
         public MutableText getText() { return Text.literal(String.valueOf(value)); }
     }
     private Hire hire;
@@ -176,6 +177,8 @@ public class HireSettlerScreen extends Screen
     private Text moraleText;
     private Text skillText;
 
+    private Text architectWarning;
+    
     private SettlerEntity settler;
     private Identifier skinTexture;
     private static Identifier expertiseTexture;
@@ -211,6 +214,7 @@ public class HireSettlerScreen extends Screen
 		skillText = Text.literal(String.valueOf(settler.getSettlerSkill()));
 
 		priceText = Text.literal("0");
+		architectWarning = Text.literal("");
 		
 		updateButtons();
 	}
@@ -282,7 +286,7 @@ public class HireSettlerScreen extends Screen
 		barTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f, 1.0f));
 		mainTextures.add(new TextureElement(expertiseTexture, (backgroundPosX + 214), (backgroundPosY + 18), 12, 12, "Expertise", 1.2f, 1.2f));
 
-		governingTextures.add(new TextureElement(ARCHITECT_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Uses settlement supplies to construct buildings", 1.0f, 1.0f));
+		governingTextures.add(new TextureElement(ARCHITECT_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Sells blueprints and constructs / maintains buildings", 1.0f, 1.0f));
 		governingTextures.add(new TextureElement(COURIER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sends requests or demands to other settlements", 1.0f, 1.0f));
 		governingTextures.add(new TextureElement(DELIVERER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Disperses settlement supplies to other settlers", 1.0f, 1.0f));
 		governingTextures.add(new TextureElement(INNKEEPER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Provides shelter and rest for foreigners", 1.0f, 1.0f));
@@ -792,6 +796,13 @@ public class HireSettlerScreen extends Screen
 		else
 		    priceText = hire.getText();
 
+		if (hireArchitectButton.isFocused())
+			architectWarning = Text.literal("Lives in Town Hall");
+		else
+			architectWarning = Text.literal("");
+		
+		TextUtil.drawText(context, this.textRenderer, architectWarning, backgroundPosX + 205, backgroundPosY + 82, new Color(90, 90, 90).getRGB(), false, true, 60, TextAlign.CENTER);
+		
 		for (TextureElement element : governingTextures)
 		{
 			element.draw(context);
@@ -963,9 +974,9 @@ public class HireSettlerScreen extends Screen
     private  void drawPriceText(DrawContext context)
     {
     	if (this.playerEmeralds < hire.getValue())
-			TextUtil.drawText(context, textRenderer, priceText, backgroundPosX + 204, backgroundPosY + 34, new Color(235, 50, 30).getRGB(), true, true, 200, TextAlign.RIGHT);
+			TextUtil.drawText(context, this.textRenderer, priceText, backgroundPosX + 204, backgroundPosY + 34, new Color(235, 50, 30).getRGB(), true, true, 200, TextAlign.RIGHT);
 		else
-			TextUtil.drawText(context, textRenderer, priceText, backgroundPosX + 204, backgroundPosY + 34, new Color(255, 255, 255).getRGB(), true, true, 200, TextAlign.RIGHT);
+			TextUtil.drawText(context, this.textRenderer, priceText, backgroundPosX + 204, backgroundPosY + 34, new Color(255, 255, 255).getRGB(), true, true, 200, TextAlign.RIGHT);
     }
     
     private void drawBar(DrawContext context, int x, int y, float value, int barIndex)
@@ -1030,10 +1041,6 @@ public class HireSettlerScreen extends Screen
             return hire.getText().formatted(Formatting.GRAY);
         else 
             return hire.getText().formatted(Formatting.RED);
-    }
-    
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
     }
     
     @Override

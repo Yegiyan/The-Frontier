@@ -10,9 +10,6 @@ import com.frontier.settlements.SettlementManager;
 
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.ServerWorldAccess;
@@ -63,43 +60,6 @@ public class HireSettler
 
         return skillTransfers;
     }
-	
-	public static boolean removeEmeraldsFromPlayer(PlayerEntity player, int amount)
-	{
-	    int remaining = amount;
-	    for (int i = 0; i < player.getInventory().size(); i++)
-	    {
-	        ItemStack stack = player.getInventory().getStack(i);
-	        if (stack.getItem() == Items.EMERALD)
-	        {
-	            if (stack.getCount() > remaining)
-	            {
-	                stack.decrement(remaining);
-	                return true;
-	            }
-	            else
-	            {
-	                remaining -= stack.getCount();
-	                stack.setCount(0);
-	            }
-	        }
-	        if (remaining <= 0)
-	            return true;
-	    }
-	    return false;
-	}
-	
-	public static void refundEmeraldsToPlayer(PlayerEntity player, int amount)
-	{
-		while (amount > 0)
-		{
-			int stackSize = Math.min(amount, Items.EMERALD.getMaxCount());
-			ItemStack emeraldStack = new ItemStack(Items.EMERALD, stackSize);
-			if (!player.getInventory().insertStack(emeraldStack))
-				player.dropItem(emeraldStack, false);
-			amount -= stackSize;
-		}
-	}
 
 	public static void architect(ArchitectEntity architect, String firstName, String lastName, String name, String faction, String profession, String expertise, int hunger, int morale, int skill, UUID uuid, String gender, World world)
 	{

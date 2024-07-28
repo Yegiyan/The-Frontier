@@ -7,7 +7,7 @@ import java.util.UUID;
 import com.frontier.Frontier;
 import com.frontier.entities.settler.ArchitectEntity;
 import com.frontier.entities.settler.SettlerEntity;
-import com.frontier.gui.StructureScreen;
+import com.frontier.gui.ArchitectScreen;
 import com.frontier.settlements.SettlementManager;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -56,7 +56,7 @@ public class FrontierPacketsClient
 			
 		    client.execute(() ->
 		    {
-		        MinecraftClient.getInstance().setScreen(new StructureScreen(structureInventory, architect));
+		        MinecraftClient.getInstance().setScreen(new ArchitectScreen(structureInventory, architect));
 		    });
 		});
 	}

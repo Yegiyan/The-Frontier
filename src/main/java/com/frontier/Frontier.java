@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import com.frontier.calendar.FrontierCalendarManager;
 import com.frontier.events.RequestNomads;
+import com.frontier.items.FrontierItemGroup;
+import com.frontier.items.FrontierItems;
 import com.frontier.network.FrontierPacketsServer;
 import com.frontier.regions.RegionManager;
 import com.frontier.register.FrontierCommands;
@@ -20,10 +22,7 @@ public class Frontier implements ModInitializer
 {
 	public static String MOD_ID = "frontier";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-	
-	// display name above npc heads
-	// display their current goal below name(?)
-	// create blueprint items (townhall, warehouse, & house)
+
 	// show tier 0 dimensions of structure to player when they try to manually place
 	
 	// architect:
@@ -31,29 +30,25 @@ public class Frontier implements ModInitializer
 	// create build   goal
 	// create repair  goal
 	// create upgrade goal
+	// create choose build location goal
 	
 	// allow custom building activation
 
     @Override
     public void onInitialize()
     {
-    	FrontierCalendarManager.initialize();
-    	
+    	FrontierCommands.register();
         FrontierEntities.register();
-        FrontierCommands.register();
-
-        FrontierManager.keyBindings();
-        FrontierManager.regionData();
-        FrontierManager.entityData();
-        FrontierManager.playerData();
-        FrontierManager.settlementData();
+        FrontierItemGroup.register();
+        FrontierManager.registerEvents();
+        FrontierPacketsServer.registerHandlers();
 
         RegionManager.registerCallback();
         SettlementManager.registerCallback();
         RequestNomads.registerCallback();
 
-        FrontierPacketsServer.registerServerPacketHandlers();
-
+        FrontierCalendarManager.initialize();
+        FrontierItems.initialize();
         FrontierUpdate.worldEvents();
     }
 

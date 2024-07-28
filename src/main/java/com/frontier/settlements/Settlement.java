@@ -13,6 +13,7 @@ import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.structures.Structure;
 import com.frontier.structures.TownHall;
 import com.frontier.structures.Warehouse;
+import com.frontier.util.FrontierUtil;
 
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
@@ -196,11 +197,11 @@ public class Settlement
 	}
 	
 	public void setReputation(UUID uuid, int rep) {
-		this.reputations.put(uuid, clamp(rep, -100, 100));
+		this.reputations.put(uuid, FrontierUtil.clamp(rep, -100, 100));
 	}
 	
 	public void updateReputation(UUID uuid, int rep) {
-		this.reputations.put(uuid, this.reputations.get(uuid) + clamp(rep, -100, 100));
+		this.reputations.put(uuid, this.reputations.get(uuid) + FrontierUtil.clamp(rep, -100, 100));
 	}
 	
 	public void checkReputation(UUID uuid, MinecraftServer server) { // might have to make a separate method for other entities
@@ -310,9 +311,5 @@ public class Settlement
         int currentValue = statistics.getOrDefault(key, 0);
         int newValue = currentValue + amount;
         if (newValue >= 0) statistics.put(key, newValue);
-    }
-	
-	int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
     }
 }

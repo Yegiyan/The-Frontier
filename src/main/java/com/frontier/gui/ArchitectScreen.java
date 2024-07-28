@@ -13,6 +13,8 @@ import com.frontier.gui.util.TextUtil;
 import com.frontier.gui.util.TextUtil.TextAlign;
 import com.frontier.gui.util.TextureElement;
 import com.frontier.network.FrontierPacketsServer;
+import com.frontier.settlements.Blueprint;
+import com.frontier.util.FrontierUtil;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -43,6 +45,7 @@ import net.minecraft.block.TurtleEggBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ArmorItem;
@@ -94,13 +97,12 @@ import net.minecraft.item.WrittenBookItem;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-public class StructureScreen extends Screen
+public class ArchitectScreen extends Screen
 {
 	public static final int UI_OFFSET_X = 0;
     public static final int UI_OFFSET_Y = 72;
@@ -181,27 +183,9 @@ public class StructureScreen extends Screen
     public enum Page { BLUEPRINT, RESOURCES, UPGRADE, CORE, MILITARY, LABOR, CRAFT, RANCH, ARTISAN, CUSTOMS, MISC }
     private Page page;
     
-    public enum Blueprint
-    {
-        NONE(0), TOWNHALL(2), WAREHOUSE(4), HOUSE(3),  ROAD(12), BRIDGE(10), WALL(6),
-        BARRACKS(4), APOTHECARY(12), BOUNTYHALL(6), WATCHTOWER(10),
-        FARM(4), FISHERY(5), LODGE(3), GROVE(4), MINE(8),
-        ALCHEMYLAB(12), ARCANUM(10), BLACKSMITH(8), CARTOGRAPHY(10), FLETCHERY(6), TANNERY(8),
-        APIARY(8), COWBARN(4), CHICKENCOOP(6), SHEEPPASTURE(8), STABLE(14), PIGPEN(4), 
-        BAKERY(6), ABATTOIR(8), GREENGROCERY(4), WOODSHOP(8), MASONRY(10),
-        MARKETPLACE(12), TAVERN(8),
-        CHURCH(10), LIBRARY(12), CEMETERY(6), WELL(4), FOUNTAIN(6);
-
-        private int value;
-        Blueprint(int value) { this.value = value; }
-        public int getValue() { return value; }
-        public void setValue(int value) { this.value = value; }
-        public void updateValue(int value) { this.value += value; this.value += clamp(this.value, 1, 100); }
-        public MutableText getText() { return Text.literal(String.valueOf(value)); }
-    }
     private Blueprint blueprint;
     
-    private ButtonWidget buildButton;
+    private ButtonWidget buyButton;
     private ButtonWidget architectButton, blueprintPageButton, resourcesPageButton, upgradePageButton;
     private ButtonWidget coreButton, militiaButton, laboringButton, craftingButton, ranchingButton, artisanButton, customsButton, miscButton;
     private ButtonWidget barracksButton, watchTowerButton, bountyHallButton;
@@ -244,7 +228,7 @@ public class StructureScreen extends Screen
     ArchitectEntity architect;
     int playerEmeralds;
     
-	public StructureScreen(List<ItemStack> structureInventory, ArchitectEntity architect)
+	public ArchitectScreen(List<ItemStack> structureInventory, ArchitectEntity architect)
 	{
 		super(Text.literal("Structure Management Screen"));
 		this.page = Page.BLUEPRINT;
@@ -315,9 +299,9 @@ public class StructureScreen extends Screen
 		if (blueprint == Blueprint.NONE)
 			priceText = Text.literal("0");
 
-		initializeBuildButton();
+		initializeBuyButton();
 		
-        addDrawableChild(buildButton);
+        addDrawableChild(buyButton);
         addDrawableChild(architectButton);
 		addDrawableChild(blueprintPageButton);
 		addDrawableChild(resourcesPageButton);
@@ -384,17 +368,17 @@ public class StructureScreen extends Screen
 		upgradePageButton.active = false;
 	}
 	
-	private void initializeBuildButton()
+	private void initializeBuyButton()
 	{
-        buildButton = ButtonWidget.builder(Text.literal("Buy"), button ->
+        buyButton = ButtonWidget.builder(Text.literal("Buy"), button ->
         {
             PlayerData playerData = PlayerData.players.get(this.player.getUuid());
             if (this.player != null && playerData != null)
             {
-                PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
-                // TODO: Pass building info
+                PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer()); // TODO: Pass building info
                 passedData.writeInt(blueprint.getValue());
-                ClientPlayNetworking.send(FrontierPacketsServer.BUILD_STRUCTURE_ID, passedData);
+                passedData.writeEnumConstant(blueprint);
+                ClientPlayNetworking.send(FrontierPacketsServer.BUY_BLUEPRINT_ID, passedData);
                 MinecraftClient.getInstance().setScreen(null);
             }
         }).dimensions(backgroundPosX + 192, backgroundPosY + 63, 45, 20).build();
@@ -464,8 +448,8 @@ public class StructureScreen extends Screen
 	private void setupBlueprintPage()
 	{
 		blueprintText1 = Text.literal("PURCHASE BLUEPRINTS").formatted(Formatting.BOLD);
-		blueprintText2 = Text.literal("As the leader you can purchase blueprints from the Architect. Use the blueprint by right-clicking a desired location for your building. The Architect will use your settlement resources to construct it.");
-		blueprintText3 = Text.literal("You can also place the blueprint in an item frame above the entrance of your own custom building to activate it.");
+		blueprintText2 = Text.literal("Use the blueprint by right-clicking a desired location for your building. The Architect will use your settlement resources to construct and maintain it.");
+		blueprintText3 = Text.literal("You can also place the blueprint in an item frame above a door or gate of your own custom structure to designate it.");
 		blueprint = Blueprint.NONE;
 		initializeJobCategoryButtons();
 	}
@@ -814,14 +798,20 @@ public class StructureScreen extends Screen
 		resetTexturesArrays();
 		
 		if (page == Page.BLUEPRINT || page == Page.RESOURCES || page == Page.UPGRADE)
-			buildButton.visible = false;
+			buyButton.visible = false;
 		else
-			buildButton.visible = true;
+			buyButton.visible = true;
 
 		if (blueprint != Blueprint.NONE && this.playerEmeralds >= blueprint.getValue())
-			buildButton.active = true;
+			buyButton.active = true;
 		else
-			buildButton.active = false;
+			buyButton.active = false;
+		
+		if (!FrontierUtil.hasEnoughFreeSlots(this.player.getInventory(), 1))
+		{
+			buyButton.active = false;
+			buyButton.setTooltip(Tooltip.of(Text.literal("Not enough inventory space!")));
+		}
 
 	    this.renderBackground(context);
 	    context.drawTexture(BACKGROUND_TEXTURE, backgroundPosX, backgroundPosY, 0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
@@ -889,9 +879,9 @@ public class StructureScreen extends Screen
 	{
 		TextUtil.drawText(context, textRenderer, blueprintText1, backgroundPosX + 64, backgroundPosY + 22, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
 		TextUtil.drawText(context, textRenderer, blueprintText2, backgroundPosX + 125, backgroundPosY + 50, new Color(255, 255, 255).getRGB(), true, true, 220, TextAlign.CENTER);
-		TextUtil.drawText(context, textRenderer, blueprintText3, backgroundPosX + 125, backgroundPosY + 105, new Color(255, 255, 255).getRGB(), true, true, 220, TextAlign.CENTER);
+		TextUtil.drawText(context, textRenderer, blueprintText3, backgroundPosX + 125, backgroundPosY + 97, new Color(255, 255, 255).getRGB(), true, true, 220, TextAlign.CENTER);
 		
-		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 143), 0, 0, 225, 2, 32, 2);
+		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 137), 0, 0, 225, 2, 32, 2);
 
 		rectTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f, 1.0f));
 		for (TextureElement element : rectTextures)
@@ -1677,9 +1667,5 @@ public class StructureScreen extends Screen
     public boolean shouldPause() 
     {
     	return false;
-    }
-    
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
     }
 }

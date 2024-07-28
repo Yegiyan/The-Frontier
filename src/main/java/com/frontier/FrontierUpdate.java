@@ -7,8 +7,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 public class FrontierUpdate
 {
-	// intervals in seconds
+	// intervals are in seconds
 	private static final int playerRepInterval = 5;
+	
 	private static int repTickCounter = 0;
 	
 	public static void worldEvents()
