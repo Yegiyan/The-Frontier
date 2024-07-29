@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.UUID;
 
 import com.frontier.Frontier;
+import com.frontier.PlayerData;
 import com.frontier.entities.settler.ArchitectEntity;
 import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.gui.ArchitectScreen;
+import com.frontier.gui.PlayerCardScreen;
 import com.frontier.settlements.SettlementManager;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -19,7 +21,8 @@ import net.minecraft.util.collection.DefaultedList;
 
 public class FrontierPacketsClient
 {
-	public static final Identifier SETTLEMENT_RESOURCES_RESPONSE_ID = new Identifier(Frontier.MOD_ID, "settlement_resources_response");
+	public static final Identifier SETTLEMENT_RESOURCES_RESPONSE_ARCHITECT_ID = new Identifier(Frontier.MOD_ID, "settlement_resources_response_architect");
+	public static final Identifier SETTLEMENT_RESOURCES_RESPONSE_PLAYER_ID = new Identifier(Frontier.MOD_ID, "settlement_resources_response_player");
 	
 	public static void registerClientPacketHandlers()
 	{
@@ -37,7 +40,7 @@ public class FrontierPacketsClient
 			});
 		});
 		
-		ClientPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_RESPONSE_ID, (client, handler, buf, responseSender) ->
+		ClientPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_RESPONSE_ARCHITECT_ID, (client, handler, buf, responseSender) ->
 		{
 			int size = buf.readInt();
 			UUID settlerUUID = buf.readUuid();
@@ -47,7 +50,7 @@ public class FrontierPacketsClient
 			for (int i = 0; i < size; i++)
 			{
 			    ItemStack itemStack = buf.readItemStack();
-			    int count = buf.readInt(); // read item count explicitly
+			    int count = buf.readInt();
 			    itemStack.setCount(count);
 			    structureInventory.add(itemStack);
 			}
@@ -57,6 +60,29 @@ public class FrontierPacketsClient
 		    client.execute(() ->
 		    {
 		        MinecraftClient.getInstance().setScreen(new ArchitectScreen(structureInventory, architect));
+		    });
+		});
+		
+		ClientPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_RESPONSE_PLAYER_ID, (client, handler, buf, responseSender) ->
+		{
+			PlayerData playerData = PlayerData.players.get(client.player.getUuid());
+			List<ItemStack> structureInventory = new ArrayList<>();
+			
+			if (SettlementManager.getSettlement(playerData.getFaction()) != null)
+			{
+				int size = buf.readInt();
+				for (int i = 0; i < size; i++)
+				{
+				    ItemStack itemStack = buf.readItemStack();
+				    int count = buf.readInt();
+				    itemStack.setCount(count);
+				    structureInventory.add(itemStack);
+				}
+			}
+	
+		    client.execute(() ->
+		    {
+		        MinecraftClient.getInstance().setScreen(new PlayerCardScreen(structureInventory));
 		    });
 		});
 	}

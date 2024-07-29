@@ -31,7 +31,9 @@ public class FrontierPacketsServer
 	public static final Identifier CREATE_SETTLEMENT_ID = new Identifier(Frontier.MOD_ID, "create_settlement");
 	public static final Identifier ABANDON_SETTLEMENT_ID = new Identifier(Frontier.MOD_ID, "abandon_settlement");
 	
-	public static final Identifier SETTLEMENT_RESOURCES_REQUEST_ID = new Identifier(Frontier.MOD_ID, "settlement_resources_request");
+	public static final Identifier SETTLEMENT_RESOURCES_REQUEST_ARCHITECT_ID = new Identifier(Frontier.MOD_ID, "settlement_resources_request_architect");
+	public static final Identifier SETTLEMENT_RESOURCES_REQUEST_PLAYER_ID = new Identifier(Frontier.MOD_ID, "settlement_resources_request_player");
+	
 	public static final Identifier BUY_BLUEPRINT_ID = new Identifier(Frontier.MOD_ID, "build_structure");
 	public static final Identifier UPGRADE_STRUCTURE_ID = new Identifier(Frontier.MOD_ID, "upgrade_structure");
 	
@@ -60,7 +62,7 @@ public class FrontierPacketsServer
 	        });
 	    });
 		
-		ServerPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_REQUEST_ID, (server, player, handler, buf, responseSender) ->
+		ServerPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_REQUEST_ARCHITECT_ID, (server, player, handler, buf, responseSender) ->
 		{
 			UUID settlerUUID = buf.readUuid();
             String settlerFaction = buf.readString(32767);
@@ -83,7 +85,34 @@ public class FrontierPacketsServer
 						buffer.writeInt(itemStack.getCount());
 					}
 
-					ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_ID, buffer);
+					ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_ARCHITECT_ID, buffer);
+				}
+			});
+		});
+		
+		ServerPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_REQUEST_PLAYER_ID, (server, player, handler, buf, responseSender) ->
+		{
+			server.execute(() ->
+			{
+				PlayerData playerData = PlayerData.players.get(player.getUuid());
+				if (playerData != null)
+				{
+					PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+					
+					if (SettlementManager.getSettlement(playerData.getFaction()) != null)
+					{
+						List<ItemStack> structureInventory = SettlementManager.getSettlement(playerData.getFaction()).getStructureByName("townhall").getStructureInventory(player.getServer().getOverworld());
+						
+						buffer.writeInt(structureInventory.size());
+						
+						for (ItemStack itemStack : structureInventory)
+						{
+							buffer.writeItemStack(itemStack);
+							buffer.writeInt(itemStack.getCount());
+						}
+					}
+
+					ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_PLAYER_ID, buffer);
 				}
 			});
 		});

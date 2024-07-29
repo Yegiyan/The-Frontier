@@ -123,7 +123,7 @@ public class SettlerCardScreen extends Screen
         		PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
         		passedData.writeUuid(settler.getUuid());
                 passedData.writeString(settler.getSettlerFaction());
-        		ClientPlayNetworking.send(FrontierPacketsServer.SETTLEMENT_RESOURCES_REQUEST_ID, passedData);
+        		ClientPlayNetworking.send(FrontierPacketsServer.SETTLEMENT_RESOURCES_REQUEST_ARCHITECT_ID, passedData);
         	}).dimensions(backgroundPosX + 84, backgroundPosY - 25, 80, 20).build();
         	addDrawableChild(architectButton);
         }

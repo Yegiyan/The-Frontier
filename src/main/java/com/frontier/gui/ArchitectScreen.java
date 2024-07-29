@@ -915,7 +915,7 @@ public class ArchitectScreen extends Screen
 		}
 
 		for (CheckboxElement checkbox : checkboxes)
-			checkbox.render(context, textRenderer);
+			checkbox.render(context, this.textRenderer);
 
 		int x = backgroundPosX + 10;
 		int y = backgroundPosY + 95;
@@ -938,7 +938,7 @@ public class ArchitectScreen extends Screen
 
 					context.getMatrices().push();
 					context.getMatrices().translate(0, 0, 200);
-					context.drawText(textRenderer, countString, x + ITEM_SIZE - textRenderer.getWidth(countString), y + ITEM_SIZE - textRenderer.fontHeight, Colors.WHITE, true);
+					context.drawText(this.textRenderer, countString, x + ITEM_SIZE - this.textRenderer.getWidth(countString), y + ITEM_SIZE - this.textRenderer.fontHeight, Colors.WHITE, true);
 					context.getMatrices().pop();
 				}
 				x += ITEM_SIZE + 3;
@@ -955,8 +955,8 @@ public class ArchitectScreen extends Screen
 	
 	private void renderUpgradePage(DrawContext context, int mouseX, int mouseY)
 	{
-		TextUtil.drawText(context, textRenderer, upgradeText1, backgroundPosX + 76, backgroundPosY + 22, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
-		TextUtil.drawText(context, textRenderer, upgradeText2, backgroundPosX + 125, backgroundPosY + 50, new Color(255, 255, 255).getRGB(), true, true, 225, TextAlign.CENTER);
+		TextUtil.drawText(context, this.textRenderer, upgradeText1, backgroundPosX + 76, backgroundPosY + 22, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
+		TextUtil.drawText(context, this.textRenderer, upgradeText2, backgroundPosX + 125, backgroundPosY + 50, new Color(255, 255, 255).getRGB(), true, true, 225, TextAlign.CENTER);
 		
 		context.drawTexture(SEPARATOR_TEXTURE, (backgroundPosX + 10), (backgroundPosY + 95), 0, 0, 225, 2, 32, 2);
 
