@@ -26,6 +26,7 @@ import net.minecraft.util.math.Direction;
 public class Settlement
 {
     private String name;
+    private UUID uuid;
 	private UUID leader;
 	private BlockPos position;
 	private Set<ChunkPos> territory;
@@ -52,6 +53,7 @@ public class Settlement
     public Settlement(String name, UUID leader, BlockPos position, MinecraftServer server)
     {
         this.name = name;
+        this.uuid = UUID.randomUUID();
         this.leader = leader;
         this.position = position;
         this.territory = new HashSet<>();
@@ -88,11 +90,11 @@ public class Settlement
         statistics.put("Visitors", 0);
         statistics.put("Merchants", 0);
         
-        // resources
-        statistics.put("Food", 0);
-        statistics.put("Materials", 0);
-        statistics.put("Beds", 0);
+        // infrastructure
         statistics.put("Structures", 0);
+        statistics.put("Housing", 0);
+        statistics.put("Roads", 0);
+        statistics.put("Graves", 0);
         
         // economy
         statistics.put("Trades", 0);
@@ -102,9 +104,9 @@ public class Settlement
         
         // security
         statistics.put("Militia", 0);
+        statistics.put("Towers", 0);
         statistics.put("Bounties", 0);
         statistics.put("Bandits", 0);
-        statistics.put("Deaths", 0);
     }
     
     protected void constructStructure(String structureName, BlockPos position, ServerWorld world, Direction facing)
@@ -167,7 +169,15 @@ public class Settlement
 		return name;
 	}
     
-    public UUID getLeader() {
+    public UUID getUUID() {
+		return uuid;
+	}
+
+	public void setUuid(UUID uuid) {
+		this.uuid = uuid;
+	}
+
+	public UUID getLeader() {
 		return leader;
 	}
 

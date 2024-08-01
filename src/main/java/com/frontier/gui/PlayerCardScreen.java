@@ -17,6 +17,7 @@ import com.frontier.gui.util.TextureElement;
 import com.frontier.regions.RegionManager;
 import com.frontier.settlements.SettlementManager;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -114,27 +115,29 @@ public class PlayerCardScreen extends Screen
 	private static final int BACKGROUND_HEIGHT = 338;
 
 	private static final Identifier NAMEPLATE_TEXTURE = new Identifier("minecraft", "textures/gui/social_interactions.png");
+	private static final Identifier WINDOW_TEXTURE = new Identifier("minecraft", "textures/gui/advancements/window.png");
+	private static final Identifier WINDOW_BACKGROUND_TEXTURE = new Identifier("minecraft", "textures/gui/advancements/widgets.png");
 	
 	private static final Identifier FACTION_TEXTURE = new Identifier("minecraft", "textures/mob_effect/resistance.png");
 	private static final Identifier RENOWN_TEXTURE = new Identifier("minecraft", "textures/mob_effect/hero_of_the_village.png");
-	private static final Identifier REGION_TEXTURE = new Identifier("minecraft", "textures/mob_effect/darkness.png");
-	private static final Identifier TERRITORY_TEXTURE = new Identifier("minecraft", "textures/item/mojang_banner_pattern.png");
+	//private static final Identifier REGION_TEXTURE = new Identifier("minecraft", "textures/mob_effect/darkness.png");
+	//private static final Identifier TERRITORY_TEXTURE = new Identifier("minecraft", "textures/item/mojang_banner_pattern.png");
 	private static final Identifier SEPARATOR_TEXTURE = new Identifier("minecraft", "textures/gui/header_separator.png");
 
-	private static final Identifier RELATIONS_TEXTURE = new Identifier("minecraft", "textures/mob_effect/hero_of_the_village.png");
-	private static final Identifier RESOURCES_TEXTURE = new Identifier("minecraft", "textures/item/bundle_filled.png");
-	private static final Identifier INFORMATION_TEXTURE = new Identifier("minecraft", "textures/item/bell.png");
+	private static final Identifier RELATIONS_TEXTURE = new Identifier("minecraft", "textures/block/cartography_table_top.png");
+	private static final Identifier RESOURCES_TEXTURE = new Identifier("minecraft", "textures/block/barrel_side.png");
+	private static final Identifier INFORMATION_TEXTURE = new Identifier("minecraft", "textures/block/chiseled_bookshelf_occupied.png");
 	
 	private static final int ORANGE = 0xF74B03;
 	private static final Map<String, Identifier> PROFESSION_TEXTURES = Map.of
 			(
-			"Adventurer", new Identifier("minecraft", "textures/mob_effect/speed.png"),
-			"Denizen", new Identifier("minecraft", "textures/item/totem_of_undying.png"), 
+			"Adventurer", new Identifier("minecraft", "textures/item/spyglass.png"),
+			"Denizen", new Identifier("minecraft", "textures/item/compass_19.png"), 
 			"Merchant", new Identifier("minecraft", "textures/item/bundle_filled.png"), 
-			"Commander", new Identifier("minecraft", "textures/item/armor_stand.png"),
+			"Commander", new Identifier("minecraft", "textures/item/goat_horn.png"),
 			"Leader", new Identifier("minecraft", "textures/item/bell.png"), 
-			"Outlaw", new Identifier("minecraft", "textures/item/spyglass.png"), 
-			"Maverick", new Identifier("minecraft", "textures/mob_effect/bad_omen.png")
+			"Outlaw", new Identifier("minecraft", "textures/mob_effect/bad_omen.png"), 
+			"Maverick", new Identifier("minecraft", "textures/item/skull_pottery_sherd.png")
 			);
 
 	private int backgroundPosX;
@@ -158,6 +161,8 @@ public class PlayerCardScreen extends Screen
 	private Text renownText;
 	private Text regionText;
 	private Text territoryText;
+	private Text directionText;
+	private Text biomeNameText;
 	
 	private Text resourcesText1;
     private Text resourcesText2;
@@ -202,22 +207,16 @@ public class PlayerCardScreen extends Screen
 		backgroundPosX = (this.width - BACKGROUND_WIDTH) / 2 + UI_OFFSET_X;
 		backgroundPosY = (this.height - BACKGROUND_HEIGHT) / 2 + UI_OFFSET_Y;
 
-		if (player.getWorld().getRegistryKey().equals(World.OVERWORLD))
-			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region (" + RegionManager.getPlayerDirection(player.getBlockPos()) + ")" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f, 1.0f));
-		else if (player.getWorld().getRegistryKey().equals(World.NETHER))
-			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f, 1.0f));
-		else if (player.getWorld().getRegistryKey().equals(World.END))
-			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f, 1.0f));
-		else
-			textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 12, backgroundPosY + 35, 10, 10, "Current Region" + RegionManager.getRegionWild(player.getBlockPos()), 1.0f, 1.0f));
+		textures.add(new TextureElement(RENOWN_TEXTURE, backgroundPosX + 20, backgroundPosY + 37, 12, 12, "Renown", 1.0f, 1.0f));
 		
-		textures.add(new TextureElement(TERRITORY_TEXTURE, backgroundPosX + 12, backgroundPosY + 55, 12, 12, "Current Territory", 1.0f, 1.0f));
-		textures.add(new TextureElement(professionTexture, backgroundPosX + 225, backgroundPosY + 14, 12, 12, "Profession", 1.0f, 1.0f));
-		textures.add(new TextureElement(FACTION_TEXTURE, backgroundPosX + 225, backgroundPosY + 35, 12, 12, "Faction", 1.0f, 1.0f));
-		textures.add(new TextureElement(RENOWN_TEXTURE, backgroundPosX + 225, backgroundPosY + 55, 12, 12, "Renown", 1.0f, 1.0f));
-
+		textures.add(new TextureElement(professionTexture, backgroundPosX + 214, backgroundPosY + 24, 12, 12, "Profession", 1.0f, 1.0f));
+		textures.add(new TextureElement(FACTION_TEXTURE, backgroundPosX + 214, backgroundPosY + 37, 12, 12, "Faction", 1.0f, 1.0f));
+		
+		//textures.add(new TextureElement(REGION_TEXTURE, backgroundPosX + 25, backgroundPosY + 91, 10, 10, "Current Region", 1.0f, 1.0f));
+		//textures.add(new TextureElement(TERRITORY_TEXTURE, backgroundPosX + 25, backgroundPosY + 105, 12, 12, "Current Territory", 1.0f, 1.0f));
+		
 		if (player != null && playerData != null)
-		{
+		{			
 			setSkinTexture(player);
 			setRegionText(player);
 			setTerritoryText(player, playerData);
@@ -226,7 +225,9 @@ public class PlayerCardScreen extends Screen
 			factionText = Text.literal(playerData.getFaction());
 			professionText = Text.literal(playerData.getProfession());
 			renownText = Text.literal(playerData.getRenownAsString());
-
+			directionText = Text.literal(RegionManager.getPlayerDirection(player.getBlockPos()));
+			biomeNameText = Text.literal(RegionManager.getBiomeName(player)); // "Windswept Savanna Plateau" RegionManager.getBiomeName(player)
+			
 			updateButtons();
 		}
 	}
@@ -234,6 +235,7 @@ public class PlayerCardScreen extends Screen
 	private void updateButtons()
 	{
 		initializeMainButtons();
+		
 		switch (page)
 		{
 			case FACTION:
@@ -331,6 +333,7 @@ public class PlayerCardScreen extends Screen
 	public void render(DrawContext context, int mouseX, int mouseY, float delta)
 	{
 		this.renderBackground(context);
+		rectTextures.clear();
 		context.drawTexture(BACKGROUND_TEXTURE, backgroundPosX, backgroundPosY, 0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
 		playerButton.active = true;
 		factionButton.active = true;
@@ -352,32 +355,51 @@ public class PlayerCardScreen extends Screen
 				break;
 		}
 		
+		if (this.playerData.getFaction().equalsIgnoreCase("N/A"))
+			factionButton.visible = false;
+		
 		super.render(context, mouseX, mouseY, delta);
 	}
 
 	private void renderPlayerPage(DrawContext context, int mouseX, int mouseY)
 	{
 		playerButton.active = false;
-		
-		if (skinTexture != null)
-			context.drawTexture(skinTexture, backgroundPosX + 13, backgroundPosY + 15, 8, 8, 8, 8, 64, 64);
 
+		RenderSystem.enableBlend();
+		RenderSystem.defaultBlendFunc();
+		rectTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f, 1.6225f));
+		rectTextures.add(new TextureElement(WINDOW_BACKGROUND_TEXTURE, (backgroundPosX + 9), (backgroundPosY + 75), 196, 16, 2, 57, 256, 256, null, 1.16f, 8.4f));
+		rectTextures.add(new TextureElement(WINDOW_TEXTURE, (backgroundPosX + 8), (backgroundPosY + 68), 252, 140, 0, 0, 256, 256, null, 0.923f, 1.03f));
+		for (TextureElement element : rectTextures)
+			element.drawRect(context);
+		RenderSystem.disableBlend();
+		
 		textures.forEach(element ->
 		{
 			element.draw(context);
 			if (element.isMouseOver(mouseX, mouseY))
 				TextUtil.renderTooltip(context, this.textRenderer, element.getToolTip(), mouseX, mouseY);
 		});
-
-		TextUtil.drawText(context, this.textRenderer, nameText, backgroundPosX + 30, backgroundPosY + 15);
-		TextUtil.drawText(context, this.textRenderer, regionText, backgroundPosX + 30, backgroundPosY + 36);
-		TextUtil.drawText(context, this.textRenderer, territoryText, backgroundPosX + 30, backgroundPosY + 57);
 		
-		TextUtil.drawText(context, textRenderer, professionText, backgroundPosX + 219, backgroundPosY + 15, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.RIGHT);
-		TextUtil.drawText(context, textRenderer, factionText, backgroundPosX + 219, backgroundPosY + 36, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.RIGHT);
-		TextUtil.drawText(context, textRenderer, renownText, backgroundPosX + 219, backgroundPosY + 57, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.RIGHT);
+		if (skinTexture != null)
+			context.drawTexture(skinTexture, backgroundPosX + 22, backgroundPosY + 26, 8, 8, 8, 8, 64, 64);
 
-		context.drawTexture(SEPARATOR_TEXTURE, backgroundPosX + 12, backgroundPosY + 80, 0, 0, 225, 2, 32, 2);
+		TextUtil.drawText(context, this.textRenderer, nameText, backgroundPosX + 36, backgroundPosY + 26);
+		TextUtil.drawText(context, textRenderer, renownText, backgroundPosX + 36, backgroundPosY + 39, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT);
+		
+		TextUtil.drawText(context, textRenderer, professionText, backgroundPosX + 213, backgroundPosY + 26, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.RIGHT);
+		TextUtil.drawText(context, textRenderer, factionText, backgroundPosX + 213, backgroundPosY + 39, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.RIGHT);
+		
+		TextUtil.drawText(context, this.textRenderer, regionText, backgroundPosX + 27, backgroundPosY + 92, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT, mouseX, mouseY, "Current Region");
+		TextUtil.drawText(context, textRenderer, territoryText, backgroundPosX + 27, backgroundPosY + 107, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.LEFT, mouseX, mouseY, "Current Territory");
+		
+		TextUtil.drawText(context, textRenderer, directionText, backgroundPosX + 225, backgroundPosY + 92, new Color(255, 255, 255).getRGB(), true, true, 145, TextAlign.RIGHT, mouseX, mouseY, "Current Region Location");
+		TextUtil.drawText(context, textRenderer, biomeNameText, backgroundPosX + 225, backgroundPosY + 107, new Color(255, 255, 255).getRGB(), true, true, 85, TextAlign.RIGHT, mouseX, mouseY, "Current Biome");
+
+		if (biomeNameText.getString().length() >= 16)
+			context.drawTexture(SEPARATOR_TEXTURE, backgroundPosX + 27, backgroundPosY + 130, 0, 0, 194, 2, 32, 2);
+		else
+			context.drawTexture(SEPARATOR_TEXTURE, backgroundPosX + 27, backgroundPosY + 122, 0, 0, 194, 2, 32, 2);
 	}
 
 	private void renderFactionPage(DrawContext context, int mouseX, int mouseY)

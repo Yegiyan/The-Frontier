@@ -128,7 +128,8 @@ public class PlayerData
     }
     
     public ServerPlayerEntity getPlayer(MinecraftServer server) {
-        if (server == null) return null;
+        if (server == null)
+        	return null;
         return server.getPlayerManager().getPlayer(this.uuid);
     }
 

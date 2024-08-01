@@ -38,7 +38,7 @@ public class RegionMapRenderer extends MapRenderer
     	if (!isRenderingEnabled)
     		return;
     	
-    	List<Region> regionsToRender = new ArrayList<>(RegionManager.allRegions);
+    	List<Region> regionsToRender = new ArrayList<>(RegionManager.regions);
     	VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getLines());
     	
         for (Region region : regionsToRender)

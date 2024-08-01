@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class SettlerName
+public class SettlerNames
 {
 	public static List<String> maleFirstNames = Arrays.asList("Alden", "Balin", "Cedric", "Darian", "Eamon", "Fabian", "Gawain", "Hadrian",
 			"Ivor", "Jareth", "Kael", "Lancelot", "Merrick", "Nolan", "Osric", "Percival", "Quinlan", "Roland", "Soren", "Tristan", "Urien",

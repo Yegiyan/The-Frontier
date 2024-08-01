@@ -157,7 +157,6 @@ public class Region
         return new Vec3d(averageX, 0, averageZ);
     }
 
-
     public List<Zone> getZones() {
         return zones;
     }

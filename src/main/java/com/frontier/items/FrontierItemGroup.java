@@ -23,6 +23,7 @@ public class FrontierItemGroup
 		Registry.register(Registries.ITEM_GROUP, FRONTIER_ITEM_GROUP_KEY, FRONTIER_ITEM_GROUP);
 		ItemGroupEvents.modifyEntriesEvent(FRONTIER_ITEM_GROUP_KEY).register(itemGroup ->
 		{
+			itemGroup.add(FrontierItems.SETTLEMENT_CHARTER);
 			itemGroup.add(FrontierItems.BLUEPRINT_TOWNHALL);
 			itemGroup.add(FrontierItems.BLUEPRINT_WAREHOUSE);
 			itemGroup.add(FrontierItems.BLUEPRINT_HOUSE);

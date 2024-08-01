@@ -23,6 +23,11 @@ public class Frontier implements ModInitializer
 	public static String MOD_ID = "frontier";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+	// go through every class and clean them up or make them more modular
+	// make sure conventions are consistent and redundancy is minimal/non-existant
+	
+	// gucci up the player card screen
+	// fix regions being busted on tier 0 & 1 maps when using higher tiers
 	// show tier 0 dimensions of structure to player when they try to manually place
 	
 	// architect:

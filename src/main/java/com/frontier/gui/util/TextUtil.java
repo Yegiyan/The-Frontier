@@ -45,6 +45,44 @@ public class TextUtil
         }
     }
 
+    public static void drawText(DrawContext context, TextRenderer textRenderer, Text text, int x, int y, int color, boolean shadow, boolean wrap, int maxWidth, TextAlign align, int mouseX, int mouseY, String tooltip) {
+        boolean isHovered = false;
+        
+        if (wrap) {
+            List<MutableText> lines = wrapText(text, textRenderer, maxWidth);
+            int lineHeight = textRenderer.fontHeight + 1; // line height with some padding
+            for (int i = 0; i < lines.size(); i++) {
+                int drawX = x;
+                if (align == TextAlign.CENTER)
+                    drawX = x - textRenderer.getWidth(lines.get(i)) / 2;
+                else if (align == TextAlign.RIGHT)
+                    drawX = x - textRenderer.getWidth(lines.get(i));
+                
+                if (isMouseOver(drawX, y + (i * lineHeight), textRenderer.getWidth(lines.get(i)), textRenderer.fontHeight, mouseX, mouseY)) {
+                    isHovered = true;
+                }
+                
+                context.drawText(textRenderer, lines.get(i), drawX, y + (i * lineHeight), color, shadow);
+            }
+        } else {
+            int drawX = x;
+            if (align == TextAlign.CENTER)
+                drawX = x - textRenderer.getWidth(text) / 2;
+            else if (align == TextAlign.RIGHT)
+                drawX = x - textRenderer.getWidth(text);
+            
+            if (isMouseOver(drawX, y, textRenderer.getWidth(text), textRenderer.fontHeight, mouseX, mouseY)) {
+                isHovered = true;
+            }
+            
+            context.drawText(textRenderer, text, drawX, y, color, shadow);
+        }
+
+        if (isHovered) {
+            renderTooltip(context, textRenderer, tooltip, mouseX, mouseY);
+        }
+    }
+    
     private static List<MutableText> wrapText(Text text, TextRenderer textRenderer, int maxWidth)
     {
         List<MutableText> lines = new ArrayList<>();
@@ -76,5 +114,9 @@ public class TextUtil
     {
         if (text != null)
             context.drawTooltip(textRenderer, Text.literal(text), mouseX, mouseY);
+    }
+    
+    private static boolean isMouseOver(int x, int y, int width, int height, int mouseX, int mouseY) {
+        return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
     }
 }

@@ -2,7 +2,7 @@ package com.frontier.regions;
 
 import java.util.Random;
 
-public class RegionNameGenerator 
+public class RegionNames
 {
 	private static final String[] COLD_PREFIXES = {"Frost", "Snow", "Ice", "Winter", "Glacial", "Arctic", "Chill", "Frozen"};
     private static final String[] COOL_PREFIXES = {"Mist", "Rain", "Pine", "Mountain", "Cloud", "Storm", "Fog", "Twilight"};
@@ -16,7 +16,7 @@ public class RegionNameGenerator
     private static final String[] TEMPERATE_SUFFIXES = {"Plains", "Hills", "Garden", "Glade", "Valley", "Path", "Wood", "Brook"};
     private static final String[] HOT_SUFFIXES = {"Sands", "Wastes", "Oasis", "Plateau", "Expanse", "Basin", "Dunes", "Terrace"};
 
-    public static String generateBiomeName(float temperature) 
+    public static String generateName(float temperature)
     {
         Random random = new Random();
         String prefix, middle, suffix;

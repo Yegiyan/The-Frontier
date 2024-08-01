@@ -89,22 +89,18 @@ public class Zone
     
     public String getDirection()
     {
-    	if (vertDir == null || horiDir == null)
+        if (vertDir == null || horiDir == null)
             return "Unknown";
-    	
-    	if (vertDir.equals(vDir.CENTER) && horiDir.equals(hDir.CENTER))
-    		return "CENTER";
-
-    	else if (!vertDir.equals(vDir.CENTER) && horiDir.equals(hDir.CENTER))
-    		return "" + vertDir;
-    	
-    	else if (vertDir.equals(vDir.CENTER) && !horiDir.equals(hDir.CENTER))
-    		return "" + horiDir;
-    	
-    	else
-    		return vertDir + "-" + horiDir;
+        if (vertDir.equals(vDir.CENTER) && horiDir.equals(hDir.CENTER))
+            return "Center";
+        else if (!vertDir.equals(vDir.CENTER) && horiDir.equals(hDir.CENTER))
+            return capitalize(vertDir.toString());
+        else if (vertDir.equals(vDir.CENTER) && !horiDir.equals(hDir.CENTER))
+            return capitalize(horiDir.toString());
+        else
+            return capitalize(vertDir.toString()) + "-" + capitalize(horiDir.toString());
     }
-    
+
     public vDir getVDir() {
         return vertDir;
     }
@@ -119,6 +115,12 @@ public class Zone
 
     public void setHDir(hDir dir) {
         this.horiDir = dir;
+    }
+    
+    private String capitalize(String str) {
+        if (str == null || str.isEmpty())
+            return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
 
     @Override

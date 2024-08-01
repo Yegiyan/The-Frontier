@@ -132,9 +132,9 @@ public class FrontierCommands
 	        LiteralArgumentBuilder<ServerCommandSource> command = CommandManager.literal("setFrontierFaction")
 	                .requires(source -> source.hasPermissionLevel(2))
 	                .then(CommandManager.argument("player", GameProfileArgumentType.gameProfile())
-	                .then(CommandManager.argument("faction", StringArgumentType.word())
+	                .then(CommandManager.argument("faction", StringArgumentType.greedyString())
 	                        .executes(context -> setFaction(context, GameProfileArgumentType.getProfileArgument(context, "player").iterator().next().getName(), 
-	                        		StringArgumentType.getString(context, "faction")))));
+	                                StringArgumentType.getString(context, "faction")))));
 	        dispatcher.register(command);
 	    });
 	    

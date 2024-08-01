@@ -13,6 +13,7 @@ import com.frontier.renderers.RegionMapRenderer;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.MapColor;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -21,8 +22,10 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -31,8 +34,8 @@ import net.minecraft.world.biome.Biome;
 
 public class RegionManager 
 {
-	public static CopyOnWriteArrayList<Region> allRegions = new CopyOnWriteArrayList<>();
-	public static CopyOnWriteArrayList<Zone> allZones = new CopyOnWriteArrayList<>();
+	public static CopyOnWriteArrayList<Region> regions = new CopyOnWriteArrayList<>();
+	public static CopyOnWriteArrayList<Zone> zones = new CopyOnWriteArrayList<>();
 	
 	private static final int ZONE_RADIUS = 2048;
     private static final int ZONE_WIDTH = 128;
@@ -73,7 +76,7 @@ public class RegionManager
 	            int z2 = z1 + ZONE_WIDTH;
 
 	            boolean zoneExists = false;
-	            for (Zone existingZone : allZones)
+	            for (Zone existingZone : zones)
 	            {
 	                if (existingZone.overlaps(x1, z1, x2, z2))
 	                {
@@ -85,7 +88,7 @@ public class RegionManager
 	            if (!zoneExists)
 	            {
 	                Zone newZone = new Zone(x1, z1, x2, z2, "Zone" + seed.nextInt(), null, false, (byte) 0);
-	                allZones.add(newZone);
+	                zones.add(newZone);
 	            }
 	        }
 	    }
@@ -93,7 +96,7 @@ public class RegionManager
 
 	public static void assignRegions(World world)
 	{
-	    List<Zone> unchartedZones = allZones.stream().filter(zone -> !zone.isCharted()).collect(Collectors.toList());
+	    List<Zone> unchartedZones = zones.stream().filter(zone -> !zone.isCharted()).collect(Collectors.toList());
 
 	    for (Zone unchartedZone : unchartedZones)
 	    {
@@ -101,7 +104,7 @@ public class RegionManager
 	        double minDistanceToRegion = Double.MAX_VALUE;
 
 	        // find closest existing region to the uncharted zone
-	        for (Region region : allRegions)
+	        for (Region region : regions)
 	        {
 	        	region.assignZoneDirection();
 	            double distance = calculateDistanceToRegion(unchartedZone, region);
@@ -129,9 +132,9 @@ public class RegionManager
 	            boolean isWild = seed.nextInt(100) < WILD_CHANCE;
 
 	            float avgTemp = calculateAverageTemperature(Collections.singletonList(unchartedZone), world);
-	            String regionName = RegionNameGenerator.generateBiomeName(avgTemp);
+	            String regionName = RegionNames.generateName(avgTemp);
 	            Region newRegion = new Region(regionName, isWild, (byte) colorId);
-	            allRegions.add(newRegion);
+	            regions.add(newRegion);
 
 	            unchartedZone.setRegion(newRegion.getName());
 	            unchartedZone.setColor(newRegion.getColor());
@@ -160,7 +163,7 @@ public class RegionManager
 
         NbtCompound regionsCompound = new NbtCompound();
 
-        for (Region region : allRegions)
+        for (Region region : regions)
         {
             NbtCompound regionNbt = new NbtCompound();
             regionNbt.putByte("Color", region.getColor());
@@ -209,8 +212,8 @@ public class RegionManager
         	NbtCompound nbt = NbtIo.readCompressed(nbtFile);
         	NbtCompound regionsCompound = nbt.getCompound("Regions");
 
-            allRegions.clear();
-            allZones.clear();
+            regions.clear();
+            zones.clear();
 
             for (String regionName : regionsCompound.getKeys())
             {
@@ -219,7 +222,7 @@ public class RegionManager
                 boolean isWild = regionNbt.getBoolean("IsWild");
 
                 Region region = new Region(regionName, isWild, color);
-                allRegions.add(region);
+                regions.add(region);
 
                 NbtList zonesList = regionNbt.getList("Zones", 10);
                 for (NbtElement zoneElement : zonesList)
@@ -240,7 +243,7 @@ public class RegionManager
                     zone.setVDir(vertDir);
                     zone.setHDir(horiDir);
                     
-                    allZones.add(zone);
+                    zones.add(zone);
                     region.addZone(zone);
                 }
             }
@@ -309,7 +312,7 @@ public class RegionManager
     
     public static String getPlayerDirection(BlockPos playerPosition)
     {
-        for (Zone zone : allZones) 
+        for (Zone zone : zones) 
             if (zone.isWithinBounds(playerPosition))
                 return zone.getDirection();
         return " ";
@@ -317,13 +320,13 @@ public class RegionManager
     
     public static String getRegionWild(BlockPos playerPosition)
     {
-    	for (Zone zone : allZones)
+    	for (Zone zone : zones)
         {
             if (zone.isWithinBounds(playerPosition))
             {
                 Region region = findRegionForZone(zone);
                 if (region.isWild())
-                    return " (Wild)";
+                    return "Wild";
             }
         }
     	return "";
@@ -331,7 +334,7 @@ public class RegionManager
     
     public static String getPlayerRegion(BlockPos playerPosition)
     {
-        for (Zone zone : allZones)
+        for (Zone zone : zones)
         {
             if (zone.isWithinBounds(playerPosition))
             {
@@ -345,16 +348,49 @@ public class RegionManager
 
     private static Region findRegionForZone(Zone zone)
     {
-        for (Region region : allRegions)
+        for (Region region : regions)
             if (region.getZones().contains(zone))
                 return region;
         return null;
     }
     
+    public static String getBiomeName(PlayerEntity player)
+	{
+		RegistryEntry<Biome> biomeEntry = player.getWorld().getBiome(player.getBlockPos());
+		RegistryKey<Biome> biomeKey = biomeEntry.getKey().get();
+        Identifier biomeId = biomeKey.getValue();
+        String biomeName = "Unknown";
+        if (biomeEntry.getKey().isPresent())
+        {
+        	biomeName = biomeId.toString();
+	        int colonIndex = biomeName.indexOf(':');
+	        if (colonIndex != -1)
+	            biomeName = biomeName.substring(colonIndex + 1);
+	        biomeName = formatBiomeName(biomeName);
+        }
+        return biomeName;
+	}
+	
+	private static String formatBiomeName(String name)
+	{
+	    String[] words = name.split("_");
+	    StringBuilder formatted = new StringBuilder();
+	    for (String word : words)
+	    {
+	        if (!word.isEmpty())
+	        {
+	            formatted.append(Character.toUpperCase(word.charAt(0)));
+	            formatted.append(word.substring(1));
+	            formatted.append(" ");
+	        }
+	    }
+	    return formatted.toString().trim();
+	}
+    
     public static void reset()
     {
-        allRegions.clear();
-        allZones.clear();
+        regions.clear();
+        zones.clear();
     }
     
     public static void setWorldSeed(long worldSeed) {

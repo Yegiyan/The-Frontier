@@ -58,8 +58,9 @@ import net.minecraft.util.math.Direction;
 public class SettlementManager
 {
     private static Map<String, Settlement> settlements = new HashMap<>();
-    private static BlockPos bellPos = null;
-
+    private static BlockPos settlementOriginPos = null;
+    //world.getBlockState(blockHitResult.getBlockPos()).getBlock() == Blocks.BELL
+    
     public static void registerCallback()
 	{
 	    UseBlockCallback.EVENT.register((player, world, hand, blockHitResult) ->
@@ -67,10 +68,10 @@ public class SettlementManager
 	    	PlayerData playerData = PlayerData.players.get(player.getUuid());
 	    	if (playerData != null)
 	    	{
-	    		if (!world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == Items.CLOCK && world.getBlockState(blockHitResult.getBlockPos()).getBlock() == Blocks.BELL)
-	    			bellPos = blockHitResult.getBlockPos();
+	    		if (!world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == FrontierItems.SETTLEMENT_CHARTER)
+	    			settlementOriginPos = blockHitResult.getBlockPos();
 	    		
-	    		if (world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == FrontierItems.BLUEPRINT_TOWNHALL)
+	    		if (world.isClient && !playerData.getProfession().equals("Leader") && player.getStackInHand(hand).getItem() == FrontierItems.SETTLEMENT_CHARTER)
 		        {
 		        	MinecraftClient.getInstance().setScreen(new CreateSettlementScreen());
 		            return ActionResult.SUCCESS;
@@ -94,6 +95,14 @@ public class SettlementManager
             if (!settlementExists(factionName)) // TODO: check for faction names that aren't necessarily settlements
             {
                 BlockPos newSettlementPos = playerData.getPlayer(server).getBlockPos();
+                
+                if (settlementOriginPos == null)
+                {
+                	playerData.getPlayer(server).sendMessage(Text.literal("Settlement not created due invalid settlement establishment position!").styled(style -> style.withColor(Formatting.WHITE)), false);
+               	 	Frontier.LOGGER.error("SettlementManager - settlementOriginPos is null!");
+               	 	return null;
+                }
+                
                 if (!isTerritoryOverlap(newSettlementPos))
                 {
                     Settlement settlement = new Settlement(factionName, leader, newSettlementPos, server);
@@ -111,7 +120,7 @@ public class SettlementManager
                     	return null;
                     }
                     
-                    server.getOverworld().setBlockState(bellPos, Blocks.AIR.getDefaultState());
+                    //server.getOverworld().setBlockState(settlementOriginPos, Blocks.AIR.getDefaultState());
                     return settlement;
                 } 
                 else
@@ -126,7 +135,7 @@ public class SettlementManager
                 return null;
             }
         }
-        Frontier.LOGGER.error("SettlementManager() - createSettlement() playerData is null!");
+        Frontier.LOGGER.error("SettlementManager - createSettlement() playerData is null!");
         return null;
     }
     
@@ -151,7 +160,7 @@ public class SettlementManager
 		    }
 		}
 		else
-			Frontier.LOGGER.error("SettlementManager() - create() playerData is null!");
+			Frontier.LOGGER.error("SettlementManager - create() playerData is null!");
     }
 	
     public static void abandon(UUID leader, String factionName, MinecraftServer server)
@@ -172,7 +181,7 @@ public class SettlementManager
 	    	}
 		}
 		else
-			Frontier.LOGGER.error("SettlementManager() - abandon() playerData is null!");
+			Frontier.LOGGER.error("SettlementManager - abandon() playerData is null!");
 		
 		electNewLeader(leader, factionName, server);
     }
@@ -243,23 +252,13 @@ public class SettlementManager
 
 	    if (nbtFile.exists())
 	    {
-	        try
-	        {
-	            rootNbt = NbtIo.readCompressed(nbtFile);
-	        }
-	        catch (IOException e)
-	        {
-	        	e.printStackTrace(); 
-	        	return;
-	        }
+	        try { rootNbt = NbtIo.readCompressed(nbtFile); }
+	        catch (IOException e) { e.printStackTrace(); return; }
 	    }
 	    else
 	    {
 	        rootNbt = new NbtCompound();
-	        try
-	        {
-	            nbtFile.createNewFile();
-	        }
+	        try { nbtFile.createNewFile(); }
 	        catch (IOException e) { e.printStackTrace(); }
 	    }
 
@@ -372,6 +371,7 @@ public class SettlementManager
 	        for (Map.Entry<String, Integer> statEntry : settlement.getStatistics().entrySet())
 	        	statisticsNbt.put(statEntry.getKey(), NbtInt.of(statEntry.getValue()));
 	        
+	        settlementNbt.putUuid("UUID", settlement.getUUID());
 	        settlementNbt.putUuid("Leader", settlement.getLeader());
 	        settlementNbt.putLong("Position", settlement.getPosition().asLong());
 	        settlementNbt.put("Territory", territoryNbt);
@@ -420,9 +420,12 @@ public class SettlementManager
 	            {
 	                NbtCompound settlementNbt = settlementsNbt.getCompound(factionName);
 
+	                UUID settlementUUID = settlementNbt.getUuid("UUID");
 	                UUID leader = settlementNbt.getUuid("Leader");
 	                BlockPos position = BlockPos.fromLong(settlementNbt.getLong("Position"));
+	                
 	                Settlement settlement = new Settlement(factionName, leader, position, server);
+	                settlement.setUuid(settlementUUID);
 
 	                // load territory
 	                if (settlementNbt.contains("Territory", 9))
@@ -462,7 +465,6 @@ public class SettlementManager
 	                    settler.readCustomDataFromNbt(settlerNbt);
 	                    settlement.addSettler(settler);
 	                }
-
 	                
 	                // load players
 	                NbtList playersNbt = settlementNbt.getList("Players", 8);
@@ -680,7 +682,7 @@ public class SettlementManager
 	private static BlockPos getFrontPosition(ServerPlayerEntity player, int distance)
 	{
 	    Direction facing = player.getHorizontalFacing();
-	    return bellPos.offset(facing, distance);
+	    return settlementOriginPos.offset(facing, distance);
 	}
 	
 	public static boolean isTerritoryOverlap(BlockPos newSettlementPos)

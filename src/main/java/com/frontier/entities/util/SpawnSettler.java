@@ -34,8 +34,8 @@ public class SpawnSettler
 
 	    do
 	    {
-	    	firstName = SettlerName.generateFirstName(gender);
-	    	lastName = SettlerName.generateLastName();
+	    	firstName = SettlerNames.generateFirstName(gender);
+	    	lastName = SettlerNames.generateLastName();
 	        name = firstName + " " + lastName;
 	    }
 	    while (occupiedNames.contains(name));
