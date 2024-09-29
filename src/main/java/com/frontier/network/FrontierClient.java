@@ -1,5 +1,6 @@
 package com.frontier.network;
 
+import com.frontier.items.BlueprintItem;
 import com.frontier.renderers.TerritoryRenderer;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -14,5 +15,6 @@ public class FrontierClient implements ClientModInitializer
 	{
 		FrontierPacketsClient.registerClientPacketHandlers();
 		TerritoryRenderer.register();
+		BlueprintItem.register();
 	}
 }

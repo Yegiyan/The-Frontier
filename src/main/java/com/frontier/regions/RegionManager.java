@@ -32,7 +32,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
-public class RegionManager 
+public class RegionManager
 {
 	public static CopyOnWriteArrayList<Region> regions = new CopyOnWriteArrayList<>();
 	public static CopyOnWriteArrayList<Zone> zones = new CopyOnWriteArrayList<>();

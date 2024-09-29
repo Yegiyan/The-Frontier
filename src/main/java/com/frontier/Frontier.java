@@ -23,21 +23,16 @@ public class Frontier implements ModInitializer
 	public static String MOD_ID = "frontier";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	// go through every class and clean them up or make them more modular
-	// make sure conventions are consistent and redundancy is minimal/non-existant
-	
-	// gucci up the player card screen
-	// fix regions being busted on tier 0 & 1 maps when using higher tiers
-	// show tier 0 dimensions of structure to player when they try to manually place
+	// create structure placement confirmation GUI
 	
 	// architect:
 	// create idle    goal
 	// create build   goal
 	// create repair  goal
 	// create upgrade goal
-	// create choose build location goal
+	// create choose 'random' build location goal
 	
-	// allow custom building activation
+	// implement custom structure activation with blueprints/item frames
 
     @Override
     public void onInitialize()

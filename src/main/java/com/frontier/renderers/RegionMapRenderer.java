@@ -17,7 +17,7 @@ import net.minecraft.client.texture.TextureManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.map.MapState;
 
-public class RegionMapRenderer extends MapRenderer 
+public class RegionMapRenderer extends MapRenderer
 {
     public static int minX, minZ, maxX, maxZ;
     public static boolean isRenderingEnabled = false;

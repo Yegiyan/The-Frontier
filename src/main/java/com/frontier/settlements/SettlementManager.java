@@ -328,7 +328,6 @@ public class SettlementManager
 	            graveNbt.putString("Birth", grave.getBirth());
 	            graveNbt.putString("Death", grave.getDeath());
 	            graveNbt.putString("Eulogy", grave.getEulogy());
-	            
 	            gravesNbt.add(graveNbt);
 	        }
 	        
