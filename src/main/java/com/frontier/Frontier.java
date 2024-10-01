@@ -22,14 +22,12 @@ public class Frontier implements ModInitializer
 {
 	public static String MOD_ID = "frontier";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-
-	// create structure placement confirmation GUI
 	
 	// architect:
-	// create idle    goal
 	// create build   goal
 	// create repair  goal
 	// create upgrade goal
+	// create idle    goal
 	// create choose 'random' build location goal
 	
 	// implement custom structure activation with blueprints/item frames

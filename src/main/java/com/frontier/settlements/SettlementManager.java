@@ -111,7 +111,7 @@ public class SettlementManager
                     ServerPlayerEntity player = playerData.getPlayer(server);
                     BlockPos townHallPos = getFrontPosition(player, 2);
                     Direction facing = player.getHorizontalFacing();
-                    settlement.constructStructure("townhall", townHallPos, server.getOverworld(), facing);
+                    //settlement.constructStructure("townhall", townHallPos, server.getOverworld(), facing);
                     
                     if (settlement.abortSettlementCreation)
                     {
@@ -678,6 +678,7 @@ public class SettlementManager
 		return state;
 	}
 
+	@SuppressWarnings("unused")
 	private static BlockPos getFrontPosition(ServerPlayerEntity player, int distance)
 	{
 	    Direction facing = player.getHorizontalFacing();

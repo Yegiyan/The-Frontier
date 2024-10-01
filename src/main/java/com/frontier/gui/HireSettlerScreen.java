@@ -286,7 +286,7 @@ public class HireSettlerScreen extends Screen
 		barTextures.add(new TextureElement(NAMEPLATE_TEXTURE, (backgroundPosX + 5), (backgroundPosY + 8), 238, 36, 0, 0, 256, 256, null, 1.0f, 1.0f));
 		mainTextures.add(new TextureElement(expertiseTexture, (backgroundPosX + 214), (backgroundPosY + 18), 12, 12, "Expertise", 1.2f, 1.2f));
 
-		governingTextures.add(new TextureElement(ARCHITECT_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Sells blueprints and constructs / maintains buildings", 1.0f, 1.0f));
+		governingTextures.add(new TextureElement(ARCHITECT_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 120), 16, 16, "Sells blueprints and can construct or maintain buildings", 1.0f, 1.0f));
 		governingTextures.add(new TextureElement(COURIER_TEXTURE, (backgroundPosX + 87), (backgroundPosY + 120), 16, 16, "Sends requests or demands to other settlements", 1.0f, 1.0f));
 		governingTextures.add(new TextureElement(DELIVERER_TEXTURE, (backgroundPosX + 167), (backgroundPosY + 120), 16, 16, "Disperses settlement supplies to other settlers", 1.0f, 1.0f));
 		governingTextures.add(new TextureElement(INNKEEPER_TEXTURE, (backgroundPosX + 7), (backgroundPosY + 150), 16, 16, "Provides shelter and rest for foreigners", 1.0f, 1.0f));

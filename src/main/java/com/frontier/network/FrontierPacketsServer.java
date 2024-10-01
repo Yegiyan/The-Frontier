@@ -1,5 +1,6 @@
 package com.frontier.network;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,7 +13,9 @@ import com.frontier.entities.util.HireSettler;
 import com.frontier.items.FrontierItems;
 import com.frontier.register.FrontierEntities;
 import com.frontier.settlements.Blueprint;
+import com.frontier.settlements.Settlement;
 import com.frontier.settlements.SettlementManager;
+import com.frontier.structures.Structure;
 import com.frontier.util.FrontierUtil;
 
 import io.netty.buffer.Unpooled;
@@ -40,6 +43,8 @@ public class FrontierPacketsServer
 	public static final Identifier SYNC_SETTLER_INVENTORY_ID = new Identifier(Frontier.MOD_ID, "sync_settler_inventory");
 	public static final Identifier HIRE_SETTLER_ID = new Identifier(Frontier.MOD_ID, "hire_settler");
 	
+	public static final Identifier BLUEPRINT_PLACEMENT_ID = new Identifier(Frontier.MOD_ID, "blueprint_placement");
+	
 	public static void registerHandlers()
 	{
 		ServerPlayNetworking.registerGlobalReceiver(CREATE_SETTLEMENT_ID, (server, player, handler, buf, responseSender) ->
@@ -64,57 +69,69 @@ public class FrontierPacketsServer
 		
 		ServerPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_REQUEST_ARCHITECT_ID, (server, player, handler, buf, responseSender) ->
 		{
-			UUID settlerUUID = buf.readUuid();
-            String settlerFaction = buf.readString(32767);
-            
-			server.execute(() ->
-			{
-				PlayerData playerData = PlayerData.players.get(player.getUuid());
-				if (playerData != null)
-				{
-					List<ItemStack> structureInventory = SettlementManager.getSettlement(playerData.getFaction()).getStructureByName("townhall").getStructureInventory(player.getServer().getOverworld());
-					
-					PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-					buffer.writeInt(structureInventory.size());
-					buffer.writeUuid(settlerUUID);
-					buffer.writeString(settlerFaction);
-					
-					for (ItemStack itemStack : structureInventory)
-					{
-						buffer.writeItemStack(itemStack);
-						buffer.writeInt(itemStack.getCount());
-					}
+		    UUID settlerUUID = buf.readUuid();
+		    String settlerFaction = buf.readString(32767);
+		    
+		    server.execute(() ->
+		    {
+		        PlayerData playerData = PlayerData.players.get(player.getUuid());
+		        if (playerData != null)
+		        {
+		            List<ItemStack> structureInventory = new ArrayList<>();
+		            
+		            Settlement settlement = SettlementManager.getSettlement(playerData.getFaction());
+		            if (settlement != null)
+		            {
+		                Structure townhall = settlement.getStructureByName("townhall");
+		                if (townhall != null)
+		                    structureInventory = townhall.getStructureInventory(player.getServer().getOverworld());
+		            }
 
-					ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_ARCHITECT_ID, buffer);
-				}
-			});
+		            PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+		            buffer.writeInt(structureInventory.size());
+		            buffer.writeUuid(settlerUUID);
+		            buffer.writeString(settlerFaction);
+		            
+		            for (ItemStack itemStack : structureInventory)
+		            {
+		                buffer.writeItemStack(itemStack);
+		                buffer.writeInt(itemStack.getCount());
+		            }
+
+		            ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_ARCHITECT_ID, buffer);
+		        }
+		    });
 		});
 		
 		ServerPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_REQUEST_PLAYER_ID, (server, player, handler, buf, responseSender) ->
 		{
-			server.execute(() ->
-			{
-				PlayerData playerData = PlayerData.players.get(player.getUuid());
-				if (playerData != null)
-				{
-					PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-					
-					if (SettlementManager.getSettlement(playerData.getFaction()) != null)
-					{
-						List<ItemStack> structureInventory = SettlementManager.getSettlement(playerData.getFaction()).getStructureByName("townhall").getStructureInventory(player.getServer().getOverworld());
-						
-						buffer.writeInt(structureInventory.size());
-						
-						for (ItemStack itemStack : structureInventory)
-						{
-							buffer.writeItemStack(itemStack);
-							buffer.writeInt(itemStack.getCount());
-						}
-					}
+		    server.execute(() ->
+		    {
+		        PlayerData playerData = PlayerData.players.get(player.getUuid());
+		        if (playerData != null)
+		        {
+		            PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+		            List<ItemStack> structureInventory = new ArrayList<>();
+		            
+		            Settlement settlement = SettlementManager.getSettlement(playerData.getFaction());
+		            if (settlement != null)
+		            {
+		                Structure townhall = settlement.getStructureByName("townhall");
+		                if (townhall != null)
+		                    structureInventory = townhall.getStructureInventory(player.getServer().getOverworld());
+		            }
 
-					ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_PLAYER_ID, buffer);
-				}
-			});
+		            buffer.writeInt(structureInventory.size());
+		            
+		            for (ItemStack itemStack : structureInventory)
+		            {
+		                buffer.writeItemStack(itemStack);
+		                buffer.writeInt(itemStack.getCount());
+		            }
+
+		            ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_PLAYER_ID, buffer);
+		        }
+		    });
 		});
 		
 		ServerPlayNetworking.registerGlobalReceiver(BUY_BLUEPRINT_ID, (server, player, handler, buf, responseSender) ->
@@ -223,5 +240,14 @@ public class FrontierPacketsServer
 	            	Frontier.LOGGER.error("FrontierPacketsServer() - Nomad entity not found!");
 		    });
 		});
+		
+		ServerPlayNetworking.registerGlobalReceiver(BLUEPRINT_PLACEMENT_ID, (server, player, handler, buf, responseSender) ->
+		{
+			
+	        server.execute(() ->
+	        {
+
+	        });
+	    });
 	}
 }

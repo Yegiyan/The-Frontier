@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier;
 
 public class FrontierItems
 {
-	public static final Item SETTLEMENT_CHARTER = register(new BlueprintItem(new Item.Settings().maxCount(1)), "settlement_charter");
+	public static final Item SETTLEMENT_CHARTER = register(new Item(new Item.Settings().maxCount(1)), "settlement_charter");
 	public static final Item BLUEPRINT_TOWNHALL = register(new BlueprintItem(new Item.Settings().maxCount(1)), "blueprint_townhall");
 	public static final Item BLUEPRINT_WAREHOUSE = register(new BlueprintItem(new Item.Settings().maxCount(1)), "blueprint_warehouse");
 	public static final Item BLUEPRINT_HOUSE = register(new BlueprintItem(new Item.Settings().maxCount(1)), "blueprint_house");

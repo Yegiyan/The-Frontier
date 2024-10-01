@@ -22,18 +22,18 @@ import net.minecraft.world.World;
 public class ArchitectEntity extends SettlerEntity
 {
 	public static final Identifier[] ARCHITECT_TEXTURES_MALE = new Identifier[]
-			{
+	{
 	        new Identifier("frontier", "textures/entity/architect/architect_male_0.png"),
 	        new Identifier("frontier", "textures/entity/architect/architect_male_1.png"),
 	        new Identifier("frontier", "textures/entity/architect/architect_male_2.png"),
-	        };
+	};
 	
 	public static final Identifier[] ARCHITECT_TEXTURES_FEMALE = new Identifier[]
-			{
-	        new Identifier("frontier", "textures/entity/architect/architect_female_0.png"),
-	        new Identifier("frontier", "textures/entity/architect/architect_female_1.png"),
-	        new Identifier("frontier", "textures/entity/architect/architect_female_2.png"),
-	        };
+	{
+			new Identifier("frontier", "textures/entity/architect/architect_female_0.png"),
+			new Identifier("frontier", "textures/entity/architect/architect_female_1.png"),
+			new Identifier("frontier", "textures/entity/architect/architect_female_2.png"),
+	};
 	
 	public ArchitectEntity(EntityType<? extends PathAwareEntity> entityType, World world)
 	{

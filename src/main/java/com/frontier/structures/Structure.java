@@ -126,6 +126,8 @@ public abstract class Structure
 	// - upgradeStructure(world)
 	// - repairStructure(world)
 	
+	// or call resume between world loads
+	
 	public void resume(ServerWorld world)
 	{
 		if (isClearing)

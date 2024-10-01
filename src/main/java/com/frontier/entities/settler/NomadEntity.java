@@ -34,18 +34,18 @@ public class NomadEntity extends SettlerEntity
 	private BlockPos bellPos;
 	
 	public static final Identifier[] NOMAD_TEXTURES_MALE = new Identifier[]
-			{
+	{
 	        new Identifier("frontier", "textures/entity/nomad/nomad_male_0.png"),
 	        new Identifier("frontier", "textures/entity/nomad/nomad_male_1.png"),
 	        new Identifier("frontier", "textures/entity/nomad/nomad_male_2.png"),
-	        };
+	};
 	
 	public static final Identifier[] NOMAD_TEXTURES_FEMALE = new Identifier[] 
-			{
+	{
 	        new Identifier("frontier", "textures/entity/nomad/nomad_female_0.png"),
 	        new Identifier("frontier", "textures/entity/nomad/nomad_female_1.png"),
 	        new Identifier("frontier", "textures/entity/nomad/nomad_female_2.png"),
-	        };
+	};
 	
 	public NomadEntity(EntityType<? extends PathAwareEntity> entityType, World world) 
 	{

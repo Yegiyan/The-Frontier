@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import com.frontier.PlayerData;
 import com.frontier.entities.settler.SettlerEntity;
+import com.frontier.structures.House;
 import com.frontier.structures.Structure;
 import com.frontier.structures.TownHall;
 import com.frontier.structures.Warehouse;
@@ -119,6 +120,9 @@ public class Settlement
                 break;
             case "warehouse":
                 structure = new Warehouse(structureName, this.name, position, facing);
+                break;
+            case "house":
+                structure = new House(structureName, this.name, position, facing);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown structure type: " + structureName);
