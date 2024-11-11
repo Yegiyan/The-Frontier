@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.lwjgl.glfw.GLFW;
 
 import com.frontier.Frontier;
+import com.frontier.PlayerData;
 import com.frontier.blueprint.BlueprintState;
 import com.frontier.blueprint.BlueprintStateManager;
 import com.frontier.gui.BlueprintScreen;
@@ -53,8 +54,9 @@ public class BlueprintItem extends Item
 			MinecraftClient client = MinecraftClient.getInstance();
 			long windowHandle = client.getWindow().getHandle();
 			PlayerEntity player = client.player;
+			PlayerData playerData = PlayerData.players.get(player.getUuid());
 
-			if (player != null)
+			if (player != null && playerData.getProfession().equals("Leader"))
 			{
 				BlueprintState blueprintState = BlueprintStateManager.getOrCreateBlueprintState(player);
 				ItemStack itemStackInHand = player.getMainHandStack();
@@ -92,11 +94,15 @@ public class BlueprintItem extends Item
 	{
 		BlueprintState blueprintState = BlueprintStateManager.getOrCreateBlueprintState(player);
 		ItemStack itemStackInHand = player.getStackInHand(hand);
+		PlayerData playerData = PlayerData.players.get(player.getUuid());
 
 		if (!world.isClient)
 		{
 			HitResult hitResult = player.raycast(5.0D, 0.0F, false);
 
+			if (!playerData.getProfession().equals("Leader"))
+				return new TypedActionResult<>(ActionResult.FAIL, itemStackInHand);
+			
 			// check if blueprint is the same
 			if (blueprintState.isPlacing() && blueprintState.getActiveBlueprint() != itemStackInHand.getItem())
 			{

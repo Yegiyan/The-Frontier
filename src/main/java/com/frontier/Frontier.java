@@ -23,6 +23,24 @@ public class Frontier implements ModInitializer
 	public static String MOD_ID = "frontier";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	
+	// don't allow building other structures until a townhall is active
+	
+	// custom placement GUI for each blueprint?
+	// change structure material type?
+	
+	// 1. hit confirm
+	// 2. send required info across the network
+	// 3. put structure into queue
+	// 4. alert architect of queued buildings
+	// 5. architect checks if we have required materials
+	// 6. if we don't, alert the player
+	// 7. if we do, architect grabs required materials and goes to placement position
+	// 8. architect begins placing blocks, looking at the position of the block they're placing as well as walking near it
+	// 9. once constructed, architect goes to townhall
+	// 10. architect checks for other queued buildings
+	// 11. if not he can go idle and wait for STEP 1
+	// 12. if we do, we go to STEP 5
+	
 	// architect:
 	// create build   goal
 	// create repair  goal
