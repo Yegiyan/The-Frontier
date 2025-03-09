@@ -2,12 +2,18 @@ package com.frontier.gui;
 
 import java.awt.Color;
 
+import com.frontier.PlayerData;
 import com.frontier.blueprint.BlueprintState;
+import com.frontier.network.FrontierPacketsServer;
 
+import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -54,13 +60,17 @@ public class BlueprintScreen extends Screen
 
         this.confirmButton = ButtonWidget.builder(Text.literal("Confirm"), button ->
         {
-        	//PlayerEntity player = MinecraftClient.getInstance().player;
-        	//PlayerData playerData = PlayerData.players.get(player.getUuid());
-        	
-        	//PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
-    	    //passedData.writeString(playerData.getFaction());
-    	    //ClientPlayNetworking.send(FrontierPacketsServer.BLUEPRINT_PLACEMENT_ID, passedData);
-        	
+            PlayerEntity player = MinecraftClient.getInstance().player;
+            PlayerData playerData = PlayerData.players.get(player.getUuid());
+
+            PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+            passedData.writeString(playerData.getFaction());
+            passedData.writeString(blueprintState.getName());
+            passedData.writeBlockPos(blueprintState.getPlacementPos());
+            passedData.writeEnumConstant(blueprintState.getFacing());
+            ClientPlayNetworking.send(FrontierPacketsServer.BLUEPRINT_PLACEMENT_ID, passedData);
+            
+            blueprintState.reset();
             MinecraftClient.getInstance().setScreen(null);
         }).dimensions(backgroundPosX + 232, backgroundPosY + 91, 60, 20).build();
         

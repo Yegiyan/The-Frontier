@@ -2,6 +2,7 @@ package com.frontier.blueprint;
 
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 public class BlueprintState
 {
@@ -10,6 +11,7 @@ public class BlueprintState
 	private boolean isPlacing = false, isInspecting = false;
 	private Item activeBlueprint;
 	private String name = "null";
+	private Direction facing = Direction.NORTH;
 
 	public void reset()
 	{
@@ -21,6 +23,7 @@ public class BlueprintState
 	    this.setInspecting(false);
 	    this.activeBlueprint = null;
 	    this.setName("null");
+	    this.setFacing(Direction.NORTH);
 	}
 	
 	public BlockPos getPlacementPos() {
@@ -85,5 +88,13 @@ public class BlueprintState
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public Direction getFacing() {
+	    return facing;
+	}
+	
+	public void setFacing(Direction facing) {
+	    this.facing = facing;
 	}
 }

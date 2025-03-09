@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.frontier.settlements.SettlementManager;
 import com.frontier.util.FrontierUtil;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
@@ -18,6 +19,7 @@ import net.minecraft.util.WorldSavePath;
 public class PlayerData 
 {
 	public static Map<UUID, PlayerData> players = new HashMap<>();
+	
     protected ServerPlayerEntity player;
     private MinecraftServer server;
     private UUID uuid;
@@ -40,7 +42,7 @@ public class PlayerData
     public void updateRenown(int score)
     {
         this.renown += score;
-        this.renown = FrontierUtil.clamp(this.renown, -100, 100);
+        this.renown = FrontierUtil.clamp(this.renown, 0, 100);
     }
     
     public void saveData()
@@ -127,7 +129,11 @@ public class PlayerData
         catch (IOException e) { e.printStackTrace(); }
     }
     
-    public ServerPlayerEntity getPlayer(MinecraftServer server) {
+    public static PlayerData getData(PlayerEntity player) {
+		return players.get(player.getUuid());
+	}
+
+	public ServerPlayerEntity getPlayer(MinecraftServer server) {
         if (server == null)
         	return null;
         return server.getPlayerManager().getPlayer(this.uuid);
@@ -159,6 +165,10 @@ public class PlayerData
     
     public String getProfession() {
         return profession;
+    }
+    
+    public boolean isLeader() {
+    	return profession.equals("Leader");
     }
     
     public int getRenown() {

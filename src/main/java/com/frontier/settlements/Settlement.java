@@ -8,12 +8,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.frontier.Frontier;
 import com.frontier.PlayerData;
 import com.frontier.entities.settler.SettlerEntity;
-import com.frontier.structures.House;
 import com.frontier.structures.Structure;
-import com.frontier.structures.TownHall;
-import com.frontier.structures.Warehouse;
+import com.frontier.structures.StructureFactory;
 import com.frontier.util.FrontierUtil;
 
 import net.minecraft.item.Items;
@@ -28,10 +27,10 @@ public class Settlement
 {
     private String name;
     private UUID uuid;
-	private UUID leader;
-	private BlockPos position;
-	private Set<ChunkPos> territory;
-	
+    private UUID leader;
+    private BlockPos position;
+    private Set<ChunkPos> territory;
+    
     private Map<UUID, Integer> reputations;
     private List<Structure> structures;
     private List<Grave> graves;
@@ -74,7 +73,7 @@ public class Settlement
     }
     
     private void generateTerritory()
-	{
+    {
         int centerX = this.position.getX() >> 4;
         int centerZ = this.position.getZ() >> 4;
         for (int dx = -TERRITORY_CHUNK_RADIUS; dx <= TERRITORY_CHUNK_RADIUS; dx++)
@@ -85,8 +84,8 @@ public class Settlement
     
     private void initSettlementStats()
     {
-    	// population
-    	statistics.put("Players", 0);
+        // population
+        statistics.put("Players", 0);
         statistics.put("Settlers", 0);
         statistics.put("Visitors", 0);
         statistics.put("Merchants", 0);
@@ -112,32 +111,125 @@ public class Settlement
     
     protected void constructStructure(String structureName, BlockPos position, ServerWorld world, Direction facing)
     {
-        Structure structure;
-        switch (structureName)
+        Structure structure = StructureFactory.createStructure(structureName, this.name, position, facing);
+        
+        if (structure == null)
         {
-            case "townhall":
-                structure = new TownHall(structureName, this.name, position, facing);
-                break;
-            case "warehouse":
-                structure = new Warehouse(structureName, this.name, position, facing);
-                break;
-            case "house":
-                structure = new House(structureName, this.name, position, facing);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown structure type: " + structureName);
+            Frontier.LOGGER.error("Failed to create structure: " + structureName);
+            abortSettlementCreation = true;
+            return;
         }
-
+        
         structure.constructStructure(world);
         
         if (!structure.canConstruct())
         {
-        	abortSettlementCreation = true;
-        	return;
+            abortSettlementCreation = true;
+            return;
         }
         
         structures.add(structure);
+        updateStatistic("Structures", 1);
+        
+        // update statistics
+        if (structureName.equals("house"))
+            updateStatistic("Housing", 1);
+        else if (structureName.contains("tower"))
+            updateStatistic("Towers", 1);
     }
+    
+    // spawn a structure instantly
+    public void spawnStructure(String structureName, BlockPos position, ServerWorld world, Direction facing)
+    {
+        Structure structure = StructureFactory.createStructure(structureName, this.name, position, facing);
+        
+        if (structure == null)
+        {
+            Frontier.LOGGER.error("Failed to create structure: " + structureName);
+            return;
+        }
+        
+        structure.spawnStructure(world);
+        
+        if (structure.isConstructed())
+        {
+            structures.add(structure);
+            updateStatistic("Structures", 1);
+            
+            // update statistics
+            if (structureName.equals("house"))
+                updateStatistic("Housing", 1);
+            else if (structureName.contains("tower"))
+                updateStatistic("Towers", 1);
+        }
+    }
+    
+    // upgrade all eligible structures
+    public void upgradeStructures(ServerWorld world)
+    {
+        for (Structure structure : structures)
+            if (structure.upgradeAvailable() && structure.isConstructed() && !structure.isUpgrading())
+                structure.upgrade(world);
+    }
+    
+    // upgrade a specific structure
+    public boolean upgradeStructure(String structureName, ServerWorld world)
+    {
+        Structure structure = getStructureByName(structureName);
+        if (structure != null && structure.upgradeAvailable() && structure.isConstructed() && !structure.isUpgrading())
+        {
+            structure.upgrade(world);
+            return true;
+        }
+        return false;
+    }
+    
+    // repair all eligible structures
+    public void repairStructures(ServerWorld world)
+    {
+        for (Structure structure : structures)
+            if (structure.requiresRepair() && structure.isConstructed() && !structure.isUpgrading())
+                structure.getRepairManager().repairStructure(world);
+    }
+    
+    // repair a specific structure
+    public boolean repairStructure(String structureName, ServerWorld world)
+    {
+        Structure structure = getStructureByName(structureName);
+        if (structure != null && structure.requiresRepair() && structure.isConstructed() && !structure.isUpgrading())
+        {
+            structure.getRepairManager().repairStructure(world);
+            return true;
+        }
+        return false;
+    }
+    
+	public List<Structure> getStructuresByType(Structure.StructureType type)
+	{
+		List<Structure> result = new ArrayList<>();
+		for (Structure structure : structures)
+			if (structure.getType() == type)
+				result.add(structure);
+		return result;
+	}
+
+	public List<Structure> getActiveStructures()
+	{
+		List<Structure> result = new ArrayList<>();
+		for (Structure structure : structures)
+			if (structure.isActive())
+				result.add(structure);
+		return result;
+	}
+
+	public List<Structure> getDamagedStructures(ServerWorld world)
+	{
+		List<Structure> result = new ArrayList<>();
+		for (Structure structure : structures)
+			if (structure.isDamaged(world))
+				result.add(structure);
+		return result;
+	}
     
     public boolean isWithinTerritory(BlockPos pos)
     {
@@ -169,159 +261,177 @@ public class Settlement
         this.territory.remove(chunk);
     }
     
+    public void addStructure(Structure structure) {
+    	this.structures.add(structure);
+    }
+    
     public String getName() {
-		return name;
-	}
+        return name;
+    }
     
     public UUID getUUID() {
-		return uuid;
-	}
-
-	public void setUuid(UUID uuid) {
-		this.uuid = uuid;
-	}
-
-	public UUID getLeader() {
-		return leader;
-	}
-
-	public void setLeader(UUID leader) {
-		this.leader = leader;
-	}
-	
-	public BlockPos getPosition() {
-		return position;
-	}
-
-	public void setPosition(BlockPos position) {
-		this.position = position;
-	}
-	
-	public Set<ChunkPos> getTerritory() {
-	    return this.territory;
-	}
-
-	public Map<UUID, Integer> getReputations() {
-		return this.reputations;
-	}
-	
-	public int getReputation(UUID uuid) {
-		reputations.putIfAbsent(uuid, 0);
-		return reputations.get(uuid);
-	}
-	
-	public void setReputation(UUID uuid, int rep) {
-		this.reputations.put(uuid, FrontierUtil.clamp(rep, -100, 100));
-	}
-	
-	public void updateReputation(UUID uuid, int rep) {
-		this.reputations.put(uuid, this.reputations.get(uuid) + FrontierUtil.clamp(rep, -100, 100));
-	}
-	
-	public void checkReputation(UUID uuid, MinecraftServer server) { // might have to make a separate method for other entities
-		if (reputations.putIfAbsent(uuid, 0) == null)
-	        SettlementManager.saveSettlements(server);
+        return uuid;
     }
 
-	public List<Structure> getStructures() {
-		return structures;
-	}
-	
-	public Structure getStructureByName(String name)
-	{
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public UUID getLeader() {
+        return leader;
+    }
+
+    public void setLeader(UUID leader) {
+        this.leader = leader;
+    }
+    
+    public BlockPos getPosition() {
+        return position;
+    }
+
+    public void setPosition(BlockPos position) {
+        this.position = position;
+    }
+    
+    public Set<ChunkPos> getTerritory() {
+        return this.territory;
+    }
+
+    public Map<UUID, Integer> getReputations() {
+        return this.reputations;
+    }
+    
+    public int getReputation(UUID uuid) {
+        reputations.putIfAbsent(uuid, 0);
+        return reputations.get(uuid);
+    }
+    
+    public void setReputation(UUID uuid, int rep) {
+        this.reputations.put(uuid, FrontierUtil.clamp(rep, -100, 100));
+    }
+    
+    public void updateReputation(UUID uuid, int rep) {
+        this.reputations.put(uuid, this.reputations.get(uuid) + FrontierUtil.clamp(rep, -100, 100));
+    }
+    
+    // might have to make a separate method for other entities
+    public void checkReputation(UUID uuid, MinecraftServer server) {
+        if (reputations.putIfAbsent(uuid, 0) == null)
+            SettlementManager.saveSettlements(server);
+    }
+
+    public List<Structure> getStructures() {
+        return structures;
+    }
+    
+    public Structure getStructureByName(String name)
+    {
         for (Structure structure : structures)
             if (structure.getName().equals(name))
                 return structure;
         return null;
     }
+    
+    public Structure getStructureByUUID(UUID uuid)
+    {
+        for (Structure structure : structures)
+            if (structure.getUUID().equals(uuid))
+                return structure;
+        return null;
+    }
 
-	public List<Grave> getGraves() {
-		return graves;
-	}
-	
-	public void addGrave(Grave grave) {
-		this.graves.add(grave);
-	}
-	
-	public void removeGrave(String name) {
-	    graves.removeIf(grave -> grave.getName().equals(name));
-	}
-	
-	public List<SettlerEntity> getSettlers() {
-		return settlers;
-	}
+    public List<Grave> getGraves() {
+        return graves;
+    }
+    
+    public void addGrave(Grave grave) {
+        this.graves.add(grave);
+        updateStatistic("Graves", 1);
+    }
+    
+    public void removeGrave(String name) {
+        if (graves.removeIf(grave -> grave.getName().equals(name)))
+            updateStatistic("Graves", -1);
+    }
+    
+    public List<SettlerEntity> getSettlers() {
+        return settlers;
+    }
 
-	public void addSettler(SettlerEntity settler) {
-		this.settlers.add(settler);
-	}
-	
-	public SettlerEntity getSettlerByUUID(UUID uuid)
-	{
+    public void addSettler(SettlerEntity settler) {
+        this.settlers.add(settler);
+        updateStatistic("Settlers", 1);
+    }
+    
+    public SettlerEntity getSettlerByUUID(UUID uuid)
+    {
         for (SettlerEntity settler : settlers)
             if (settler.getUuid().equals(uuid))
                 return settler;
         return null;
     }
-	
-	public void removeSettler(UUID uuid) {
-	    settlers.removeIf(settler -> settler.getUuid().equals(uuid));
-	}
+    
+    public void removeSettler(UUID uuid) {
+        if (settlers.removeIf(settler -> settler.getUuid().equals(uuid)))
+            updateStatistic("Settlers", -1);
+    }
 
-	public List<UUID> getPlayers() {
-		return players;
-	}
-	
-	public PlayerData getPlayerData(UUID uuid) {
-		return  PlayerData.players.get(uuid);
-	}
+    public List<UUID> getPlayers() {
+        return players;
+    }
+    
+    public PlayerData getPlayerData(UUID uuid) {
+        return PlayerData.players.get(uuid);
+    }
 
-	public void addPlayer(UUID player) {
-		this.players.add(player);
-	}
-	
-	public void removePlayer(UUID player)
-	{
-		this.players.remove(player);
-	}
-	
-	public List<UUID> getAllies() {
-		return allies;
-	}
+    public void addPlayer(UUID player) {
+        this.players.add(player);
+        updateStatistic("Players", 1);
+    }
+    
+    public void removePlayer(UUID player) {
+        if (this.players.remove(player))
+            updateStatistic("Players", -1);
+    }
+    
+    public List<UUID> getAllies() {
+        return allies;
+    }
 
-	public void addAlly(UUID faction) {
-		this.allies.add(faction);
-	}
+    public void addAlly(UUID faction) {
+        this.allies.add(faction);
+    }
 
-	public List<UUID> getEnemies() {
-		return enemies;
-	}
+    public List<UUID> getEnemies() {
+        return enemies;
+    }
 
-	public void addEnemy(UUID faction) {
-		this.enemies.add(faction);
-	}
+    public void addEnemy(UUID faction) {
+        this.enemies.add(faction);
+    }
 
-	public List<String> getAlliedFactions() {
-		return alliedFactions;
-	}
+    public List<String> getAlliedFactions() {
+        return alliedFactions;
+    }
 
-	public void addAllyFaction(String faction) {
-		this.alliedFactions.add(faction);
-	}
+    public void addAllyFaction(String faction) {
+        this.alliedFactions.add(faction);
+    }
 
-	public List<String> getEnemyFactions() {
-		return enemyFactions;
-	}
+    public List<String> getEnemyFactions() {
+        return enemyFactions;
+    }
 
-	public void addEnemyFaction(String faction) {
-		this.enemyFactions.add(faction);
-	}
-	
-	public HashMap<String, Integer> getStatistics() {
-		return statistics;
-	}
+    public void addEnemyFaction(String faction) {
+        this.enemyFactions.add(faction);
+    }
+    
+    public HashMap<String, Integer> getStatistics() {
+        return statistics;
+    }
 
-	public void updateStatistic(String key, int amount) // always non-negative
-	{
+    public void updateStatistic(String key, int amount) // always non-negative
+    {
         int currentValue = statistics.getOrDefault(key, 0);
         int newValue = currentValue + amount;
         if (newValue >= 0) statistics.put(key, newValue);

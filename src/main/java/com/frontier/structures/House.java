@@ -1,6 +1,7 @@
 package com.frontier.structures;
 
 import com.frontier.Frontier;
+import com.frontier.settlements.SettlementManager;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -21,10 +22,11 @@ public class House extends Structure
 	}
 
     @Override
-    protected void onConstruction()
+    protected void onConstruction(ServerWorld world)
     {
     	Frontier.LOGGER.info("Constructed House at " + position);
     	setActive(true);
+    	SettlementManager.saveSettlements(world.getServer());
     }
 
     @Override

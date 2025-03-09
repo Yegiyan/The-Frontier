@@ -15,7 +15,10 @@ import com.frontier.register.FrontierEntities;
 import com.frontier.settlements.Blueprint;
 import com.frontier.settlements.Settlement;
 import com.frontier.settlements.SettlementManager;
+import com.frontier.structures.House;
 import com.frontier.structures.Structure;
+import com.frontier.structures.TownHall;
+import com.frontier.structures.Warehouse;
 import com.frontier.util.FrontierUtil;
 
 import io.netty.buffer.Unpooled;
@@ -24,9 +27,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.Entity.RemovalReason;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
 public class FrontierPacketsServer
@@ -39,6 +45,7 @@ public class FrontierPacketsServer
 	
 	public static final Identifier BUY_BLUEPRINT_ID = new Identifier(Frontier.MOD_ID, "build_structure");
 	public static final Identifier UPGRADE_STRUCTURE_ID = new Identifier(Frontier.MOD_ID, "upgrade_structure");
+	public static final Identifier REPAIR_STRUCTURE_ID = new Identifier(Frontier.MOD_ID, "repair_structure");
 	
 	public static final Identifier SYNC_SETTLER_INVENTORY_ID = new Identifier(Frontier.MOD_ID, "sync_settler_inventory");
 	public static final Identifier HIRE_SETTLER_ID = new Identifier(Frontier.MOD_ID, "hire_settler");
@@ -170,15 +177,60 @@ public class FrontierPacketsServer
 		    });
 		});
 		
+		// structure upgrades triggered by UI
 		ServerPlayNetworking.registerGlobalReceiver(UPGRADE_STRUCTURE_ID, (server, player, handler, buf, responseSender) ->
 		{
-		    //int cost = buf.readInt();
-		    //World world = player.getServerWorld();
-		    
-		    server.execute(() ->
-		    {
-		    	// upgrading shit here
-		    });
+			UUID structureUUID = buf.readUuid();
+			
+			server.execute(() ->
+			{
+				PlayerData playerData = PlayerData.players.get(player.getUuid());
+				if (playerData != null)
+				{
+					Settlement settlement = SettlementManager.getSettlement(playerData.getFaction());
+					if (settlement != null)
+					{
+						// find structure by UUID
+						for (Structure structure : settlement.getStructures())
+						{
+							if (structure.getUUID().equals(structureUUID))
+							{
+								// check if upgrade is available and player has permission
+								if (structure.upgradeAvailable() && structure.getLeader().equals(player.getUuid()))
+								{
+									structure.upgrade(server.getOverworld());
+
+									// notify player of success
+									player.sendMessage(Text.literal("Upgrading " + structure.getName()), false);
+								}
+								break;
+							}
+						}
+					}
+				}
+			});
+		});
+		
+		ServerPlayNetworking.registerGlobalReceiver(REPAIR_STRUCTURE_ID, (server, player, handler, buf, responseSender) ->
+		{
+			UUID structureUUID = buf.readUuid();
+
+			server.execute(() -> {
+				PlayerData playerData = PlayerData.players.get(player.getUuid());
+				if (playerData != null)
+				{
+					Settlement settlement = SettlementManager.getSettlement(playerData.getFaction());
+					if (settlement != null)
+					{
+						Structure structure = settlement.getStructureByUUID(structureUUID);
+						if (structure != null && structure.requiresRepair())
+						{
+							structure.getRepairManager().repairStructure(server.getOverworld());
+							player.sendMessage(Text.literal("Repairing " + structure.getName()), false);
+						}
+					}
+				}
+			});
 		});
 		
 		ServerPlayNetworking.registerGlobalReceiver(SYNC_SETTLER_INVENTORY_ID, (server, player, handler, buf, responseSender) ->
@@ -243,11 +295,52 @@ public class FrontierPacketsServer
 		
 		ServerPlayNetworking.registerGlobalReceiver(BLUEPRINT_PLACEMENT_ID, (server, player, handler, buf, responseSender) ->
 		{
-			
-	        server.execute(() ->
-	        {
-
-	        });
-	    });
+		    String faction = buf.readString(32767);
+		    String blueprintName = buf.readString(32767);
+		    BlockPos placementPos = buf.readBlockPos();
+		    Direction facing = buf.readEnumConstant(Direction.class);
+		    
+		    server.execute(() ->
+		    {
+		        PlayerData playerData = PlayerData.players.get(player.getUuid());
+		        if (playerData != null && playerData.isLeader())
+		        {
+		            Settlement settlement = SettlementManager.getSettlement(faction);
+		            if (settlement != null)
+		            {
+		                Structure structure = null;
+		                switch (blueprintName)
+		                {
+		                    case "townhall":
+		                        structure = new TownHall("townhall", faction, placementPos, facing);
+		                        break;
+		                    case "warehouse":
+		                        structure = new Warehouse("warehouse", faction, placementPos, facing);
+		                        break;
+		                    case "house":
+		                        structure = new House("house", faction, placementPos, facing);
+		                        break;
+		                    default:
+		                        Frontier.LOGGER.error("Unknown blueprint type: " + blueprintName);
+		                        break;
+		                }
+		                
+		                if (structure != null)
+		                {
+		                	if (!structure.getPosition().equals(placementPos))
+		                        structure.setPosition(placementPos);
+		                	
+		                    settlement.addStructure(structure);
+		                    structure.constructStructure(server.getOverworld());
+		                    Frontier.sendMessage(player, "Started construction of a " + structure.getName() + " at " + placementPos.toShortString(), Formatting.GREEN);
+		                }
+		            }
+		            else
+		                Frontier.sendMessage(player, "Settlement not found!", Formatting.RED);
+		        }
+		        else
+		            Frontier.sendMessage(player, "Only settlement leaders can confirm blueprint placement!", Formatting.RED);
+		    });
+		});
 	}
 }

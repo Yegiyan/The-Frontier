@@ -23,8 +23,7 @@ import com.frontier.gui.CreateSettlementScreen;
 import com.frontier.items.FrontierItems;
 import com.frontier.register.FrontierEntities;
 import com.frontier.structures.Structure;
-import com.frontier.structures.TownHall;
-import com.frontier.structures.Warehouse;
+import com.frontier.structures.StructureFactory;
 
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.Block;
@@ -108,11 +107,6 @@ public class SettlementManager
                     Settlement settlement = new Settlement(factionName, leader, newSettlementPos, server);
                     settlements.put(factionName, settlement);
                     
-                    ServerPlayerEntity player = playerData.getPlayer(server);
-                    BlockPos townHallPos = getFrontPosition(player, 2);
-                    Direction facing = player.getHorizontalFacing();
-                    //settlement.constructStructure("townhall", townHallPos, server.getOverworld(), facing);
-                    
                     if (settlement.abortSettlementCreation)
                     {
                     	playerData.getPlayer(server).sendMessage(Text.literal("Cannot construct townhall here, choose a more suitable location!").styled(style -> style.withColor(Formatting.WHITE)), false);
@@ -154,8 +148,14 @@ public class SettlementManager
 	    		
 	    		newSettlement.addPlayer(playerData.getPlayer(server).getUuid());
 	    		newSettlement.setLeader(playerData.getPlayer(server).getUuid());
-	    		saveSettlements(server);
 	    		
+	    		// construct a Town Hall
+	            //ServerPlayerEntity player = playerData.getPlayer(server);
+	            //BlockPos townHallPos = getFrontPosition(player, 2);
+	            //Direction facing = player.getHorizontalFacing();
+	            //newSettlement.constructStructure("townhall", townHallPos, server.getOverworld(), facing);
+	    		
+	    		saveSettlements(server);
 		    	playerData.getPlayer(server).sendMessage(Text.literal("You're now the leader of a new settlement called " + factionName + "! Ring the bell with a clock to request nomads or ring it with a compass to abandon your settlement.").styled(style -> style.withColor(Formatting.WHITE)), false);
 		    }
 		}
@@ -186,6 +186,22 @@ public class SettlementManager
 		electNewLeader(leader, factionName, server);
     }
 	
+	public static boolean upgradeSettlementStructure(String settlementName, String structureName, MinecraftServer server)
+	{
+		Settlement settlement = getSettlement(settlementName);
+		if (settlement != null)
+			return settlement.upgradeStructure(structureName, server.getOverworld());
+		return false;
+	}
+
+	public static boolean repairSettlementStructure(String settlementName, String structureName, MinecraftServer server)
+	{
+		Settlement settlement = getSettlement(settlementName);
+		if (settlement != null)
+			return settlement.repairStructure(structureName, server.getOverworld());
+		return false;
+	}
+    
 	private static void electNewLeader(UUID leader, String faction, MinecraftServer server)
 	{
 		// if there are no players and settlers
@@ -332,38 +348,13 @@ public class SettlementManager
 	        }
 	        
 	        // save structures
-	        NbtList structuresNbt = new NbtList();
-	        for (Structure structure : settlement.getStructures())
-	        {
-	            NbtCompound structureNbt = new NbtCompound();
-	            structureNbt.putString("Name", structure.getName());
-	            structureNbt.putString("Faction", structure.getFaction());
-	            structureNbt.putString("Type", structure.getType().toString());
-	            structureNbt.putLong("Position", structure.getPosition().asLong());
-	            structureNbt.putString("Facing", structure.getFacing().getName());
-	            structureNbt.putInt("Tier", structure.getTier());
-	            structureNbt.putUuid("UUID", structure.getUUID());
-	            structureNbt.putBoolean("IsActive", structure.isActive());
-	            structureNbt.putBoolean("IsConstructed", structure.isConstructed());
-	            structureNbt.putBoolean("RequiresRepair", structure.requiresRepair());
-	            structureNbt.putBoolean("IsConstructing", structure.isConstructing());
-	            structureNbt.putBoolean("IsUpgrading", structure.isUpgrading());
-	            structureNbt.putBoolean("IsClearing", structure.isClearing());
-	            structureNbt.putInt("ConstructionTicksElapsed", structure.getConstructionTicksElapsed());
-	            structureNbt.putInt("UpgradeTicksElapsed", structure.getUpgradeTicksElapsed());
-	            structureNbt.putInt("RepairTicksElapsed", structure.getRepairTicksElapsed());
-	            
-	            structureNbt.put("AirBlocksQueue", serializeQueue(structure.getAirBlocksQueue()));
-	            structureNbt.put("NonAirBlocksQueue", serializeQueue(structure.getNonAirBlocksQueue()));
-	            structureNbt.put("ClearingQueue", serializeQueue(structure.getClearingQueue()));
-	            structureNbt.put("UpgradeQueue", serializeQueue(structure.getUpgradeQueue()));
-	            structureNbt.put("RepairQueue", serializeRepairQueue(structure.getRepairQueue()));
-	            
-	            structureNbt.put("ConstructionMap", serializeMap(structure.getConstructionMap()));
-	            structureNbt.put("UpgradeMap", serializeMap(structure.getUpgradeMap()));
-	            
-	            structuresNbt.add(structureNbt);
-	        }
+			NbtList structuresNbt = new NbtList();
+			for (Structure structure : settlement.getStructures())
+			{
+				NbtCompound structureNbt = new NbtCompound();
+				StructureFactory.saveStructureToNbt(structure, structureNbt);
+				structuresNbt.add(structureNbt);
+			}
 
 	        // save statistics
 	        NbtCompound statisticsNbt = new NbtCompound();
@@ -517,55 +508,14 @@ public class SettlementManager
 	                }
 	                
 	                // load structures
-	                NbtList structuresNbt = settlementNbt.getList("Structures", 10);
-	                for (int i = 0; i < structuresNbt.size(); i++)
-	                {
-	                    NbtCompound structureNbt = structuresNbt.getCompound(i);
-	                    String structureName = structureNbt.getString("Name");
-	                    String faction = structureNbt.getString("Faction");
-	                    String type = structureNbt.getString("Type");
-	                    BlockPos structurePos = BlockPos.fromLong(structureNbt.getLong("Position"));
-	                    Direction facing = Direction.byName(structureNbt.getString("Facing"));
-	                    int tier = structureNbt.getInt("Tier");
-	                    UUID uuid = structureNbt.getUuid("UUID");
-
-	                    Structure structure;
-	                    switch (structureName)
-	                    {
-	                        case "townhall":
-	                            structure = new TownHall(structureName, faction, structurePos, facing);
-	                            break;
-	                        case "warehouse":
-	                            structure = new Warehouse(structureName, faction, structurePos, facing);
-	                            break;
-	                        default:
-	                            throw new IllegalArgumentException("Unknown structure type: " + structureName);
-	                    }
-	                    
-	                    structure.setType(type);
-	                    structure.setTier(tier);
-	                    structure.setUUID(uuid);
-	                    structure.setActive(structureNbt.getBoolean("IsActive"));
-	                    structure.setConstructed(structureNbt.getBoolean("IsConstructed"));
-	                    structure.setRepair(structureNbt.getBoolean("RequiresRepair"));
-	                    structure.setConstructing(structureNbt.getBoolean("IsConstructing"));
-	                    structure.setUpgrading(structureNbt.getBoolean("IsUpgrading"));
-	                    structure.setClearing(structureNbt.getBoolean("IsClearing"));
-	                    structure.setConstructionTicksElapsed(structureNbt.getInt("ConstructionTicksElapsed"));
-	                    structure.setUpgradeTicksElapsed(structureNbt.getInt("UpgradeTicksElapsed"));
-	                    structure.setRepairTicksElapsed(structureNbt.getInt("RepairTicksElapsed"));
-	                    
-	                    structure.setAirBlocksQueue(deserializeQueue(structureNbt.getList("AirBlocksQueue", 10)));
-	                    structure.setNonAirBlocksQueue(deserializeQueue(structureNbt.getList("NonAirBlocksQueue", 10)));
-	                    structure.setClearingQueue(deserializeQueue(structureNbt.getList("ClearingQueue", 10)));
-	                    structure.setUpgradeQueue(deserializeQueue(structureNbt.getList("UpgradeQueue", 10)));
-	                    structure.setRepairQueue(deserializeRepairQueue(structureNbt.getList("RepairQueue", 10)));
-	                    
-	                    structure.setConstructionMap(deserializeMap(structureNbt.getList("ConstructionMap", 10)));
-	                    structure.setUpgradeMap(deserializeMap(structureNbt.getList("UpgradeMap", 10)));
-	                    
-	                    settlement.getStructures().add(structure);
-	                }
+					NbtList structuresNbt = settlementNbt.getList("Structures", 10);
+					for (int i = 0; i < structuresNbt.size(); i++)
+					{
+						NbtCompound structureNbt = structuresNbt.getCompound(i);
+						Structure structure = StructureFactory.loadStructureFromNbt(structureNbt, server.getOverworld());
+						if (structure != null)
+							settlement.getStructures().add(structure);
+					}
 	                
 	                // load statistics
 	                NbtCompound statisticsNbt = settlementNbt.getCompound("Statistics");
@@ -583,7 +533,7 @@ public class SettlementManager
 	    catch (IOException e) { e.printStackTrace(); }
 	}
 	
-	private static NbtList serializeMap(Map<BlockPos, BlockState> map)
+	public static NbtList serializeMap(Map<BlockPos, BlockState> map)
 	{
 		NbtList list = new NbtList();
 		for (Map.Entry<BlockPos, BlockState> entry : map.entrySet())
@@ -596,7 +546,7 @@ public class SettlementManager
 		return list;
 	}
 
-	private static Map<BlockPos, BlockState> deserializeMap(NbtList list)
+	public static Map<BlockPos, BlockState> deserializeMap(NbtList list)
 	{
 		Map<BlockPos, BlockState> map = new HashMap<>();
 		for (int i = 0; i < list.size(); i++)
@@ -609,7 +559,7 @@ public class SettlementManager
 		return map;
 	}
 
-	private static BlockState deserializeBlockState(NbtCompound compound)
+	public static BlockState deserializeBlockState(NbtCompound compound)
 	{
 		String blockName = compound.getString("Name");
 		Block block = Registries.BLOCK.get(new Identifier(blockName));
@@ -624,7 +574,7 @@ public class SettlementManager
 		return state;
 	}
 	
-	private static NbtList serializeQueue(Queue<BlockPos> queue)
+	public static NbtList serializeQueue(Queue<BlockPos> queue)
 	{
 	    NbtList list = new NbtList();
 	    for (BlockPos pos : queue)
@@ -632,7 +582,7 @@ public class SettlementManager
 	    return list;
 	}
 	
-	private static Queue<BlockPos> deserializeQueue(NbtList list)
+	public static Queue<BlockPos> deserializeQueue(NbtList list)
 	{
 	    Queue<BlockPos> queue = new LinkedList<>();
 	    list.forEach(item ->
@@ -643,7 +593,7 @@ public class SettlementManager
 	    return queue;
 	}
 	
-	private static NbtList serializeRepairQueue(Queue<Map.Entry<BlockPos, BlockState>> queue)
+	public static NbtList serializeRepairQueue(Queue<Map.Entry<BlockPos, BlockState>> queue)
 	{
 		NbtList list = new NbtList();
 		for (Map.Entry<BlockPos, BlockState> entry : queue)
@@ -656,7 +606,7 @@ public class SettlementManager
 		return list;
 	}
 
-	private static Queue<Map.Entry<BlockPos, BlockState>> deserializeRepairQueue(NbtList list)
+	public static Queue<Map.Entry<BlockPos, BlockState>> deserializeRepairQueue(NbtList list)
 	{
 		Queue<Map.Entry<BlockPos, BlockState>> queue = new LinkedList<>();
 		list.forEach(item ->
@@ -670,7 +620,7 @@ public class SettlementManager
 		return queue;
 	}
 	
-	private static <T extends Comparable<T>> BlockState applyProperty(BlockState state, Property<T> property, String value)
+	public static <T extends Comparable<T>> BlockState applyProperty(BlockState state, Property<T> property, String value)
 	{
 		Optional<T> optional = property.parse(value);
 		if (optional.isPresent())

@@ -81,7 +81,7 @@ public class BlueprintItem extends Item
 						int minSizeX = blueprintState.getMinSizeX();
 						int minSizeY = blueprintState.getMinSizeY();
 						int minSizeZ = blueprintState.getMinSizeZ();
-
+						
 						ForcefieldRenderer.drawForcefieldAtPosition(client, matrixStack, placementPos, minSizeX, minSizeY, minSizeZ, context.camera());
 					}
 				}
@@ -123,45 +123,55 @@ public class BlueprintItem extends Item
 	@Override
 	public ActionResult useOnBlock(ItemUsageContext context)
 	{
-		PlayerEntity player = context.getPlayer();
-		if (player != null)
-		{
-			BlueprintState blueprintState = BlueprintStateManager.getOrCreateBlueprintState(player);
-			ItemStack itemStackInHand = player.getMainHandStack();
+	    PlayerEntity player = context.getPlayer();
+	    if (player != null)
+	    {
+	        PlayerData playerData = PlayerData.players.get(player.getUuid());
+	        if (!playerData.isLeader())
+	            return ActionResult.FAIL;
 
-			if (itemStackInHand.getItem() instanceof BlueprintItem)
-			{
-				Item blueprintItem = itemStackInHand.getItem();
+	        BlueprintState blueprintState = BlueprintStateManager.getOrCreateBlueprintState(player);
+	        ItemStack itemStackInHand = player.getMainHandStack();
 
-				// check if same blueprint is being used
-				if (blueprintState.isPlacing() && blueprintState.getActiveBlueprint() != blueprintItem)
-					return ActionResult.FAIL;
+	        if (itemStackInHand.getItem() instanceof BlueprintItem)
+	        {
+	            Item blueprintItem = itemStackInHand.getItem();
 
-				// set active blueprint when placing
-				blueprintState.setActiveBlueprint(blueprintItem);
+	            // check if the player is trying to place a different blueprint before confirming the previous one
+	            if (blueprintState.isPlacing() && blueprintState.getActiveBlueprint() != blueprintItem)
+	            {
+	                if (!context.getWorld().isClient)
+	                    if (player instanceof ServerPlayerEntity serverPlayer)
+	                        Frontier.sendMessage(serverPlayer, "Confirm or cancel previous blueprint placement first before trying to place another one!", Formatting.RED);
+	                return ActionResult.FAIL;
+	            }
 
-				BlockPos blockPos = context.getBlockPos();
-				blueprintState.setPlacementPos(blockPos);
+	            // set active blueprint when placing
+	            blueprintState.setActiveBlueprint(blueprintItem);
 
-				if (!context.getWorld().isClient)
-				{
-					Vec3i structureSize = getBlueprintNbt(context.getWorld(), this.getName().getString(), blockPos);
-					blueprintState.setMinSizeX(structureSize.getX());
-					blueprintState.setMinSizeY(structureSize.getY());
-					blueprintState.setMinSizeZ(structureSize.getZ());
+	            BlockPos blockPos = context.getBlockPos();
+	            blueprintState.setPlacementPos(blockPos);
+	            
+	            Direction facing = player.getHorizontalFacing();
+	            blueprintState.setFacing(facing);
 
-					Direction facing = player.getHorizontalFacing();
-					adjustPositionForFacing(facing, blockPos, blueprintState);
-					System.out.println("Blueprint used at: " + blockPos + ", Facing: " + facing + ", New Position: " + blueprintState.getPlacementPos());
-				}
+	            if (!context.getWorld().isClient)
+	            {
+	                Vec3i structureSize = getBlueprintNbt(context.getWorld(), this.getName().getString(), blockPos);
+	                System.out.println("Structure size: " + structureSize);
+	                blueprintState.setMinSizeX(structureSize.getX());
+	                blueprintState.setMinSizeY(structureSize.getY());
+	                blueprintState.setMinSizeZ(structureSize.getZ());
+	                adjustPositionForFacing(facing, blockPos, blueprintState);
+	            }
 
-				blueprintState.setInspecting(false);
-				blueprintState.setPlacing(true);
-				return ActionResult.SUCCESS;
-			}
-		}
+	            blueprintState.setInspecting(false);
+	            blueprintState.setPlacing(true);
+	            return ActionResult.SUCCESS;
+	        }
+	    }
 
-		return ActionResult.FAIL;
+	    return ActionResult.FAIL;
 	}
 
 	private void adjustPositionForFacing(Direction facing, BlockPos blockPos, BlueprintState blueprintState)
@@ -184,7 +194,7 @@ public class BlueprintItem extends Item
 					adjustPosition(blockPos, blueprintState, -minSizeX + 2, -minSizeZ / 2 - 1);
 				break;
 			case NORTH:
-				blueprintState.setPlacementPos(new BlockPos(placementPosX - minSizeZ / 2, placementPosY, placementPosZ - minSizeZ));
+				blueprintState.setPlacementPos(new BlockPos(placementPosX - minSizeX / 2, placementPosY, placementPosZ - minSizeZ));
 				break;
 			case SOUTH:
 				blueprintState.setPlacementPos(new BlockPos(placementPosX - minSizeX / 2, placementPosY, placementPosZ + 1));
