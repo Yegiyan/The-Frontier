@@ -25,7 +25,7 @@ public class StructureSerializer
 
 	public static void processStructure(Structure structure, ServerWorld world, BiConsumer<BlockPos, BlockState> blockProcessor)
 	{
-	    String path = String.format("data/frontier/structures/settlement/%s_%d.nbt", structure.getName().toLowerCase(), structure.getTier());
+	    String path = String.format("data/frontier/structures/settlement/%s_%d.nbt", structure.getType(), structure.getTier());
 	    try (InputStream inputStream = StructureSerializer.class.getClassLoader().getResourceAsStream(path))
 	    {
 	        if (inputStream != null)
@@ -35,7 +35,7 @@ public class StructureSerializer
 	            NbtList paletteList = tag.getList("palette", 10);
 
 	            // get structure's dimensions for proper centering
-	            int[] structureSize = getStructureSize(structure.getName(), structure.getTier());
+	            int[] structureSize = getStructureSize(structure.getTypeLowerCaseString(), structure.getTier());
 	            Map<Integer, BlockState> paletteMap = buildPaletteMap(paletteList);
 
 	            for (int i = 0; i < blocksList.size(); i++)
@@ -65,7 +65,7 @@ public class StructureSerializer
 	            }
 	        }
 	        else
-	            Frontier.LOGGER.error("NBT file not found: " + path);
+	            Frontier.LOGGER.error("StructureSerializer() - NBT file not found: " + path);
 	    }
 	    catch (IOException e) { e.printStackTrace(); }
 	}
@@ -73,7 +73,7 @@ public class StructureSerializer
 	public static Map<BlockPos, BlockState> loadStructure(String name, int tier, BlockPos position, Direction facing)
 	{
 	    Map<BlockPos, BlockState> structureMap = new HashMap<>();
-	    String path = String.format("data/frontier/structures/settlement/%s_%d.nbt", name.toLowerCase(), tier);
+	    String path = String.format("data/frontier/structures/settlement/%s_%d.nbt", name, tier);
 
 	    try (InputStream inputStream = StructureSerializer.class.getClassLoader().getResourceAsStream(path))
 	    {
@@ -115,7 +115,7 @@ public class StructureSerializer
 	        }
 	        else
 	        {
-	            Frontier.LOGGER.error("NBT file not found: " + path);
+	            Frontier.LOGGER.error("StructureSerializer() - NBT file not found: " + path);
 	        }
 	    }
 	    catch (IOException e) { e.printStackTrace(); }
@@ -149,9 +149,9 @@ public class StructureSerializer
 		return paletteMap;
 	}
 
-	public static int[] getStructureSize(String name, int tier)
+	public static int[] getStructureSize(String typeName, int tier)
 	{
-		String path = String.format("data/frontier/structures/settlement/%s_%d.nbt", name.toLowerCase(), tier);
+		String path = String.format("data/frontier/structures/settlement/%s_%d.nbt", typeName, tier);
 		int[] size = new int[3]; // [length, width, height]
 
 		try (InputStream inputStream = StructureSerializer.class.getClassLoader().getResourceAsStream(path))
@@ -166,7 +166,7 @@ public class StructureSerializer
 				size[2] = sizeList.getInt(2); // height
 			}
 			else
-				Frontier.LOGGER.error("Structure - NBT file not found: " + path);
+				Frontier.LOGGER.error("StructureSerializer() - NBT file not found: " + path);
 		}
 		catch (IOException e) { e.printStackTrace(); }
 		return size;

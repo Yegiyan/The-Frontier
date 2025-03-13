@@ -10,18 +10,19 @@ import net.minecraft.server.world.ServerWorld;
 
 public class StructureManager
 {
-	private static final int SECONDS = 5; // update interval in seconds
+	private static final int SECONDS = 1; // update interval in seconds
 	private int tickCounter = 0;
 
 	public void register()
 	{
 		ServerTickEvents.START_SERVER_TICK.register(this::onServerTick);
+		Frontier.LOGGER.info("StructureManager registered for tick events");
 	}
 
 	private void onServerTick(MinecraftServer server)
 	{
 		tickCounter++;
-		if (tickCounter >= 20 * SECONDS)
+		if (tickCounter >= 1 * SECONDS)
 		{
 			tickCounter = 0;
 			updateActivities(server);
@@ -30,30 +31,55 @@ public class StructureManager
 
 	private void updateActivities(MinecraftServer server)
 	{
+		ServerWorld world = server.getOverworld();
+		int totalSettlements = SettlementManager.getSettlements().size();
+		
+		Frontier.LOGGER.debug("StructureManager updating " + totalSettlements + " settlements");
+		
 		for (Settlement settlement : SettlementManager.getSettlements().values())
 		{
-			ServerWorld world = server.getOverworld();
-
 			// auto flag damaged structures for repair
 			for (Structure structure : settlement.getStructures())
-				if (structure.isDamaged(world) && !structure.isUpgrading() && !structure.isConstructing())
+			{
+				if (structure.isDamaged(world) && !structure.isUpgrading() && !structure.isConstructing() && !structure.requiresRepair())
+				{
+					Frontier.LOGGER.info("Structure " + structure.getName() + " is damaged, flagging for repair");
 					structure.getRepairManager().setRepair(true);
+				}
+			}
 			
-			// auto repairs if resources are available
+			// process construction ticks
+			for (Structure structure : settlement.getStructures())
+			{
+				if (structure.isConstructing())
+				{
+					structure.getConstructionManager().processTick(world);
+				}
+			}
+			
+			// process upgrade ticks
+			for (Structure structure : settlement.getStructures())
+			{
+				if (structure.isUpgrading())
+				{
+					structure.getUpgradeManager().processTick(world);
+				}
+			}
+			
+			// process repair ticks and auto-repair if resources are available
 			for (Structure structure : settlement.getStructures())
 			{
 				if (structure.requiresRepair() && !structure.isUpgrading() && !structure.isConstructing())
 				{
-					Frontier.LOGGER.info("Attempting to repair structure: " + structure.getName());
-					if (structure.getRepairManager().canRepair(world))
+					// start repairs if resources are available and repair isn't already in progress
+					if (structure.getRepairManager().getRepairQueue().isEmpty() && structure.getRepairManager().canRepair(world))
 					{
-						Frontier.LOGGER.info("Repairing structure: " + structure.getName());
+						Frontier.LOGGER.info("Starting repairs on structure: " + structure.getName());
 						structure.getRepairManager().repairStructure(world);
 					}
-					else
-					{
-						Frontier.LOGGER.info("Cannot repair structure yet: " + structure.getName() + " (insufficient resources)");
-					}
+					
+					// process ongoing repairs
+					structure.getRepairManager().processTick(world);
 				}
 			}
 
@@ -62,7 +88,4 @@ public class StructureManager
 				structure.update(world);
 		}
 	}
-
-	// add more global structure management methods here
-	// for example, to find structures of certain types across settlements or to apply global effects to structures
 }

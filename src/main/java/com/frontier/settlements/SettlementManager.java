@@ -149,12 +149,6 @@ public class SettlementManager
 	    		newSettlement.addPlayer(playerData.getPlayer(server).getUuid());
 	    		newSettlement.setLeader(playerData.getPlayer(server).getUuid());
 	    		
-	    		// construct a Town Hall
-	            //ServerPlayerEntity player = playerData.getPlayer(server);
-	            //BlockPos townHallPos = getFrontPosition(player, 2);
-	            //Direction facing = player.getHorizontalFacing();
-	            //newSettlement.constructStructure("townhall", townHallPos, server.getOverworld(), facing);
-	    		
 	    		saveSettlements(server);
 		    	playerData.getPlayer(server).sendMessage(Text.literal("You're now the leader of a new settlement called " + factionName + "! Ring the bell with a clock to request nomads or ring it with a compass to abandon your settlement.").styled(style -> style.withColor(Formatting.WHITE)), false);
 		    }
@@ -684,6 +678,10 @@ public class SettlementManager
         }
         return "Uncontested";
     }
+	
+	public static void updateStatistic(String faction, String key, int amount) {
+		SettlementManager.getSettlement(faction).updateStatistic(key, amount);
+	}
 	
 	public static SettlerEntity getSettlerByUUID(String settlementName, UUID uuid)
 	{

@@ -120,7 +120,7 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	        }
 	    }
 
-	    if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && hand.equals(Hand.MAIN_HAND) && !isNomad())
+	    if (player.getWorld().isClient && playerData.isLeader() && hand.equals(Hand.MAIN_HAND) && !isNomad())
 	    	MinecraftClient.getInstance().setScreen(new SettlerCardScreen(this));
 	    
 	    //printEntityInfo(player, hand);

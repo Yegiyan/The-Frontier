@@ -14,14 +14,12 @@ public class TownHall extends Structure
 
 	public TownHall(String name, String faction, BlockPos position, Direction facing)
 	{
-		super(name, faction, StructureType.CORE, position, facing);
-		setMaxTier(2);
+		super(name, faction, StructureType.TOWNHALL, position, facing);
 	}
 
 	@Override
 	protected void update(ServerWorld world)
 	{
-		// you can now use component managers here if needed
 		// getInventoryManager().getStructureInventory(world)
 		// Frontier.LOGGER.info(getName() + " inventory: " + getStructureInventory(world));
 	}
@@ -29,15 +27,16 @@ public class TownHall extends Structure
 	@Override
 	protected void onConstruction(ServerWorld world)
 	{
-		Frontier.LOGGER.info("Constructed TownHall at " + position);
+		this.setName("Town Hall");
 		setActive(true);
 		SettlementManager.saveSettlements(world.getServer());
+		Frontier.LOGGER.info("Constructed " + this.getName() + " at (" + position + ")");
 	}
 
 	@Override
 	protected void onUpgrade()
 	{
-		Frontier.LOGGER.info("Upgraded TownHall to tier " + tier + " at " + position);
+		Frontier.LOGGER.info("Upgraded Town Hall to tier " + tier + " at " + position);
 	}
 
 	@Override

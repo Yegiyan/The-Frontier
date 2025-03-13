@@ -8,11 +8,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.frontier.Frontier;
 import com.frontier.PlayerData;
 import com.frontier.entities.settler.SettlerEntity;
 import com.frontier.structures.Structure;
-import com.frontier.structures.StructureFactory;
+import com.frontier.structures.StructureType;
 import com.frontier.util.FrontierUtil;
 
 import net.minecraft.item.Items;
@@ -21,7 +20,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
 
 public class Settlement
 {
@@ -109,61 +107,6 @@ public class Settlement
         statistics.put("Bandits", 0);
     }
     
-    protected void constructStructure(String structureName, BlockPos position, ServerWorld world, Direction facing)
-    {
-        Structure structure = StructureFactory.createStructure(structureName, this.name, position, facing);
-        
-        if (structure == null)
-        {
-            Frontier.LOGGER.error("Failed to create structure: " + structureName);
-            abortSettlementCreation = true;
-            return;
-        }
-        
-        structure.constructStructure(world);
-        
-        if (!structure.canConstruct())
-        {
-            abortSettlementCreation = true;
-            return;
-        }
-        
-        structures.add(structure);
-        updateStatistic("Structures", 1);
-        
-        // update statistics
-        if (structureName.equals("house"))
-            updateStatistic("Housing", 1);
-        else if (structureName.contains("tower"))
-            updateStatistic("Towers", 1);
-    }
-    
-    // spawn a structure instantly
-    public void spawnStructure(String structureName, BlockPos position, ServerWorld world, Direction facing)
-    {
-        Structure structure = StructureFactory.createStructure(structureName, this.name, position, facing);
-        
-        if (structure == null)
-        {
-            Frontier.LOGGER.error("Failed to create structure: " + structureName);
-            return;
-        }
-        
-        structure.spawnStructure(world);
-        
-        if (structure.isConstructed())
-        {
-            structures.add(structure);
-            updateStatistic("Structures", 1);
-            
-            // update statistics
-            if (structureName.equals("house"))
-                updateStatistic("Housing", 1);
-            else if (structureName.contains("tower"))
-                updateStatistic("Towers", 1);
-        }
-    }
-    
     // upgrade all eligible structures
     public void upgradeStructures(ServerWorld world)
     {
@@ -204,7 +147,7 @@ public class Settlement
         return false;
     }
     
-	public List<Structure> getStructuresByType(Structure.StructureType type)
+	public List<Structure> getStructuresByType(StructureType type)
 	{
 		List<Structure> result = new ArrayList<>();
 		for (Structure structure : structures)

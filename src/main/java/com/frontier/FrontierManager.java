@@ -16,6 +16,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -76,6 +77,7 @@ public class FrontierManager
 		ServerLifecycleEvents.SERVER_STARTED.register(server ->
 		{
 			SettlementManager.loadSettlements(server);
+
 			for (Settlement settlement : SettlementManager.getSettlements().values())
 			{
 				for (Structure structure : settlement.getStructures())
@@ -89,6 +91,17 @@ public class FrontierManager
 		{
 			SettlementManager.saveSettlements(server);
 			SettlementManager.reset();
+		});
+
+		// world save event to save periodically
+		ServerTickEvents.END_SERVER_TICK.register(server ->
+		{
+			// save settlements every 5 minutes (6000 ticks)
+			if (server.getTicks() % 6000 == 0)
+			{
+				Frontier.LOGGER.info("Auto saving settlement data...");
+				SettlementManager.saveSettlements(server);
+			}
 		});
 	}
 

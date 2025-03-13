@@ -12,7 +12,6 @@ import com.frontier.Frontier;
 import com.frontier.settlements.Settlement;
 import com.frontier.settlements.SettlementManager;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BellBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -98,7 +97,7 @@ public class StructureRepairManager
 	    // collect resources from all valid structures
 	    for (Structure structureInSettlement : settlement.getStructures())
 	    {
-	        if (structureInSettlement.getName().equals("townhall") || structureInSettlement.getName().equals("warehouse"))
+	        if (structureInSettlement.getType().equals(StructureType.TOWNHALL) || structureInSettlement.getType().equals(StructureType.WAREHOUSE))
 	        {
 	            StructureInventoryManager inventoryManager = structureInSettlement.getInventoryManager();
 	            Map<BlockPos, List<ItemStack>> chestContents = inventoryManager.getChestContents(world);
@@ -111,8 +110,7 @@ public class StructureRepairManager
 	                for (ItemStack item : items)
 	                {
 	                    String itemName = item.getItem().getTranslationKey();
-	                    availableResources.put(itemName,
-	                            availableResources.getOrDefault(itemName, 0) + item.getCount());
+	                    availableResources.put(itemName, availableResources.getOrDefault(itemName, 0) + item.getCount());
 	                }
 	            }
 
@@ -122,8 +120,7 @@ public class StructureRepairManager
 	                for (ItemStack item : items)
 	                {
 	                    String itemName = item.getItem().getTranslationKey();
-	                    availableResources.put(itemName,
-	                            availableResources.getOrDefault(itemName, 0) + item.getCount());
+	                    availableResources.put(itemName, availableResources.getOrDefault(itemName, 0) + item.getCount());
 	                }
 	            }
 
@@ -131,8 +128,7 @@ public class StructureRepairManager
 	            for (ItemStack item : furnaceOutputs.values())
 	            {
 	                String itemName = item.getItem().getTranslationKey();
-	                availableResources.put(itemName, 
-	                        availableResources.getOrDefault(itemName, 0) + item.getCount());
+	                availableResources.put(itemName, availableResources.getOrDefault(itemName, 0) + item.getCount());
 	            }
 	        }
 	    }
@@ -154,9 +150,7 @@ public class StructureRepairManager
 	        int requiredCount = resource.getValue();
 
 	        if (!availableResources.containsKey(blockName) || availableResources.get(blockName) < requiredCount)
-	        {
 	            return false; // not enough resources
-	        }
 	    }
 
 	    return true; // all required resources available
@@ -186,9 +180,9 @@ public class StructureRepairManager
 	    List<Structure> structuresToCheck = new ArrayList<>();
 	    
 	    // prioritize townhall and warehouse structures
-	    for (Structure structureInSettlement : settlement.getStructures())
-	        if (structureInSettlement.getName().equals("townhall") || structureInSettlement.getName().equals("warehouse"))
-	            structuresToCheck.add(structureInSettlement);
+	    for (Structure settlementStructure : settlement.getStructures())
+	        if (settlementStructure.getType().equals(StructureType.TOWNHALL) || settlementStructure.getType().equals(StructureType.WAREHOUSE))
+	            structuresToCheck.add(settlementStructure);
 	    
 	    // remove resources from containers
 	    for (String blockName : requiredResources.keySet())
@@ -231,16 +225,12 @@ public class StructureRepairManager
 
 	    repairQueue.addAll(missingBlocks.entrySet());
 	    repairTicksElapsed = 0;
-
-	    ServerTickEvents.END_SERVER_TICK.register(server ->
-	    {
-	        if (server.getOverworld() == world)
-	            repairTick(world);
-	    });
 	}
 
-	private void repairTick(ServerWorld world)
+	public void processTick(ServerWorld world)
 	{
+		if (!requiresRepair || repairQueue.isEmpty()) return;
+		
 		repairTicksElapsed++;
 
 		if (repairTicksElapsed >= BLOCK_REPAIR_TICKS)

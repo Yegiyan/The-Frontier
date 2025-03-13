@@ -38,12 +38,12 @@ public class BlueprintItem extends Item
 {
 	private static Map<String, String> blueprintNameMap = new HashMap<>();
 
-	public BlueprintItem(Settings settings)
+	public BlueprintItem(Settings settings) // AND REGISTER DOWN BELOW FOR TIER 0 STRUCTURE SIZES IN getBlueprintNbt() !!!
 	{
 		super(settings);
-		blueprintNameMap.put("Blueprint: Town Hall", "townhall");
-		blueprintNameMap.put("Blueprint: Warehouse", "warehouse");
-		blueprintNameMap.put("Blueprint: House", "house");
+		blueprintNameMap.put("Blueprint: Town Hall", "TOWNHALL");
+		blueprintNameMap.put("Blueprint: Warehouse", "WAREHOUSE");
+		blueprintNameMap.put("Blueprint: House", "HOUSE");
 	}
 
 	public static void register()
@@ -56,7 +56,7 @@ public class BlueprintItem extends Item
 			PlayerEntity player = client.player;
 			PlayerData playerData = PlayerData.players.get(player.getUuid());
 
-			if (player != null && playerData.getProfession().equals("Leader"))
+			if (player != null && playerData.isLeader())
 			{
 				BlueprintState blueprintState = BlueprintStateManager.getOrCreateBlueprintState(player);
 				ItemStack itemStackInHand = player.getMainHandStack();
@@ -64,7 +64,7 @@ public class BlueprintItem extends Item
 				if (itemStackInHand != null && itemStackInHand.getItem() instanceof BlueprintItem)
 				{
 					String blueprintName = itemStackInHand.getName().getString();
-					blueprintState.setName(blueprintNameMap.getOrDefault(blueprintName, "null"));
+					blueprintState.setName(blueprintNameMap.getOrDefault(blueprintName, "NULL"));
 				}
 
 				if (GLFW.glfwGetKey(windowHandle, GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS && blueprintState.isPlacing() && !blueprintState.isInspecting())
@@ -100,7 +100,7 @@ public class BlueprintItem extends Item
 		{
 			HitResult hitResult = player.raycast(5.0D, 0.0F, false);
 
-			if (!playerData.getProfession().equals("Leader"))
+			if (!playerData.isLeader())
 				return new TypedActionResult<>(ActionResult.FAIL, itemStackInHand);
 			
 			// check if blueprint is the same

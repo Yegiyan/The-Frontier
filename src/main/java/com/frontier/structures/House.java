@@ -11,8 +11,8 @@ public class House extends Structure
 {
     public House(String name, String faction, BlockPos position, Direction facing)
     {
-        super(name, faction, StructureType.CORE, position, facing);
-        //setMaxTier(2);
+        super(name, faction, StructureType.HOUSE, position, facing);
+        SettlementManager.updateStatistic(faction, "Housing", 1);
     }
     
     @Override
@@ -24,9 +24,10 @@ public class House extends Structure
     @Override
     protected void onConstruction(ServerWorld world)
     {
-    	Frontier.LOGGER.info("Constructed House at " + position);
+    	this.setName("House");
     	setActive(true);
     	SettlementManager.saveSettlements(world.getServer());
+    	Frontier.LOGGER.info("Constructed " + this.getName() + " at (" + position + ")");
     }
 
     @Override

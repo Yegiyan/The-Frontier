@@ -23,11 +23,10 @@ public class Frontier implements ModInitializer
 	public static String MOD_ID = "frontier";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	
-	// don't allow building other structures until a townhall is active
-	
 	// custom placement GUI for each blueprint?
-	// change structure material type?
+	// ability to choose structure material type?
 	
+	// 0. don't allow building other structures until a townhall is active
 	// 1. hit confirm
 	// 2. send required info across the network
 	// 3. put structure into queue

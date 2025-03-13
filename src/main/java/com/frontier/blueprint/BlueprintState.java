@@ -10,7 +10,7 @@ public class BlueprintState
 	private int minSizeX = 0, minSizeY = 0, minSizeZ = 0;
 	private boolean isPlacing = false, isInspecting = false;
 	private Item activeBlueprint;
-	private String name = "null";
+	private String name = "NULL";
 	private Direction facing = Direction.NORTH;
 
 	public void reset()
@@ -22,7 +22,7 @@ public class BlueprintState
 	    this.setPlacing(false);
 	    this.setInspecting(false);
 	    this.activeBlueprint = null;
-	    this.setName("null");
+	    this.setName("NULL");
 	    this.setFacing(Direction.NORTH);
 	}
 	

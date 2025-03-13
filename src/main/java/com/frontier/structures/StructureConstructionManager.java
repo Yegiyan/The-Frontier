@@ -9,7 +9,6 @@ import java.util.Set;
 import com.frontier.Frontier;
 import com.frontier.settlements.SettlementManager;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -50,20 +49,15 @@ public class StructureConstructionManager
 	    this.isConstructing = true;
 	    
 	    BlockPos originalPos = structure.getPosition();
-	    Frontier.LOGGER.info("Starting construction at position: " + originalPos);
-	    
 	    BlockPos adjustedPos = adjustToGround(world, originalPos);
+	    
 	    if (!originalPos.equals(adjustedPos))
-	    {
-	        Frontier.LOGGER.info("Position adjusted for ground: " + originalPos + " -> " + adjustedPos);
 	        structure.setPosition(adjustedPos);
-	    }
 
 	    if (canConstruct)
 	    {
 	        prepareClearingQueue(world);
 	        prepareConstructionQueue(world);
-	        registerConstructionTick(world);
 	    }
 	    
 	    else
@@ -139,15 +133,17 @@ public class StructureConstructionManager
 		return groundPos;
 	}
 
-	protected void prepareClearingQueue(ServerWorld world)
+	public void prepareClearingQueue(ServerWorld world)
 	{
+		clearingQueue.clear();
 		StructureSerializer.processStructure(structure, world, (blockPos, blockState) -> clearingQueue.add(blockPos));
 	}
 
-	protected void prepareConstructionQueue(ServerWorld world)
+	public void prepareConstructionQueue(ServerWorld world)
 	{
-		BlockPos structurePos = structure.getPosition();
-		Frontier.LOGGER.info("Preparing construction queue at position: " + structurePos);
+		airBlocksQueue.clear();
+		nonAirBlocksQueue.clear();
+		constructionMap.clear();
 		
 		StructureSerializer.processStructure(structure, world, (blockPos, blockState) ->
 		{
@@ -159,71 +155,67 @@ public class StructureConstructionManager
 		});
 	}
 
-	protected void registerConstructionTick(ServerWorld world)
+	public void processTick(ServerWorld world) 
 	{
-		ServerTickEvents.END_SERVER_TICK.register(server ->
+		if (!isConstructing) return;
+		
+		constructionTicksElapsed++;
+		if (isClearing)
 		{
-			if (server.getOverworld() == world && isConstructing)
+			// clear air blocks instantly
+			while (!clearingQueue.isEmpty() && world.getBlockState(clearingQueue.peek()).isAir())
 			{
-				constructionTicksElapsed++;
-				if (isClearing)
-				{
-					// clear air blocks instantly
-					while (!clearingQueue.isEmpty() && world.getBlockState(clearingQueue.peek()).isAir())
-					{
-						BlockPos pos = clearingQueue.poll();
-						world.setBlockState(pos, Blocks.AIR.getDefaultState());
-					}
+				BlockPos pos = clearingQueue.poll();
+				world.setBlockState(pos, Blocks.AIR.getDefaultState());
+			}
 
-					// clear non-air blocks
-					if (constructionTicksElapsed >= BLOCK_CLEAR_TICKS)
-					{
-						constructionTicksElapsed = 0;
-						if (!clearingQueue.isEmpty())
-						{
-							BlockPos pos = clearingQueue.poll();
-							world.breakBlock(pos, true);
-						}
-						
-						else
-						{
-							isClearing = false;
-							constructionTicksElapsed = 0; // reset tick counter for construction phase
-						}
-					}
+			// clear non-air blocks
+			if (constructionTicksElapsed >= BLOCK_CLEAR_TICKS)
+			{
+				constructionTicksElapsed = 0;
+				if (!clearingQueue.isEmpty())
+				{
+					BlockPos pos = clearingQueue.poll();
+					world.breakBlock(pos, true);
 				}
+				
 				else
 				{
-					// place air blocks instantly
-					while (!airBlocksQueue.isEmpty() && constructionMap.get(airBlocksQueue.peek()).isAir())
-					{
-						BlockPos pos = airBlocksQueue.poll();
-						BlockState state = constructionMap.get(pos);
-						world.setBlockState(pos, state);
-					}
-
-					// place non-air blocks
-					if (constructionTicksElapsed >= BLOCK_PLACE_TICKS)
-					{
-						constructionTicksElapsed = 0;
-						if (!nonAirBlocksQueue.isEmpty())
-						{
-							BlockPos pos = nonAirBlocksQueue.poll();
-							BlockState state = constructionMap.get(pos);
-							world.setBlockState(pos, state);
-						}
-						
-						else if (airBlocksQueue.isEmpty())
-						{
-							this.isConstructing = false;
-							structure.setConstructed(true);
-							structure.onConstruction(world);
-							SettlementManager.saveSettlements(world.getServer());
-						}
-					}
+					isClearing = false;
+					constructionTicksElapsed = 0; // reset tick counter for construction phase
 				}
 			}
-		});
+		}
+		else
+		{
+			// place air blocks instantly
+			while (!airBlocksQueue.isEmpty() && constructionMap.get(airBlocksQueue.peek()).isAir())
+			{
+				BlockPos pos = airBlocksQueue.poll();
+				BlockState state = constructionMap.get(pos);
+				world.setBlockState(pos, state);
+			}
+
+			// place non-air blocks
+			if (constructionTicksElapsed >= BLOCK_PLACE_TICKS)
+			{
+				constructionTicksElapsed = 0;
+				if (!nonAirBlocksQueue.isEmpty())
+				{
+					BlockPos pos = nonAirBlocksQueue.poll();
+					BlockState state = constructionMap.get(pos);
+					world.setBlockState(pos, state);
+				}
+				
+				else if (airBlocksQueue.isEmpty())
+				{
+					this.isConstructing = false;
+					structure.setConstructed(true);
+					structure.onConstruction(world);
+					SettlementManager.saveSettlements(world.getServer());
+				}
+			}
+		}
 	}
 
     public boolean canConstruct() {

@@ -11,22 +11,23 @@ public class Warehouse extends Structure
 {
     public Warehouse(String name, String faction, BlockPos position, Direction facing)
     {
-        super(name, faction, StructureType.CORE, position, facing);
-        //setMaxTier(2);
+        super(name, faction, StructureType.WAREHOUSE, position, facing);
     }
     
     @Override
 	protected void update(ServerWorld world)
 	{
+    	// getInventoryManager().getStructureInventory(world)
 		//Frontier.LOGGER.info(getName() + " of " + getFaction() + " is updating!");
 	}
 
     @Override
     protected void onConstruction(ServerWorld world)
     {
-    	Frontier.LOGGER.info("Constructed Warehouse at " + position);
+    	this.setName("Warehouse");
     	setActive(true);
     	SettlementManager.saveSettlements(world.getServer());
+    	Frontier.LOGGER.info("Constructed " + this.getName() + " at (" + position + ")");
     }
 
     @Override

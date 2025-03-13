@@ -190,7 +190,6 @@ public class FrontierPacketsServer
 					Settlement settlement = SettlementManager.getSettlement(playerData.getFaction());
 					if (settlement != null)
 					{
-						// find structure by UUID
 						for (Structure structure : settlement.getStructures())
 						{
 							if (structure.getUUID().equals(structureUUID))
@@ -199,8 +198,6 @@ public class FrontierPacketsServer
 								if (structure.upgradeAvailable() && structure.getLeader().equals(player.getUuid()))
 								{
 									structure.upgrade(server.getOverworld());
-
-									// notify player of success
 									player.sendMessage(Text.literal("Upgrading " + structure.getName()), false);
 								}
 								break;
@@ -311,14 +308,14 @@ public class FrontierPacketsServer
 		                Structure structure = null;
 		                switch (blueprintName)
 		                {
-		                    case "townhall":
-		                        structure = new TownHall("townhall", faction, placementPos, facing);
+		                    case "TOWNHALL":
+		                        structure = new TownHall(blueprintName, faction, placementPos, facing);
 		                        break;
-		                    case "warehouse":
-		                        structure = new Warehouse("warehouse", faction, placementPos, facing);
+		                    case "WAREHOUSE":
+		                        structure = new Warehouse(blueprintName, faction, placementPos, facing);
 		                        break;
-		                    case "house":
-		                        structure = new House("house", faction, placementPos, facing);
+		                    case "HOUSE":
+		                        structure = new House(blueprintName, faction, placementPos, facing);
 		                        break;
 		                    default:
 		                        Frontier.LOGGER.error("Unknown blueprint type: " + blueprintName);
@@ -332,7 +329,7 @@ public class FrontierPacketsServer
 		                	
 		                    settlement.addStructure(structure);
 		                    structure.constructStructure(server.getOverworld());
-		                    Frontier.sendMessage(player, "Started construction of a " + structure.getName() + " at " + placementPos.toShortString(), Formatting.GREEN);
+		                    Frontier.sendMessage(player, "Started construction of " + structure.getName() + " at " + placementPos.toShortString(), Formatting.GREEN);
 		                }
 		            }
 		            else

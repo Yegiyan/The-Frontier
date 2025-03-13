@@ -20,11 +20,25 @@ import net.minecraft.util.math.Direction;
 
 public abstract class Structure
 {
-	public enum StructureType { CORE, GATHERING, LABORING, CRAFTING, RANCHING, MILITARY, VISTING, MISC }
+	public enum StructureCategory
+	{ 
+		CORE,       // essential settlement buildings
+		HOUSING,    // buildings for settlers to live in
+		FOUNDATION, // roads, bridges, and walls
+		MILITARY,   // defensive, offensive, and territory expansion buildings
+		PRODUCTION, // resource gathering buildings
+		CRAFTING,   // processing and crafting buildings
+		RANCHING,   // animal husbandry buildings
+		SERVICES,   // service oriented buildings
+		CULTURAL,   // buildings for cultural and social purposes
+		DECORATIVE, // aesthetic and utility buildings
+		NULL		// null value
+	}
 
 	protected String name;
 	protected String faction;
 	protected StructureType type;
+	protected StructureCategory category;
 	protected BlockPos position;
 	protected Direction facing;
 	protected int tier;
@@ -52,6 +66,7 @@ public abstract class Structure
 		this.name = name;
 		this.faction = faction;
 		this.type = type;
+		this.category = type.getCategory();
 		this.position = position;
 		this.facing = facing;
 		this.tier = 0;
@@ -70,20 +85,15 @@ public abstract class Structure
 
 	public void resume(ServerWorld world)
 	{
-		if (constructionManager.isClearing())
-			constructionManager.prepareClearingQueue(world);
+	    Frontier.LOGGER.info("Resuming structure: " + name + " (UUID: " + uuid + ")");
+	    
+	    if (constructionManager.isClearing())
+	        constructionManager.prepareClearingQueue(world);
 
-		if (constructionManager.isConstructing())
-		{
-			constructionManager.prepareConstructionQueue(world);
-			constructionManager.registerConstructionTick(world);
-		}
-
-		if (upgradeManager.isUpgrading())
-			upgradeManager.registerUpgradeTick(world);
-
-		// don't attempt immediate repair, just ensure flag is set
-	    // let normal update cycle handle repairs when resources are available
+	    if (constructionManager.isConstructing())
+	        constructionManager.prepareConstructionQueue(world);
+	    
+	    // We don't register tick handlers anymore - StructureManager handles that
 	}
     
     public void constructStructure(ServerWorld world) {
@@ -100,7 +110,7 @@ public abstract class Structure
     
     protected void loadResourceRequirements()
 	{
-		String path = String.format("data/frontier/structures/settlement/%s_%d.nbt", name.toLowerCase(), tier);
+		String path = String.format("data/frontier/structures/settlement/%s_%d.nbt", this.getType(), tier);
 		try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path))
 		{
 			if (inputStream != null)
@@ -126,13 +136,13 @@ public abstract class Structure
 				}
 			}
 			else
-				Frontier.LOGGER.error("NBT file not found: " + path);
+				Frontier.LOGGER.error("Structure() - NBT file not found: " + path);
 		}
 		catch (IOException e) { e.printStackTrace(); }
 	}
     
     public int[] getStructureSize() {
-        return StructureSerializer.getStructureSize(name, tier);
+        return StructureSerializer.getStructureSize(this.type.toString().toLowerCase(), tier);
     }
     
     public int getLength() {
@@ -171,13 +181,25 @@ public abstract class Structure
         return type;
     }
 
+    public String getTypeLowerCaseString() {
+        return type.toString().toLowerCase();
+    }
+    
     public void setType(StructureType type) {
         this.type = type;
     }
     
-    public void setType(String type) {
-        try { this.type = StructureType.valueOf(type.toUpperCase()); }
-        catch (IllegalArgumentException e) { Frontier.LOGGER.error("Invalid structure type: " + type + "!"); }
+    public void setType(String typeStr) {
+		try { this.type = StructureType.valueOf(typeStr.toUpperCase()); }
+		catch (IllegalArgumentException e) { Frontier.LOGGER.error("Invalid structure type: " + typeStr + "!"); }
+	}
+    
+    public StructureCategory getCategory() {
+    	return this.type.getCategory();
+    }
+    
+    public void setCategory(StructureCategory category) {
+    	this.category = category;
     }
     
     public BlockPos getPosition() {
@@ -293,7 +315,6 @@ public abstract class Structure
         repairManager.setRepairTicksElapsed(ticksElapsed);
     }
     
-    // get component managers for external access
     public StructureConstructionManager getConstructionManager() {
         return constructionManager;
     }

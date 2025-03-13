@@ -10,7 +10,7 @@ import net.minecraft.entity.mob.MobEntity;
 public class HostileMobMixinGoal
 {
 	// hostile mobs that won't target frontier entities at the moment: breeze, bogged, enderman, phantom, shulker, piglin brute, hoglin, and zoglin
-	// make sure other future custom entities (similar to SettleEntity) are also targeted if appropriate
+	// make sure other future custom entities (similar to SettlerEntity) are also targeted if appropriate
 	
 	public static void addTargetGoal(MobEntity mobEntity)
 	{
