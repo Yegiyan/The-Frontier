@@ -12,6 +12,10 @@ import com.frontier.blueprint.BlueprintState;
 import com.frontier.blueprint.BlueprintStateManager;
 import com.frontier.gui.BlueprintScreen;
 import com.frontier.renderers.ForcefieldRenderer;
+import com.frontier.settlements.Settlement;
+import com.frontier.settlements.SettlementManager;
+import com.frontier.structures.Structure;
+import com.frontier.structures.StructureType;
 
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
@@ -92,86 +96,109 @@ public class BlueprintItem extends Item
 	@Override
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand)
 	{
-		BlueprintState blueprintState = BlueprintStateManager.getOrCreateBlueprintState(player);
-		ItemStack itemStackInHand = player.getStackInHand(hand);
-		PlayerData playerData = PlayerData.players.get(player.getUuid());
+	    BlueprintState blueprintState = BlueprintStateManager.getOrCreateBlueprintState(player);
+	    ItemStack itemStackInHand = player.getStackInHand(hand);
+	    PlayerData playerData = PlayerData.players.get(player.getUuid());
 
-		if (!world.isClient)
-		{
-			HitResult hitResult = player.raycast(5.0D, 0.0F, false);
+	    if (!world.isClient)
+	    {
+	        HitResult hitResult = player.raycast(5.0D, 0.0F, false);
 
-			if (!playerData.isLeader())
-				return new TypedActionResult<>(ActionResult.FAIL, itemStackInHand);
-			
-			// check if blueprint is the same
-			if (blueprintState.isPlacing() && blueprintState.getActiveBlueprint() != itemStackInHand.getItem())
-			{
-				Frontier.sendMessage((ServerPlayerEntity) player, "Confirm or cancel previous blueprint placement first before trying to place another one!", Formatting.RED);
-				return new TypedActionResult<>(ActionResult.FAIL, itemStackInHand);
-			}
+	        if (!playerData.isLeader())
+	            return new TypedActionResult<>(ActionResult.FAIL, itemStackInHand);
+	        
+	        String blueprintName = itemStackInHand.getName().getString();
+	        boolean isTownHall = "Blueprint: Town Hall".equals(blueprintName);
+	        
+	        // check if player's settlement has active Town Hall (if the blueprint is not a Town Hall)
+	        if (!isTownHall && !hasTownHall(playerData.getFaction())) {
+	            if (player instanceof ServerPlayerEntity serverPlayer) {
+	                Frontier.sendMessage(serverPlayer, "A Town Hall must be constructed before using other blueprints!", Formatting.RED);
+	            }
+	            return new TypedActionResult<>(ActionResult.FAIL, itemStackInHand);
+	        }
+	        
+	        // check if blueprint is the same
+	        if (blueprintState.isPlacing() && blueprintState.getActiveBlueprint() != itemStackInHand.getItem())
+	        {
+	            Frontier.sendMessage((ServerPlayerEntity) player, "Confirm or cancel previous blueprint placement first before trying to place another one!", Formatting.RED);
+	            return new TypedActionResult<>(ActionResult.FAIL, itemStackInHand);
+	        }
 
-			if (hitResult.getType() == HitResult.Type.MISS)
-			{
-				blueprintState.setInspecting(false);
-				return new TypedActionResult<>(ActionResult.SUCCESS, itemStackInHand);
-			}
-		}
+	        if (hitResult.getType() == HitResult.Type.MISS)
+	        {
+	            blueprintState.setInspecting(false);
+	            return new TypedActionResult<>(ActionResult.SUCCESS, itemStackInHand);
+	        }
+	    }
 
-		return new TypedActionResult<>(ActionResult.PASS, itemStackInHand);
+	    return new TypedActionResult<>(ActionResult.PASS, itemStackInHand);
 	}
 
 	@Override
 	public ActionResult useOnBlock(ItemUsageContext context)
 	{
-	    PlayerEntity player = context.getPlayer();
-	    if (player != null)
-	    {
-	        PlayerData playerData = PlayerData.players.get(player.getUuid());
-	        if (!playerData.isLeader())
-	            return ActionResult.FAIL;
+		PlayerEntity player = context.getPlayer();
+		if (player != null)
+		{
+			PlayerData playerData = PlayerData.players.get(player.getUuid());
+			if (!playerData.isLeader())
+			{
+				return ActionResult.FAIL;
+			}
 
-	        BlueprintState blueprintState = BlueprintStateManager.getOrCreateBlueprintState(player);
-	        ItemStack itemStackInHand = player.getMainHandStack();
+			BlueprintState blueprintState = BlueprintStateManager.getOrCreateBlueprintState(player);
+			ItemStack itemStackInHand = player.getMainHandStack();
 
-	        if (itemStackInHand.getItem() instanceof BlueprintItem)
-	        {
-	            Item blueprintItem = itemStackInHand.getItem();
+			if (itemStackInHand.getItem() instanceof BlueprintItem)
+			{
+				Item blueprintItem = itemStackInHand.getItem();
+				String blueprintName = itemStackInHand.getName().getString();
+				boolean isTownHall = "Blueprint: Town Hall".equals(blueprintName);
+				
+				if (!isTownHall && !hasTownHall(playerData.getFaction()))
+				{
+					if (!context.getWorld().isClient && player instanceof ServerPlayerEntity serverPlayer)
+						Frontier.sendMessage(serverPlayer, "A Town Hall must be constructed before using other blueprints!", Formatting.RED);
+					return ActionResult.FAIL;
+				}
 
-	            // check if the player is trying to place a different blueprint before confirming the previous one
-	            if (blueprintState.isPlacing() && blueprintState.getActiveBlueprint() != blueprintItem)
-	            {
-	                if (!context.getWorld().isClient)
-	                    if (player instanceof ServerPlayerEntity serverPlayer)
-	                        Frontier.sendMessage(serverPlayer, "Confirm or cancel previous blueprint placement first before trying to place another one!", Formatting.RED);
-	                return ActionResult.FAIL;
-	            }
+				// check if the player is trying to place a different blueprint before confirming the previous one
+				if (blueprintState.isPlacing() && blueprintState.getActiveBlueprint() != blueprintItem)
+				{
+					if (!context.getWorld().isClient)
+						if (player instanceof ServerPlayerEntity serverPlayer)
+							Frontier.sendMessage(serverPlayer, "Confirm or cancel previous blueprint placement first before trying to place another one!",
+									Formatting.RED);
+					return ActionResult.FAIL;
+				}
 
-	            // set active blueprint when placing
-	            blueprintState.setActiveBlueprint(blueprintItem);
+				// set active blueprint when placing
+				blueprintState.setActiveBlueprint(blueprintItem);
 
-	            BlockPos blockPos = context.getBlockPos();
-	            blueprintState.setPlacementPos(blockPos);
-	            
-	            Direction facing = player.getHorizontalFacing();
-	            blueprintState.setFacing(facing);
+				BlockPos blockPos = context.getBlockPos();
+				blueprintState.setPlacementPos(blockPos);
 
-	            if (!context.getWorld().isClient)
-	            {
-	                Vec3i structureSize = getBlueprintNbt(context.getWorld(), this.getName().getString(), blockPos);
-	                System.out.println("Structure size: " + structureSize);
-	                blueprintState.setMinSizeX(structureSize.getX());
-	                blueprintState.setMinSizeY(structureSize.getY());
-	                blueprintState.setMinSizeZ(structureSize.getZ());
-	                adjustPositionForFacing(facing, blockPos, blueprintState);
-	            }
+				Direction facing = player.getHorizontalFacing();
+				blueprintState.setFacing(facing);
 
-	            blueprintState.setInspecting(false);
-	            blueprintState.setPlacing(true);
-	            return ActionResult.SUCCESS;
-	        }
-	    }
+				if (!context.getWorld().isClient)
+				{
+					Vec3i structureSize = getBlueprintNbt(context.getWorld(), this.getName().getString(), blockPos);
+					System.out.println("Structure size: " + structureSize);
+					blueprintState.setMinSizeX(structureSize.getX());
+					blueprintState.setMinSizeY(structureSize.getY());
+					blueprintState.setMinSizeZ(structureSize.getZ());
+					adjustPositionForFacing(facing, blockPos, blueprintState);
+				}
 
-	    return ActionResult.FAIL;
+				blueprintState.setInspecting(false);
+				blueprintState.setPlacing(true);
+				return ActionResult.SUCCESS;
+			}
+		}
+
+		return ActionResult.FAIL;
 	}
 
 	private void adjustPositionForFacing(Direction facing, BlockPos blockPos, BlueprintState blueprintState)
@@ -267,5 +294,18 @@ public class BlueprintItem extends Item
 			System.out.println("Failed to load structure: " + nbtPath);
 			return BlockPos.ORIGIN;
 		});
+	}
+	
+	public boolean hasTownHall(String settlementName)
+	{
+		if (!SettlementManager.settlementExists(settlementName))
+			return false;
+
+		Settlement settlement = SettlementManager.getSettlement(settlementName);
+		for (Structure structure : settlement.getStructures())
+			if (structure.getType() == StructureType.TOWNHALL && structure.isActive())
+				return true;
+		
+		return false;
 	}
 }

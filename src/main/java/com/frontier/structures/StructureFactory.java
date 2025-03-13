@@ -47,7 +47,6 @@ public class StructureFactory
 		STRUCTURE_TYPES.put(lowercaseType, structureClass);
 	}
 
-	// create a new structure instance by type name
 	public static Structure createStructure(String typeName, String faction, BlockPos position, Direction facing)
 	{
 		try
