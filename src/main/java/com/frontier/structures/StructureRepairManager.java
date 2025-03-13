@@ -38,43 +38,44 @@ public class StructureRepairManager
 
 	public boolean isDamaged(ServerWorld world)
 	{
-		final boolean[] isDamaged = { false };
-		StructureSerializer.processStructure(structure, world, (blockPos, expectedState) ->
-		{
-			if (expectedState.isOf(Blocks.AIR)) // ignore air blocks
-				return;
+	    final boolean[] isDamaged = { false };
+	    StructureSerializer.processStructure(structure, world, (blockPos, expectedState) ->
+	    {
+	        // skip checking air blocks and dirt path blocks
+	        if (expectedState.isOf(Blocks.AIR) || expectedState.isOf(Blocks.DIRT_PATH)) 
+	            return;
 
-			BlockState currentState = world.getBlockState(blockPos);
+	        BlockState currentState = world.getBlockState(blockPos);
 
-			// check furnace block type and ignore active state property
-			if (expectedState.isOf(Blocks.FURNACE))
-			{
-				if (currentState.isOf(Blocks.FURNACE))
-					return;
-				else
-				{
-					isDamaged[0] = true;
-					return;
-				}
-			}
+	        // check furnace block type and ignore active state property
+	        if (expectedState.isOf(Blocks.FURNACE))
+	        {
+	            if (currentState.isOf(Blocks.FURNACE))
+	                return;
+	            else
+	            {
+	                isDamaged[0] = true;
+	                return;
+	            }
+	        }
 
-			// ignore direction of bells
-			if (expectedState.getBlock() instanceof BellBlock && currentState.getBlock() instanceof BellBlock)
-			{
-				// check all properties except 'facing' for bells
-				for (Property<?> property : expectedState.getProperties())
-				{
-					if (!property.getName().equals("facing") && !currentState.get(property).equals(expectedState.get(property)))
-					{
-						isDamaged[0] = true;
-						break;
-					}
-				}
-			}
-			else if (!currentState.equals(expectedState))
-				isDamaged[0] = true;
-		});
-		return isDamaged[0];
+	        // ignore direction of bells
+	        if (expectedState.getBlock() instanceof BellBlock && currentState.getBlock() instanceof BellBlock)
+	        {
+	            // check all properties except 'facing' for bells
+	            for (Property<?> property : expectedState.getProperties())
+	            {
+	                if (!property.getName().equals("facing") && !currentState.get(property).equals(expectedState.get(property)))
+	                {
+	                    isDamaged[0] = true;
+	                    break;
+	                }
+	            }
+	        }
+	        else if (!currentState.equals(expectedState))
+	            isDamaged[0] = true;
+	    });
+	    return isDamaged[0];
 	}
 
 	public boolean canRepair(ServerWorld world)
@@ -254,16 +255,46 @@ public class StructureRepairManager
 
 	private Map<BlockPos, BlockState> detectMissingBlocks(ServerWorld world)
 	{
-		Map<BlockPos, BlockState> missingBlocks = new HashMap<>();
+	    Map<BlockPos, BlockState> missingBlocks = new HashMap<>();
 
-		StructureSerializer.processStructure(structure, world, (blockPos, expectedState) ->
-		{
-			BlockState currentState = world.getBlockState(blockPos);
-			if (!currentState.equals(expectedState))
-				missingBlocks.put(blockPos, expectedState);
-		});
+	    StructureSerializer.processStructure(structure, world, (blockPos, expectedState) ->
+	    {
+	        // ignore air blocks & dirth path
+	        if (expectedState.isOf(Blocks.AIR) || expectedState.isOf(Blocks.DIRT_PATH))
+	            return;
+	            
+	        BlockState currentState = world.getBlockState(blockPos);
+	        
+	        // only consider a block "missing" if it was originally part of the structure and is now missing or different
+	        if (!currentState.equals(expectedState))
+	        {
+	            // ignore furnaces with different states
+	            if (expectedState.isOf(Blocks.FURNACE) && currentState.isOf(Blocks.FURNACE))
+	                return;
+	                
+	            // ignore direction of bells
+	            if (expectedState.getBlock() instanceof BellBlock && currentState.getBlock() instanceof BellBlock)
+	            {
+	                boolean isDifferent = false;
+	                // check all properties except 'facing' for bells
+	                for (Property<?> property : expectedState.getProperties())
+	                {
+	                    if (!property.getName().equals("facing") && !currentState.get(property).equals(expectedState.get(property)))
+	                    {
+	                        isDifferent = true;
+	                        break;
+	                    }
+	                }
+	                if (!isDifferent)
+	                    return;
+	            }
+	            
+	            // block that's actually missing or damaged
+	            missingBlocks.put(blockPos, expectedState);
+	        }
+	    });
 
-		return missingBlocks;
+	    return missingBlocks;
 	}
 
 	private int removeResourcesFromChests(Map<BlockPos, List<ItemStack>> inventory, String blockName, int requiredCount)
