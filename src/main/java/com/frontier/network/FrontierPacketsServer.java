@@ -17,6 +17,8 @@ import com.frontier.settlements.Settlement;
 import com.frontier.settlements.SettlementManager;
 import com.frontier.structures.House;
 import com.frontier.structures.Structure;
+import com.frontier.structures.StructureInventoryManager;
+import com.frontier.structures.StructureType;
 import com.frontier.structures.TownHall;
 import com.frontier.structures.Warehouse;
 import com.frontier.util.FrontierUtil;
@@ -76,69 +78,79 @@ public class FrontierPacketsServer
 		
 		ServerPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_REQUEST_ARCHITECT_ID, (server, player, handler, buf, responseSender) ->
 		{
-		    UUID settlerUUID = buf.readUuid();
-		    String settlerFaction = buf.readString(32767);
-		    
-		    server.execute(() ->
-		    {
-		        PlayerData playerData = PlayerData.players.get(player.getUuid());
-		        if (playerData != null)
-		        {
-		            List<ItemStack> structureInventory = new ArrayList<>();
-		            
-		            Settlement settlement = SettlementManager.getSettlement(playerData.getFaction());
-		            if (settlement != null)
-		            {
-		                Structure townhall = settlement.getStructureByName("townhall");
-		                if (townhall != null)
-		                    structureInventory = townhall.getStructureInventory(player.getServer().getOverworld());
-		            }
+			UUID settlerUUID = buf.readUuid();
+			String settlerFaction = buf.readString(32767);
 
-		            PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-		            buffer.writeInt(structureInventory.size());
-		            buffer.writeUuid(settlerUUID);
-		            buffer.writeString(settlerFaction);
-		            
-		            for (ItemStack itemStack : structureInventory)
-		            {
-		                buffer.writeItemStack(itemStack);
-		                buffer.writeInt(itemStack.getCount());
-		            }
+			server.execute(() ->
+			{
+				PlayerData playerData = PlayerData.players.get(player.getUuid());
+				if (playerData != null)
+				{
+					List<ItemStack> structureInventory = new ArrayList<>();
+					Settlement settlement = SettlementManager.getSettlement(playerData.getFaction());
 
-		            ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_ARCHITECT_ID, buffer);
-		        }
-		    });
+					if (settlement != null)
+					{
+						// collect from TOWNHALL + WAREHOUSE
+						for (Structure structure : settlement.getStructures())
+							if (structure.getType() == StructureType.TOWNHALL || structure.getType() == StructureType.WAREHOUSE)
+								structureInventory.addAll(structure.getStructureInventory(player.getServer().getOverworld()));
+					}
+
+					// merge identical stacks
+					structureInventory = StructureInventoryManager.mergeStacks(structureInventory);
+
+					// send results back to client
+					PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+					buffer.writeInt(structureInventory.size()); // how many stacks we have
+					buffer.writeUuid(settlerUUID);
+					buffer.writeString(settlerFaction);
+
+					// write each stack
+					for (ItemStack itemStack : structureInventory)
+					{
+						buffer.writeItemStack(itemStack);
+						buffer.writeInt(itemStack.getCount());
+					}
+
+					ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_ARCHITECT_ID, buffer);
+				}
+			});
 		});
 		
 		ServerPlayNetworking.registerGlobalReceiver(SETTLEMENT_RESOURCES_REQUEST_PLAYER_ID, (server, player, handler, buf, responseSender) ->
 		{
-		    server.execute(() ->
-		    {
-		        PlayerData playerData = PlayerData.players.get(player.getUuid());
-		        if (playerData != null)
-		        {
-		            PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-		            List<ItemStack> structureInventory = new ArrayList<>();
-		            
-		            Settlement settlement = SettlementManager.getSettlement(playerData.getFaction());
-		            if (settlement != null)
-		            {
-		                Structure townhall = settlement.getStructureByName("townhall");
-		                if (townhall != null)
-		                    structureInventory = townhall.getStructureInventory(player.getServer().getOverworld());
-		            }
+			server.execute(() ->
+			{
+				PlayerData playerData = PlayerData.players.get(player.getUuid());
+				if (playerData != null)
+				{
+					PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+					List<ItemStack> structureInventory = new ArrayList<>();
+					Settlement settlement = SettlementManager.getSettlement(playerData.getFaction());
 
-		            buffer.writeInt(structureInventory.size());
-		            
-		            for (ItemStack itemStack : structureInventory)
-		            {
-		                buffer.writeItemStack(itemStack);
-		                buffer.writeInt(itemStack.getCount());
-		            }
+					if (settlement != null)
+					{
+						// collect from TOWNHALL + WAREHOUSE
+						for (Structure structure : settlement.getStructures())
+							if (structure.getType() == StructureType.TOWNHALL || structure.getType() == StructureType.WAREHOUSE)
+								structureInventory.addAll(structure.getStructureInventory(player.getServer().getOverworld()));
+					}
 
-		            ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_PLAYER_ID, buffer);
-		        }
-		    });
+					// merge identical stacks
+					structureInventory = StructureInventoryManager.mergeStacks(structureInventory);
+
+					// write merged results
+					buffer.writeInt(structureInventory.size());
+					for (ItemStack itemStack : structureInventory)
+					{
+						buffer.writeItemStack(itemStack);
+						buffer.writeInt(itemStack.getCount());
+					}
+
+					ServerPlayNetworking.send(player, FrontierPacketsClient.SETTLEMENT_RESOURCES_RESPONSE_PLAYER_ID, buffer);
+				}
+			});
 		});
 		
 		ServerPlayNetworking.registerGlobalReceiver(BUY_BLUEPRINT_ID, (server, player, handler, buf, responseSender) ->

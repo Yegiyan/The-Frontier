@@ -182,4 +182,23 @@ public class StructureInventoryManager
 
 		return new ArrayList<>(itemMap.values());
 	}
+	
+	public static List<ItemStack> mergeStacks(List<ItemStack> originalStacks)
+	{
+		Map<Item, Integer> merged = new HashMap<>();
+		for (ItemStack stack : originalStacks)
+		{
+			Item item = stack.getItem();
+			merged.put(item, merged.getOrDefault(item, 0) + stack.getCount());
+		}
+
+		List<ItemStack> mergedStacks = new ArrayList<>();
+		for (Map.Entry<Item, Integer> entry : merged.entrySet())
+		{
+			int totalCount = entry.getValue();
+			if (totalCount > 0)
+				mergedStacks.add(new ItemStack(entry.getKey(), totalCount));
+		}
+		return mergedStacks;
+	}
 }

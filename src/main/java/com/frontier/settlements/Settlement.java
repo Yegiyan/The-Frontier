@@ -275,6 +275,14 @@ public class Settlement
         return null;
     }
     
+    public Structure getStructureByType(StructureType type)
+    {
+        for (Structure structure : structures)
+            if (structure.getType().equals(type))
+                return structure;
+        return null;
+    }
+    
     public Structure getStructureByUUID(UUID uuid)
     {
         for (Structure structure : structures)
