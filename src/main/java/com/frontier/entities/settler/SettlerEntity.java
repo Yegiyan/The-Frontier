@@ -76,6 +76,8 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 	public abstract Identifier[] getTextures(boolean isMale);
 	private SimpleInventory inventory;
 	
+	private double moveSpeed = 0.5D;
+	
 	public SettlerEntity(EntityType<? extends PathAwareEntity> entityType, World world)
     {
         super(entityType, world);
@@ -711,6 +713,14 @@ public abstract class SettlerEntity extends PathAwareEntity implements Inventory
 
 	public void setSettlerTexture(int texture) {
 	    this.dataTracker.set(SETTLER_TEXTURE, texture);
+	}
+	
+	public double getMoveSpeed() {
+		return moveSpeed;
+	}
+
+	public void setMoveSpeed(double moveSpeed) {
+		this.moveSpeed = moveSpeed;
 	}
 	
 	public Settlement getSettlement() {

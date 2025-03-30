@@ -60,7 +60,7 @@ public class BlueprintItem extends Item
 			PlayerEntity player = client.player;
 			PlayerData playerData = PlayerData.players.get(player.getUuid());
 
-			if (player != null && playerData.isLeader())
+			if (player != null && playerData != null && playerData.isLeader())
 			{
 				BlueprintState blueprintState = BlueprintStateManager.getOrCreateBlueprintState(player);
 				ItemStack itemStackInHand = player.getMainHandStack();

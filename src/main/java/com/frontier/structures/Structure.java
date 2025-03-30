@@ -92,8 +92,6 @@ public abstract class Structure
 
 	    if (constructionManager.isConstructing())
 	        constructionManager.prepareConstructionQueue(world);
-	    
-	    // We don't register tick handlers anymore - StructureManager handles that
 	}
     
     public void constructStructure(ServerWorld world) {
@@ -140,6 +138,24 @@ public abstract class Structure
 		}
 		catch (IOException e) { e.printStackTrace(); }
 	}
+    
+    public BlockPos getCenterGroundBlockPos()
+    {
+        int[] size = getStructureSize();
+        
+        int centerX = size[0] / 2;
+        int centerY = size[2] / 2;
+        
+        BlockPos centerBlock = BlockStateHelper.rotateAroundCenter
+        (
+            new BlockPos(centerX, 0, centerY),
+            facing,
+            size[0] / 2,
+            size[2] / 2
+        );
+        
+        return position.add(centerBlock.getX(), 0, centerBlock.getZ());
+    }
     
     public int[] getStructureSize() {
         return StructureSerializer.getStructureSize(this.type.toString().toLowerCase(), tier);

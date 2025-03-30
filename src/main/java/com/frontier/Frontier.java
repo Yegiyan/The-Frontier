@@ -26,7 +26,9 @@ public class Frontier implements ModInitializer
 	// custom placement GUI for each blueprint?
 	// ability to choose structure material type?
 	
-	// FIX THE GOD DAMN DOOR/GATE BULLSHIT
+	// GET CENTER OF TOWNHALL
+	// NAVIGATE ARCHITECT THERE
+	// HAVE HIM IDLE
 	
 	// 1. hit confirm
 	// 2. send required info across the network

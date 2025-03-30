@@ -2,7 +2,7 @@ package com.frontier.entities.settler;
 
 import java.util.List;
 
-import com.frontier.goals.architect.MoveToTownHallGoal;
+import com.frontier.goals.architect.GoToTownHallGoal;
 
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
@@ -50,7 +50,7 @@ public class ArchitectEntity extends SettlerEntity
 	protected void initGoals()
 	{
 		super.initGoals();
-		this.goalSelector.add(1, new MoveToTownHallGoal(this));
+		this.goalSelector.add(2, new GoToTownHallGoal(this, 0.5D));
 	}
 	
 	@Override

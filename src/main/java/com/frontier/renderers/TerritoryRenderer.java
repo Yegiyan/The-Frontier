@@ -24,10 +24,13 @@ public class TerritoryRenderer
 			if (client.player != null)
 			{
 				PlayerData playerData = PlayerData.players.get(client.player.getUuid());
-				if (playerData.getProfession().equals("Leader") && SettlementManager.getSettlement(playerData.getFaction()) != null && SettlementManager.getSettlement(playerData.getFaction()).isLeaderHoldingClock(client.getServer()))
+				if (playerData != null)
 				{
-					Set<ChunkPos> territory = SettlementManager.getSettlement(playerData.getFaction()).getTerritory();
-					ForcefieldRenderer.drawForcefield(client, matrixStack, client.player, territory, 3, camera);
+					if (playerData.getProfession().equals("Leader") && SettlementManager.getSettlement(playerData.getFaction()) != null && SettlementManager.getSettlement(playerData.getFaction()).isLeaderHoldingClock(client.getServer()))
+					{
+						Set<ChunkPos> territory = SettlementManager.getSettlement(playerData.getFaction()).getTerritory();
+						ForcefieldRenderer.drawForcefield(client, matrixStack, client.player, territory, 3, camera);
+					}
 				}
 			}
 		});

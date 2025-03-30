@@ -22,6 +22,9 @@ public class TownHall extends Structure
 	{
 		// getInventoryManager().getStructureInventory(world)
 		// Frontier.LOGGER.info(getName() + " inventory: " + getStructureInventory(world));
+		
+		//BlockPos centerGroundPos = getCenterGroundBlockPos();
+	    //Frontier.LOGGER.info(getName() + " center ground position: " + centerGroundPos);
 	}
 
 	@Override
