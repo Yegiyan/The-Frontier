@@ -50,7 +50,6 @@ public abstract class Structure
 
 	protected Map<String, Integer> resourceRequirements = new HashMap<>();
 
-	// component managers
 	private StructureConstructionManager constructionManager;
 	private StructureUpgradeManager upgradeManager;
 	private StructureRepairManager repairManager;
@@ -137,6 +136,40 @@ public abstract class Structure
 				Frontier.LOGGER.error("Structure() - NBT file not found: " + path);
 		}
 		catch (IOException e) { e.printStackTrace(); }
+	}
+    
+    public BlockPos[] getStructureCorners(BlockPos basePos, Direction facing, int length, int width, int height)
+	{
+		// first, determine the footprint based on the facing direction
+		BlockPos minCorner = basePos;
+		BlockPos maxCorner;
+
+		switch (facing)
+		{
+			case NORTH:
+				maxCorner = basePos.add(length - 1, height - 1, width - 1);
+				break;
+			case SOUTH:
+				maxCorner = basePos.add(length - 1, height - 1, width - 1);
+				break;
+			case EAST:
+				maxCorner = basePos.add(width - 1, height - 1, length - 1);
+				break;
+			case WEST:
+				maxCorner = basePos.add(width - 1, height - 1, length - 1);
+				break;
+			default:
+				maxCorner = basePos.add(length - 1, height - 1, width - 1);
+		}
+
+		int minX = Math.min(minCorner.getX(), maxCorner.getX());
+		int minY = Math.min(minCorner.getY(), maxCorner.getY());
+		int minZ = Math.min(minCorner.getZ(), maxCorner.getZ());
+		int maxX = Math.max(minCorner.getX(), maxCorner.getX());
+		int maxY = Math.max(minCorner.getY(), maxCorner.getY());
+		int maxZ = Math.max(minCorner.getZ(), maxCorner.getZ());
+
+		return new BlockPos[] { new BlockPos(minX, minY, minZ), new BlockPos(maxX, maxY, maxZ) };
 	}
     
     public BlockPos getCenterGroundBlockPos()

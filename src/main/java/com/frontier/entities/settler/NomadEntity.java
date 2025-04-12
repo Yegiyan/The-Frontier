@@ -5,6 +5,7 @@ import com.frontier.goals.SelfDefenseGoal;
 import com.frontier.goals.nomad.MoveTowardsBellGoal;
 import com.frontier.goals.nomad.MoveTowardsDespawnGoal;
 import com.frontier.gui.HireSettlerScreen;
+import com.frontier.settlements.Settlement;
 import com.frontier.settlements.SettlementManager;
 
 import net.minecraft.client.MinecraftClient;
@@ -64,15 +65,19 @@ public class NomadEntity extends SettlerEntity
 	}
 	
 	@Override
-	public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) 
+	public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand)
 	{
 		PlayerData playerData = PlayerData.players.get(player.getUuid());
-		//ItemStack itemStack = player.getStackInHand(hand);
-		
-		if (player.getWorld().isClient && playerData.getProfession().equals("Leader") && SettlementManager.getSettlement(playerData.getFaction()).isWithinTerritory(player.getBlockPos()))
-	    	MinecraftClient.getInstance().setScreen(new HireSettlerScreen(this));
-		
-	    return super.interactAt(player, hitPos, hand);
+		// ItemStack itemStack = player.getStackInHand(hand);
+
+		if (player.getWorld().isClient && playerData != null && playerData.isLeader() && playerData.getFaction() != null && !playerData.getFaction().isEmpty())
+		{
+			Settlement settlement = SettlementManager.getSettlement(playerData.getFaction());
+			if (settlement != null && settlement.isWithinTerritory(player.getBlockPos()))
+				MinecraftClient.getInstance().setScreen(new HireSettlerScreen(this));
+		}
+
+		return super.interactAt(player, hitPos, hand);
 	}
 	
 	@Override

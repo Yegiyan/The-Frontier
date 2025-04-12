@@ -2,6 +2,8 @@ package com.frontier.entities.settler;
 
 import java.util.List;
 
+import com.frontier.Frontier;
+import com.frontier.goals.architect.ArchitectState;
 import com.frontier.goals.architect.GoToTownHallGoal;
 
 import net.minecraft.entity.EntityData;
@@ -37,6 +39,8 @@ public class ArchitectEntity extends SettlerEntity
 			new Identifier("frontier", "textures/entity/architect/architect_female_2.png"),
 	};
 	
+	private ArchitectState currentState = ArchitectState.GOING_TO_TOWNHALL;
+	
 	public ArchitectEntity(EntityType<? extends PathAwareEntity> entityType, World world)
 	{
 	    super(entityType, world);
@@ -50,7 +54,7 @@ public class ArchitectEntity extends SettlerEntity
 	protected void initGoals()
 	{
 		super.initGoals();
-		this.goalSelector.add(2, new GoToTownHallGoal(this, 0.5D));
+	    this.goalSelector.add(1, new GoToTownHallGoal(this, 0.5D));
 	}
 	
 	@Override
@@ -98,16 +102,39 @@ public class ArchitectEntity extends SettlerEntity
 	public void readCustomDataFromNbt(NbtCompound nbt)
 	{
 	    super.readCustomDataFromNbt(nbt);
+
+	    if (nbt.contains("ArchitectState"))
+	    {
+	        try
+	        {
+	            String state = nbt.getString("ArchitectState");
+	            this.currentState = ArchitectState.valueOf(state);
+	        }
+	        catch (IllegalArgumentException e)
+	        {
+	            this.currentState = ArchitectState.GOING_TO_TOWNHALL;
+	        }
+	    }
 	}
 
 	@Override
 	public void writeCustomDataToNbt(NbtCompound nbt)
 	{
 	    super.writeCustomDataToNbt(nbt);
+	    nbt.putString("ArchitectState", this.currentState.name());
 	}
 	
 	@Override
     public Identifier[] getTextures(boolean isMale) {
         return isMale ? ARCHITECT_TEXTURES_MALE : ARCHITECT_TEXTURES_FEMALE;
     }
+	
+	public ArchitectState getState() {
+	    return this.currentState;
+	}
+
+	public void setState(ArchitectState state) {
+	    this.currentState = state;
+	    Frontier.LOGGER.info("Architect state changed to: " + state);
+	}
 }
