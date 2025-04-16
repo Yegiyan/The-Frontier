@@ -12,6 +12,7 @@ import com.frontier.settlements.SettlementManager;
 import com.frontier.structures.Structure;
 import com.frontier.structures.StructureType;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.FenceGateBlock;
@@ -20,6 +21,8 @@ import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -283,8 +286,8 @@ public class GoToTownHallGoal extends Goal
 						}
 					}
 
-					// play door open sound
-					world.syncWorldEvent(null, 1005, pos, 0);
+					world.syncWorldEvent(null, 1005, pos, Block.getRawIdFromState(state));
+					world.playSound(null, pos, SoundEvents.BLOCK_WOODEN_DOOR_OPEN, SoundCategory.BLOCKS, 1.0F, world.random.nextFloat() * 0.1F + 0.9F);
 
 					// record the current tick when the door was opened
 					openedDoors.put(pos, architect.age);
@@ -297,8 +300,8 @@ public class GoToTownHallGoal extends Goal
 				{
 					world.setBlockState(pos, state.with(FenceGateBlock.OPEN, true), 10);
 
-					// play gate open sound
-					world.syncWorldEvent(null, 1008, pos, 0);
+					world.syncWorldEvent(null, 1008, pos, Block.getRawIdFromState(state));
+					world.playSound(null, pos, SoundEvents.BLOCK_FENCE_GATE_OPEN, SoundCategory.BLOCKS, 1.0F, world.random.nextFloat() * 0.1F + 0.9F);
 
 					// record the current tick when the gate was opened
 					openedDoors.put(pos, architect.age);
@@ -392,8 +395,8 @@ public class GoToTownHallGoal extends Goal
 				}
 			}
 
-			// play door close sound
-			world.syncWorldEvent(null, 1006, pos, 0);
+			world.syncWorldEvent(null, 1006, pos, Block.getRawIdFromState(state));
+			world.playSound(null, pos, SoundEvents.BLOCK_WOODEN_DOOR_CLOSE, SoundCategory.BLOCKS, 1.0F, world.random.nextFloat() * 0.1F + 0.9F);
 		}
 		catch (Exception e)
 		{
@@ -410,8 +413,8 @@ public class GoToTownHallGoal extends Goal
 		{
 			world.setBlockState(pos, state.with(FenceGateBlock.OPEN, false), 10);
 
-			// play gate close sound
-			world.syncWorldEvent(null, 1014, pos, 0);
+			world.syncWorldEvent(null, 1014, pos, Block.getRawIdFromState(state));
+			world.playSound(null, pos, SoundEvents.BLOCK_FENCE_GATE_CLOSE, SoundCategory.BLOCKS, 1.0F, world.random.nextFloat() * 0.1F + 0.9F);
 		}
 		catch (Exception e)
 		{

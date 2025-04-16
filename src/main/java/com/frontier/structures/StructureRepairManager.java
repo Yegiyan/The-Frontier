@@ -284,7 +284,7 @@ public class StructureRepairManager
 	{
 		if (!canRepair(world))
 		{
-			Frontier.LOGGER.info("Cannot repair " + structure.getName() + ": Insufficient resources or no damage detected");
+			//Frontier.LOGGER.info("Cannot repair " + structure.getName() + ": Insufficient resources or no damage detected");
 			return;
 		}
 
@@ -301,7 +301,7 @@ public class StructureRepairManager
 		// consume resources from storage
 		if (!consumeResources(world, requiredBlocks))
 		{
-			Frontier.LOGGER.error("Failed to consume resources for repair of " + structure.getName());
+			//Frontier.LOGGER.error("Failed to consume resources for repair of " + structure.getName());
 			return;
 		}
 
@@ -311,7 +311,7 @@ public class StructureRepairManager
 		repairTicksElapsed = 0;
 		requiresRepair = true;
 
-		Frontier.LOGGER.info("Started repair of " + structure.getName() + " - blocks to repair: " + repairQueue.size());
+		//Frontier.LOGGER.info("Started repair of " + structure.getName() + " - blocks to repair: " + repairQueue.size());
 	}
 
 	// consumes resources required for repair from settlement storage
@@ -339,7 +339,7 @@ public class StructureRepairManager
 
 			if (!consumeSpecificResource(world, storageStructures, requiredBlock, requiredCount))
 			{
-				Frontier.LOGGER.error("Failed to consume required resource: " + requiredBlock.getTranslationKey());
+				//Frontier.LOGGER.error("Failed to consume required resource: " + requiredBlock.getTranslationKey());
 				return false;
 			}
 		}
@@ -502,13 +502,13 @@ public class StructureRepairManager
 				world.setBlockState(entry.getKey(), entry.getValue());
 
 				// log repair progress
-				if (repairQueue.size() % 5 == 0 || repairQueue.isEmpty())
-					Frontier.LOGGER.info(structure.getName() + " repair progress: " + (repairQueue.isEmpty() ? "Complete" : repairQueue.size() + " blocks remaining"));
+				//if (repairQueue.size() % 5 == 0 || repairQueue.isEmpty())
+					//Frontier.LOGGER.info(structure.getName() + " repair progress: " + (repairQueue.isEmpty() ? "Complete" : repairQueue.size() + " blocks remaining"));
 
 				if (repairQueue.isEmpty())
 				{
 					requiresRepair = false;
-					Frontier.LOGGER.info(structure.getName() + " repair complete!");
+					//Frontier.LOGGER.info(structure.getName() + " repair complete!");
 					SettlementManager.saveSettlements(world.getServer());
 				}
 			}

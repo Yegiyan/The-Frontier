@@ -349,16 +349,16 @@ public class Settlement
         return allies;
     }
 
-    public void addAlly(UUID faction) {
-        this.allies.add(faction);
+    public void addAlly(UUID entityUUID) {
+        this.allies.add(entityUUID);
     }
 
     public List<UUID> getEnemies() {
         return enemies;
     }
 
-    public void addEnemy(UUID faction) {
-        this.enemies.add(faction);
+    public void addEnemy(UUID entityUUID) {
+        this.enemies.add(entityUUID);
     }
 
     public List<String> getAlliedFactions() {

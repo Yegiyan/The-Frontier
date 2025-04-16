@@ -26,10 +26,6 @@ public class Frontier implements ModInitializer
 	// custom placement GUI for each blueprint?
 	// ability to choose structure material type?
 	
-	// GET CENTER OF TOWNHALL
-	// NAVIGATE ARCHITECT THERE
-	// HAVE HIM IDLE
-	
 	// 1. hit confirm
 	// 2. send required info across the network
 	// 3. put structure into queue

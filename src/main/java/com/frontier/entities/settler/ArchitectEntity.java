@@ -5,6 +5,7 @@ import java.util.List;
 import com.frontier.Frontier;
 import com.frontier.goals.architect.ArchitectState;
 import com.frontier.goals.architect.GoToTownHallGoal;
+import com.frontier.goals.architect.IdleInTownHallGoal;
 
 import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
@@ -55,6 +56,7 @@ public class ArchitectEntity extends SettlerEntity
 	{
 		super.initGoals();
 	    this.goalSelector.add(1, new GoToTownHallGoal(this, 0.5D));
+	    this.goalSelector.add(2, new IdleInTownHallGoal(this, 0.4D));
 	}
 	
 	@Override

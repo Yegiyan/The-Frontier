@@ -1,27 +1,45 @@
 package com.frontier.goals.architect;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Random;
 
+import com.frontier.Frontier;
 import com.frontier.entities.settler.ArchitectEntity;
+import com.frontier.settlements.Settlement;
+import com.frontier.settlements.SettlementManager;
+import com.frontier.structures.Structure;
+import com.frontier.structures.TownHall;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.block.CraftingTableBlock;
-import net.minecraft.block.FurnaceBlock;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.particle.ParticleTypes;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 public class IdleInTownHallGoal extends Goal
 {
 	private final ArchitectEntity architect;
 	private final double speed;
-	private int idleTimer;
-	private Random random = new Random();
-	private BlockPos currentTarget;
-	private int interactionCooldown = 0;
+	
+	private BlockPos targetPos;
+	private Path path;
+	
+	private BlockPos lookTarget = null;
+	private int lookTimer = 0;
+	private int cooldown = 0;
+	
+	private final List<BlockPos> functionalBlocks = new ArrayList<>();
+	private boolean isScanningForBlocks = true;
+	private Box townHallBounds = null;
+	private TownHall townHall = null;
+	
+	private final Random random = new Random();
 
 	public IdleInTownHallGoal(ArchitectEntity architect, double speed)
 	{
@@ -33,92 +51,203 @@ public class IdleInTownHallGoal extends Goal
 	@Override
 	public boolean canStart()
 	{
-		return this.architect.getState() == ArchitectState.IDLE_IN_TOWNHALL;
+		return architect.getState() == ArchitectState.IDLE_IN_TOWNHALL;
 	}
 
 	@Override
 	public void start()
 	{
-		this.idleTimer = 0;
-		this.currentTarget = null;
+		findTownHall();
+		cooldown = 0;
 	}
 
-	@Override
-	public boolean shouldContinue()
+	private void findTownHall()
 	{
-		return this.architect.getState() == ArchitectState.IDLE_IN_TOWNHALL;
+		World world = architect.getWorld();
+		
+		if (world.isClient)
+			return;
+
+		String faction = architect.getSettlerFaction();
+		Settlement settlement = SettlementManager.getSettlement(faction);
+
+		if (settlement == null)
+			return;
+
+		// find town hall structure
+		for (Structure structure : settlement.getStructures())
+		{
+			if (structure instanceof TownHall && structure.isConstructed())
+			{
+				townHall = (TownHall) structure;
+
+				// calculate bounds of town hall
+				int[] size = townHall.getStructureSize();
+				BlockPos pos = townHall.getPosition();
+				BlockPos maxPos = pos.add(size[0], size[2], size[1]);
+
+				townHallBounds = new Box(pos, maxPos);
+				isScanningForBlocks = true;
+				
+				return;
+			}
+		}
+		Frontier.LOGGER.warn("No town hall found for settlement: " + faction + "!");
+	}
+
+	private void scanForFunctionalBlocks()
+	{
+		if (townHall == null || townHallBounds == null)
+			return;
+
+		functionalBlocks.clear();
+		ServerWorld world = (ServerWorld) architect.getWorld();
+
+		// get min and max coordinates of town hall
+		int minX = (int) townHallBounds.minX;
+		int minY = (int) townHallBounds.minY;
+		int minZ = (int) townHallBounds.minZ;
+		int maxX = (int) townHallBounds.maxX;
+		int maxY = (int) townHallBounds.maxY;
+		int maxZ = (int) townHallBounds.maxZ;
+
+		// scan area for functional blocks
+		for (int x = minX; x <= maxX; x++)
+		{
+			for (int y = minY; y <= maxY; y++)
+			{
+				for (int z = minZ; z <= maxZ; z++)
+				{
+					BlockPos pos = new BlockPos(x, y, z);
+					BlockState state = world.getBlockState(pos);
+                    
+                    if (state.getBlock() == Blocks.CHEST || 
+                        state.getBlock() == Blocks.TRAPPED_CHEST ||
+                        state.getBlock() == Blocks.BARREL ||
+                        state.getBlock() == Blocks.FURNACE ||
+                        state.getBlock() == Blocks.BLAST_FURNACE ||
+                        state.getBlock() == Blocks.SMOKER ||
+                        state.getBlock() == Blocks.CRAFTING_TABLE ||
+                        state.getBlock() == Blocks.SMITHING_TABLE ||
+                        state.getBlock() == Blocks.FLETCHING_TABLE ||
+                        state.getBlock() == Blocks.CARTOGRAPHY_TABLE ||
+                        state.getBlock() == Blocks.LOOM ||
+                        state.getBlock() == Blocks.STONECUTTER ||
+                        state.getBlock() == Blocks.GRINDSTONE ||
+                        state.getBlock() == Blocks.ANVIL ||
+                        state.getBlock() == Blocks.BREWING_STAND)
+                    {
+                        functionalBlocks.add(pos);
+                    }
+                }
+            }
+        }
+
+		isScanningForBlocks = false;
 	}
 
 	@Override
 	public void tick()
 	{
-		idleTimer++;
+		if (isScanningForBlocks)
+			scanForFunctionalBlocks();
 
-		// if not moving or we've reached our current target
-		if (currentTarget == null || this.architect.getNavigation().isIdle())
+		if (lookTarget != null && lookTimer > 0)
 		{
-			// every 3-5 seconds, choose a new random location to wander to
-			if (idleTimer % (60 + random.nextInt(40)) == 0)
-				wanderRandomly();
+			lookAtBlock();
+			lookTimer--;
+
+			if (lookTimer <= 0)
+				lookTarget = null;
+			return;
 		}
 
-		if (interactionCooldown > 0)
-			interactionCooldown--;
+		if (cooldown > 0)
+		{
+			cooldown--;
+			return;
+		}
 
-		// interact with blocks (chests, crafting tables, furnaces) occasionally
-		if (interactionCooldown == 0 && idleTimer % 80 == 0)
-			interactWithNearbyBlocks();
+		// if we have no target or reached the target, pick a new one
+		if (targetPos == null || architect.getNavigation().isIdle())
+		{
+			// either pick functional block to look at or random position to move to
+			if (!functionalBlocks.isEmpty() && random.nextFloat() < 0.3f)
+			{
+				// 30% chance to look at a functional block
+				lookTarget = functionalBlocks.get(random.nextInt(functionalBlocks.size()));
+				lookTimer = 100 + random.nextInt(100); // look for 5 - 10 seconds
+				lookAtBlock();
+			}
+			else
+				pickNewTarget(); // else, pick random position within town hall to move to
+
+			cooldown = 20 + random.nextInt(60); // 1-4 seconds
+		}
 	}
 
-	private void wanderRandomly()
+	private void lookAtBlock()
 	{
-		// get random position in a 6x6 area around the architect
-		int offsetX = random.nextInt(7) - 3; // -3 to 3
-		int offsetZ = random.nextInt(7) - 3; // -3 to 3
-
-		BlockPos entityPos = this.architect.getBlockPos();
-		currentTarget = entityPos.add(offsetX, 0, offsetZ);
-
-		// start moving to the new location
-		this.architect.getNavigation().startMovingTo(currentTarget.getX(), currentTarget.getY(), currentTarget.getZ(), this.speed);
-	}
-
-	private void interactWithNearbyBlocks()
-	{
-		if (!(this.architect.getEntityWorld() instanceof ServerWorld))
+		if (lookTarget == null)
 			return;
 
-		ServerWorld world = (ServerWorld) this.architect.getEntityWorld();
-		BlockPos entityPos = this.architect.getBlockPos();
+		// look at center of block
+		Vec3d targetVec = new Vec3d(lookTarget.getX() + 0.5, lookTarget.getY() + 0.5, lookTarget.getZ() + 0.5);
+		architect.getLookControl().lookAt(targetVec.x, targetVec.y, targetVec.z);
+	}
 
-		// look for interesting blocks nearby
-		for (int x = -3; x <= 3; x++)
+	private void pickNewTarget()
+	{
+		if (townHallBounds == null)
+			return;
+
+		// pick random position within town hall bounds
+		int tries = 0;
+		while (tries < 50)
 		{
-			for (int y = -1; y <= 1; y++)
+			double x = townHallBounds.minX + random.nextDouble() * (townHallBounds.maxX - townHallBounds.minX);
+			double y = townHallBounds.minY;
+			double z = townHallBounds.minZ + random.nextDouble() * (townHallBounds.maxZ - townHallBounds.minZ);
+
+			BlockPos pos = new BlockPos((int) x, (int) y, (int) z);
+
+			// find the first non-air block from the bottom
+			World world = architect.getWorld();
+			while (y <= townHallBounds.maxY)
 			{
-				for (int z = -3; z <= 3; z++)
+				pos = new BlockPos((int) x, (int) y, (int) z);
+				if (!world.getBlockState(pos).isAir() && world.getBlockState(pos.up()).isAir())
 				{
-					BlockPos checkPos = entityPos.add(x, y, z);
-					BlockState state = world.getBlockState(checkPos);
-
-					// check for blocks the architect might interact with
-					if (state.getBlock() instanceof ChestBlock || state.getBlock() instanceof CraftingTableBlock || state.getBlock() instanceof FurnaceBlock)
-					{
-
-						// move toward the block
-						this.architect.getNavigation().startMovingTo(checkPos.getX(), checkPos.getY(), checkPos.getZ(), this.speed);
-
-						// look at the block
-						this.architect.getLookControl().lookAt(checkPos.getX() + 0.5, checkPos.getY() + 0.5, checkPos.getZ() + 0.5);
-
-						// spawn some particles to show interaction
-						world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, checkPos.getX() + 0.5, checkPos.getY() + 1.0, checkPos.getZ() + 0.5, 5, 0.25, 0.25, 0.25, 0.0);
-
-						// set a cooldown before interacting again
-						interactionCooldown = 60 + random.nextInt(40); // 3-5 seconds
-					}
+					pos = pos.up();
+					break;
 				}
+				y++;
 			}
+
+			path = architect.getNavigation().findPathTo(pos, 0);
+			if (path != null)
+			{
+				targetPos = pos;
+				architect.getNavigation().startMovingAlong(path, speed);
+				return;
+			}
+
+			tries++;
 		}
+	}
+
+	@Override
+	public boolean shouldContinue()
+	{
+		return architect.getState() == ArchitectState.IDLE_IN_TOWNHALL && townHall != null;
+	}
+
+	@Override
+	public void stop()
+	{
+		architect.getNavigation().stop();
+		targetPos = null;
+		lookTarget = null;
+		lookTimer = 0;
 	}
 }
